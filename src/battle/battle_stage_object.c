@@ -4,6 +4,14 @@
 #include <string.h>
 
 extern BattleWork* _battleWorkPointer;
+extern void BattleAudience_Case_HaikeiSet(void);
+
+#ifndef TARGET_PC
+extern const f32 lbl_8042FAB8;
+#define BATTLE_STAGE_OBJECT_ZERO lbl_8042FAB8
+#else
+#define BATTLE_STAGE_OBJECT_ZERO 0.0f
+#endif
 
 //local prototypes
 void BattleObjectConfig(void);
@@ -22,14 +30,14 @@ BattleStageObject* BattleGetObjectPtr(s32 id) {
 
 BattleStageObject* BattleSearchObjectPtr(const char* name) {
 	BattleWork* wp = _battleWorkPointer;
-	BattleStageObject* object;
+	BattleStageObject* object = wp->stageObjects;
 	int i;
 
 	for (i = 0; i < 32; i++) {
-		object = &wp->stageObjects[i];
 		if (object->id && !strcmp(object->data->name, name)) {
 			return object;
 		}
+		object++;
 	}
 	return NULL; //if name not found
 }
@@ -62,7 +70,7 @@ USER_FUNC(_set_mobj_shake_init) {
 				position = (u8)(obj->mShakePeriodLength / 2);
 			}
 			obj->mShakePeriodPosition = position;
-			obj->mShakeAngle = 0.0f;
+			obj->mShakeAngle = BATTLE_STAGE_OBJECT_ZERO;
 		}
 	}
 	return EVT_RETURN_DONE;
@@ -80,4 +88,32 @@ void BattleObjectConfig(void) {
 
 void BattleStageObjectMain(void) {
 
+}
+
+USER_FUNC(_bgset_audience_bgset_access) {
+	BattleAudience_Case_HaikeiSet();
+	return 2;
+}
+
+void _rate_mix_3(s8* maximum, u8* total1, u8* total2, s8* value, u8* addition1, u8* addition2) {
+	if (*value > 0) {
+		if (*value > *maximum) {
+			*maximum = *value;
+		}
+		*total1 += *addition1;
+		*total2 += *addition2;
+		if ((s8)*total2 == 0) {
+			*maximum = 0;
+			*total1 = 0;
+		}
+	}
+}
+
+void _rate_mix(s8* maximum, u8* total, s8* value, u8* addition) {
+	if (*value > 0) {
+		if (*value > *maximum) {
+			*maximum = *value;
+		}
+		*total += *addition;
+	}
 }

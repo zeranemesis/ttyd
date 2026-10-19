@@ -27,9 +27,10 @@ from tools.project import (
 )
 
 # Game versions
-DEFAULT_VERSION = 0
+DEFAULT_VERSION = 1
 VERSIONS = [
     "G8MJ01",  # 0
+    "G8MP01",  # 1
 ]
 
 parser = argparse.ArgumentParser()
@@ -274,6 +275,9 @@ config.linker_version = "GC/2.6"
 
 # Helper function for Dolphin libraries
 def DolphinLib(lib_name: str, cflags: Any, objects: List[Object]) -> Dict[str, Any]:
+    if config.version != "G8MJ01":
+        for obj in objects:
+            obj.completed = False
     return {
         "lib": lib_name,
         "mw_version": "GC/1.2.5n",
@@ -412,7 +416,7 @@ config.libs = [
         "objects": [
             Object(NonMatching, "data/item_data.c"),
             Object(NonMatching, "data/mail_data.c"),
-            Object(Matching, "data/mapdata.c"),
+            Object(NonMatching, "data/mapdata.c"),
             Object(NonMatching, "data/npc_data.c"),
         ],
     },
@@ -423,7 +427,7 @@ config.libs = [
         "progress_category": "game",
         "objects": [
             Object(NonMatching, "driver/bgdrv.c"),
-            Object(Matching, "driver/camdrv.c"),
+            Object(NonMatching, "driver/camdrv.c"),
             Object(NonMatching, "driver/dispdrv.c"),
             Object(NonMatching, "driver/fadedrv.c"),
             Object(NonMatching, "driver/hitdrv.c"),
@@ -652,7 +656,7 @@ config.libs = [
             Object(NonMatching, "event/evt_map.c"),
             Object(NonMatching, "event/evt_npc.c"),
             Object(NonMatching, "event/evt_sub.c"),
-            Object(NonMatching, "event/evt_mobj.c"),
+            Object(Matching, "event/evt_mobj.c"),
             Object(NonMatching, "event/evt_eff.c"),
             Object(NonMatching, "event/evt_paper.c"),
             Object(NonMatching, "event/evt_case.c"),
@@ -702,8 +706,8 @@ config.libs = [
         "cflags": cflags_static,
         "progress_category": "game",
         "objects": [
-            Object(Matching, "manager/evtmgr_cmd.c"),
-            Object(Matching, "manager/evtmgr.c"),
+            Object(NonMatching, "manager/evtmgr_cmd.c"),
+            Object(NonMatching, "manager/evtmgr.c"),
             Object(NonMatching, "manager/fontmgr.c"),
             Object(NonMatching, "manager/cardmgr.c"),
             Object(NonMatching, "manager/dvdmgr.c"),
@@ -783,8 +787,8 @@ config.libs = [
             Object(NonMatching, "sequence/seq_gameover.c"),
             Object(NonMatching, "sequence/seq_logo.c"),
             Object(NonMatching, "sequence/seq_load.c"),
-            Object(Matching, "sequence/seq_demo.c"),
-            Object(Matching, "sequence/seq_e3.c"),
+            Object(NonMatching, "sequence/seq_demo.c"),
+            Object(NonMatching, "sequence/seq_e3.c"),
             Object(NonMatching, "sequence/seqdef.c"),
         ],
     },
@@ -1170,6 +1174,31 @@ config.libs = [
             Object(Matching, "vi/vi.c"),
         ],
     ),
+    {
+        "lib": "MSL_C.PPCEABI.bare.H.a",
+        "mw_version": config.linker_version,
+        "cflags": [*cflags_static, "-sdata2 8"],
+        "progress_category": "game",
+        "objects": [
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/rand.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/critical_regions.gamecube.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/misc_io.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/w_acos.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/w_asin.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/w_atan2.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/w_fmod.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/w_hypot.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/w_log.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/w_pow.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/w_sqrt.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/s_copysign.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/s_tan.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/s_sin.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/s_cos.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/s_frexp.c"),
+            Object(NonMatching, "MSL_C.PPCEABI.bare.H.a/math_ppc.c"),
+        ],
+    },
     Rel(
         "dig",
         [
@@ -1186,7 +1215,7 @@ config.libs = [
     Rel(
         "pik",
         [
-            Object(NonMatching, "unit/unit_purple_teresa.c"),
+            Object(Matching, "unit/unit_purple_teresa.c"),
         ]
     ),
     Rel(
@@ -1194,7 +1223,83 @@ config.libs = [
         [
             Object(NonMatching, "tou2.c"),
         ]
-    )
+    ),
+    Rel(
+        "gra",
+        [
+            Object(Matching, "gra.c"),
+        ],
+    ),
+    Rel(
+        "moo",
+        [
+            Object(Matching, "moo.c"),
+        ],
+    ),
+    Rel(
+        "tou",
+        [
+            Object(Matching, "tou_00.c"),
+            Object(Matching, "tou_01.c"),
+            Object(Matching, "tou_02.c"),
+            Object(Matching, "tou_04.c"),
+            Object(Matching, "tou_05.c"),
+            Object(Matching, "tou_06.c"),
+            Object(Matching, "tou_07.c"),
+            Object(Matching, "tou_08.c"),
+            Object(Matching, "tou_10.c"),
+            Object(Matching, "tou.c"),
+            Object(Matching, "event/evt_lect_tou.c"),
+        ],
+    ),
+    Rel(
+        "win",
+        [
+            Object(Matching, "window/win_00.c"),
+            Object(Matching, "window/win_03.c"),
+            Object(Matching, "window/win_04.c"),
+            Object(Matching, "window/win_06.c"),
+            Object(Matching, "unit/unit_boss_majolyne.c"),
+            Object(Matching, "event/evt_lect_win.c"),
+            Object(Matching, "win.c"),
+        ],
+    ),
+    Rel(
+        "hei",
+        [
+            Object(Matching, "hei.c"),
+            Object(Matching, "hei_00.c"),
+            Object(Matching, "hei_07.c"),
+            Object(Matching, "hei_08.c"),
+            Object(Matching, "hei_09.c"),
+            Object(Matching, "hei_10.c"),
+            Object(Matching, "hei_12.c"),
+            Object(Matching, "unit/unit_gold_chorobon.c"),
+            Object(Matching, "unit/unit_chorobon_gundan.c"),
+            Object(Matching, "event/evt_lect_hei.c"),
+        ],
+    ),
+    Rel(
+        "aaa",
+        [
+            Object(Matching, "aaa.c"),
+            Object(Matching, "aaa_00.c"),
+        ],
+    ),
+    Rel(
+        "jon",
+        [
+            Object(Matching, "unit/unit_boss_zonbaba.c"),
+        ],
+    ),
+    Rel(
+        "usu",
+        [
+            Object(Matching, "usu_00.c"),
+        ],
+    ),
+
+
 ]
 
 # Optional extra categories for progress tracking

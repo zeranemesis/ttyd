@@ -67,20 +67,20 @@ void winMgrSeq(WinMgrEntry* entry) {
 }
 
 s32 winMgrEntry(WinMgrDesc* desc) {
-    WinMgrEntry* entry;
+    WinMgrEntry* entry = wp->mEntries;
+    s32 numEntries = (s32)wp->mNumEntries;
     int i;
 
-    if (wp->mNumEntries > 0) {
-        for (i = 0; i < wp->mNumEntries; i++) {
-            entry = &wp->mEntries[i];
-            if (!(entry->flags & 1)) {
-                break; // this entry is available
-            }
+    for (i = 0; i < numEntries; i++, entry++) {
+        if (!(entry->flags & 1)) {
+            break; // this entry is available
         }
     }
     entry->flags = 0;
     entry->flags |= 1;
 
+    entry->field_0x4 = 0;
+    entry->field_0x8 = 0;
     entry->description = desc;
     entry->field_0x18 = entry->description->field_0xC;
     entry->field_0x1C = entry->description->field_0x10;

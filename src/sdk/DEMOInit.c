@@ -37,19 +37,34 @@ static void __NoHangRetraceCallback(u32 count);
 static void __NoHangDoneRender(void);
 static void __DEMODiagnoseHang(void);
 
+#include <stdio.h>
+
 void DEMOInit(GXRenderModeObj* mode) {
+	printf("[DEMOInit] Starting DEMOInit...\n"); fflush(stdout);
 	OSInit();
+	printf("[DEMOInit] OSInit done.\n"); fflush(stdout);
 	DVDInit();
+	printf("[DEMOInit] DVDInit done.\n"); fflush(stdout);
 	VIInit();
+	printf("[DEMOInit] VIInit done.\n"); fflush(stdout);
 	DEMOPadInit();
+	printf("[DEMOInit] DEMOPadInit done.\n"); fflush(stdout);
 	__DEMOInitRenderMode(mode);
+	printf("[DEMOInit] __DEMOInitRenderMode done.\n"); fflush(stdout);
 	__DEMOInitMem();
+	printf("[DEMOInit] __DEMOInitMem done.\n"); fflush(stdout);
 	memInit();
+	printf("[DEMOInit] memInit done.\n"); fflush(stdout);
 	VIConfigure(rmode);
+	printf("[DEMOInit] VIConfigure done.\n"); fflush(stdout);
 	DefaultFifo = __memAlloc(HEAP_DEFAULT, 0x64000);
+	printf("[DEMOInit] __memAlloc DefaultFifo done: %p\n", DefaultFifo); fflush(stdout);
 	DefaultFifoObj = GXInit(DefaultFifo, 0x64000);
+	printf("[DEMOInit] GXInit done.\n"); fflush(stdout);
 	__DEMOInitGX();
+	printf("[DEMOInit] __DEMOInitGX done.\n"); fflush(stdout);
 	__DEMOInitVI();
+	printf("[DEMOInit] DEMOInit completed successfully!\n"); fflush(stdout);
 }
 
 static void __DEMOInitRenderMode(GXRenderModeObj* mode) {
@@ -80,20 +95,26 @@ static void __DEMOInitRenderMode(GXRenderModeObj* mode) {
 	}
 }
 
+#include <stdint.h>
+
 static void __DEMOInitMem(void) {
 	void *arenaLo, *arenaHi;
 	u32 fbSize;
 
 	arenaLo = OSGetArenaLo();
 	arenaHi = OSGetArenaHi();
+	printf("[__DEMOInitMem] arenaLo=%p, arenaHi=%p\n", arenaLo, arenaHi); fflush(stdout);
 
 	fbSize = VIPadFrameBufferWidth(rmode->fbWidth) * rmode->xfbHeight * (u32)VI_DISPLAY_PIX_SZ;
-	DemoFrameBuffer1 = (void*)OSRoundUp32B((u32)arenaLo);
-	DemoFrameBuffer2 = (void*)OSRoundUp32B((u32)DemoFrameBuffer1 + fbSize);
+	printf("[__DEMOInitMem] fbSize=%u\n", fbSize); fflush(stdout);
+	DemoFrameBuffer1 = (void*)OSRoundUp32B((uintptr_t)arenaLo);
+	DemoFrameBuffer2 = (void*)OSRoundUp32B((uintptr_t)DemoFrameBuffer1 + fbSize);
 	DemoCurrentBuffer = DemoFrameBuffer2;
 
-	arenaLo = (void*)OSRoundUp32B((u32)DemoFrameBuffer2 + fbSize);
+	arenaLo = (void*)OSRoundUp32B((uintptr_t)DemoFrameBuffer2 + fbSize);
+	printf("[__DEMOInitMem] new arenaLo=%p\n", arenaLo); fflush(stdout);
 	OSSetArenaLo(arenaLo);
+	printf("[__DEMOInitMem] OSSetArenaLo done.\n"); fflush(stdout);
 	//newer SDKs have more stuff here
 }
 
@@ -129,10 +150,12 @@ static void __DEMOInitVI(void) {
 }
 
 void DEMOBeforeRender(void) {
+#ifndef TARGET_PC
 	if (GPHangWorkaround) {
 		GXSetDrawSync(sysGetToken());
 		GXClearGPMetric();
 	}
+#endif
 
 	if (rmode->field_rendering)
 		GXSetViewportJitter(0.0f, 0.0f, (f32)rmode->fbWidth, (f32)rmode->efbHeight, 0.0f, 1.0f, VIGetNextField());
@@ -144,10 +167,12 @@ void DEMOBeforeRender(void) {
 }
 
 void DEMODoneRender(void) {
+#ifndef TARGET_PC
 	if (GPHangWorkaround) {
 		__NoHangDoneRender();
 		return;
 	}
+#endif
 
 	if (DemoStatEnable) {
 		GXDrawDone();
@@ -284,7 +309,7 @@ static void __DEMODiagnoseHang(void) {
 	u32 xfTopD, xfBotD, suRdyD, r0RdyD;
 	GXBool readIdle, cmdIdle, junk;
 	char fullmsg[4096];
-	char newmsg[4112];
+	char newmsg[4096];
 
 	GXReadXfRasMetric(&xfBot0, &xfTop0, &r0Rdy0, &suRdy0);
 	GXReadXfRasMetric(&xfBot1, &xfTop1, &r0Rdy1, &suRdy1);

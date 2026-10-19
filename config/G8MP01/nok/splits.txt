@@ -1,0 +1,49 @@
+Sections:
+	.text       type:code align:4
+	.ctors      type:rodata align:4
+	.dtors      type:rodata align:4
+	.rodata     type:rodata align:8
+	.data       type:data align:8
+	.bss        type:bss align:8
+
+nok.c:
+	.text       start:0x00000000 end:0x00000228
+	.rodata     start:0x00000000 end:0x00000034
+	.data       start:0x00000000 end:0x00000238
+
+nok_00.c:
+	.text       start:0x00000228 end:0x000003C4
+	.rodata     start:0x00000034 end:0x00000DC4
+	.data       start:0x00000238 end:0x000031A8
+	.bss        start:0x00000000 end:0x00000004
+
+nok_01.c:
+	.text       start:0x000003C4 end:0x000006EC
+	.rodata     start:0x00000DC4 end:0x00001828
+	.data       start:0x000031A8 end:0x00006CF8
+
+unit/unit_act_atmic_teresa.c:
+	.rodata     start:0x00001828 end:0x00001904
+	.data       start:0x00006CF8 end:0x000072D0
+
+unit/unit_act_clauda.c:
+	.rodata     start:0x00001904 end:0x00001950
+
+unit/unit_act_kinopiko.c:
+	.rodata     start:0x00001950 end:0x00001A3C
+
+unit/unit_act_kinopio.c:
+	.rodata     start:0x00001A3C end:0x00001AEC
+
+unit/unit_act_mario.c:
+	.text       start:0x000006EC end:0x00000994
+	.rodata     start:0x00001AEC end:0x00001C2C
+	.data       start:0x000072D0 end:0x00009848
+
+unit/unit_act_teresa.c:
+	.rodata     start:0x00001C2C end:0x00001CEC
+	.data       start:0x00009848 end:0x00009A68
+
+battle_database_nok.c:
+	.rodata     start:0x00001CEC end:0x00001D28
+	.data       start:0x00009A68 end:0x00009E0C

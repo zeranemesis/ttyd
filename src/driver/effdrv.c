@@ -8,11 +8,17 @@
 #include <string.h>
 
 extern int sprintf(char* str, const char* format, ...);
+extern const char lbl_802CDAA8[];
 
+#ifdef TARGET_PC
 extern GlobalWork* gp;
+#else
+extern GlobalWork* wp_80422810;
+#define gp wp_80422810
+#endif
 
 //.data
-EffectSet eff_set_table[] = {
+EffectSet lbl_80315508[] = {
 	{0, "kemuri"},
 	{1, "confetti"},
 	{2, "fukidashi"},
@@ -102,7 +108,7 @@ static EffectWork work;
 
 //.sdata
 static EffectWork* wp = &work;
-const char* prefix_tbl[2] = {"jp", "us"};
+const char* prefix_tbl[6] = {"jp", "us", "ge", "fr", "sp", "it"};
 
 //local prototypes
 static void _callback_tpl(s32 error, DVDFileInfo* info);
@@ -115,7 +121,11 @@ static void _callback_tpl(s32 error, DVDFileInfo* info) {
 }
 
 void effInit(void) {
+#if defined(VERSION_G8MP01) || defined(VERSION_G8ME01)
+	wp->count = 0x200;
+#else
 	wp->count = 0x100;
+#endif
 	wp->entries = __memAlloc(HEAP_DEFAULT, wp->count * sizeof(EffectEntry));
 	memset(wp->entries, 0, wp->count * sizeof(EffectEntry));
 	wp->handle = NULL;
@@ -151,7 +161,8 @@ void effTexSetup(void) {
 void effGetTexObj(u32 id, GXTexObj* obj) {
 #ifdef __MWERKS__
 #pragma explicit_zero_data on
-	if (id < 146) { //number of images in effect.tpl
+#endif
+	if ((s32)id < 0x76) { //number of images in effect.tpl
 		if (!wp->texLoaded) {
 			static char dummy ATTRIBUTE_ALIGN(8) = '\0';
 			GXInitTexObj(obj, &dummy, 1, 1, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
@@ -163,12 +174,13 @@ void effGetTexObj(u32 id, GXTexObj* obj) {
 	else {
 		static char dummy ATTRIBUTE_ALIGN(8) = '\0';
 		if (!wp->handle) {
-			GXInitTexObj(obj, &dummy, 1, 1, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
+			GXInitTexObj(obj, prefix_tbl, 1, 1, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else {
-			TEXGetGXTexObjFromPalette(*wp->handle->data, obj, id - 146);
+			TEXGetGXTexObjFromPalette(*wp->handle->data, obj, id - 0x76);
 		}
 	}
+#ifdef __MWERKS__
 #pragma explicit_zero_data reset
 #endif
 }
@@ -219,6 +231,7 @@ void effSetName(EffectEntry* effect, const char* name) {
 void effMain(void) {
 	const char *dvdroot, *prefix;
 	EffectEntry* entry = wp->entries;
+	s32 lang;
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
@@ -241,12 +254,13 @@ void effMain(void) {
 			fileFree(wp->handle);
 			wp->handle = NULL;
 		}
-		prefix = prefix_tbl[gp->language];
+		lang = (gp->language >= 0 && gp->language < 6) ? gp->language : 3;
+		prefix = prefix_tbl[lang];
 		dvdroot = getMarioStDvdRoot();
-		if (fileAsyncf(4, 0, "%s/e/%s/effect_%s.tpl", dvdroot, prefix, prefix)) {
-			prefix = prefix_tbl[gp->language];
+		if (fileAsyncf(4, 0, lbl_802CDAA8, dvdroot, prefix, prefix)) {
+			prefix = prefix_tbl[lang];
 			dvdroot = getMarioStDvdRoot();
-			wp->handle = fileAllocf(4, "%s/e/%s/effect_%s.tpl", dvdroot, prefix, prefix);
+			wp->handle = fileAllocf(4, lbl_802CDAA8, dvdroot, prefix, prefix);
 			wp->language = gp->language;
 		}
  	}
@@ -288,7 +302,7 @@ EffectEntry* effNameToPtr(const char* name) {
 }
 
 EffectSet* effGetSet(const char* name) {
-	EffectSet* set = eff_set_table;
+EffectSet* set = lbl_80315508;
 
 	while (set->id != -1) { //run until end of table
 		if (!strcmp(set->name, name)) {

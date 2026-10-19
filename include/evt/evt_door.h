@@ -6,3 +6,6 @@
 USER_FUNC(snd_door_in);
 USER_FUNC(snd_door_out);
 USER_FUNC(door_entry);
+
+extern s32 evt_door_entry[];
+extern s32 evt_door_open_quick[];

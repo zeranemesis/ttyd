@@ -30,7 +30,10 @@ struct CameraEntry {
     u8 align_6[0x8 - 0x6];       // 0x6
     f32 progressA;               // 0x8
     Vec cameraPos;               // 0xC
-    Vec cameraAt;                // 0x18
+    union {
+        Vec cameraAt;            // 0x18
+        Vec target;
+    };
     Vec cameraUp;                // 0x24
     f32 near;                    // 0x30
     f32 far;                     // 0x34
@@ -62,7 +65,10 @@ struct CameraEntry {
     f32 dollyStartAlt;           // 0xF0
     u16 scissor[4];              // 0xF4
     f32 viewport[6];             // 0xFC
-    f32 viewYaw;                 // 0x114
+    union {
+        f32 viewYaw;             // 0x114
+        f32 field_0x114;
+    };
     f32 viewDistance;            // 0x118
     Mtx view;                    // 0x11C
     f32 rollAngle;               // 0x14C

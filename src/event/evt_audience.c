@@ -1,5 +1,6 @@
 #include "evt/evt_audience.h"
 #include "battle/battle_audience.h"
+#include "manager/evtmgr_cmd.h"
 #include "system.h"
 #include <math.h>
 
@@ -21,7 +22,7 @@ USER_FUNC(evt_audience_flag_check) {
 
 	id = evtGetValue(event, args[0]);
 	flags = evtGetValue(event, args[1]);
-	if (BattleAudienceGetPtr(id)->flags & flags) {
+	if (flags & BattleAudienceGetPtr(id)->flags) {
 		evtSetValue(event, args[2], TRUE);
 	}
 	else {
@@ -202,14 +203,14 @@ USER_FUNC(evt_audience_move_position_speed) {
 		else {
 			member->interpDelta.x = speed * (amountX / delta);
 		}
-		
+
 		if (amountY == 0.0f) {
 			member->interpDelta.y = 0.0f;
 		}
 		else {
 			member->interpDelta.y = speed * (amountY / delta);
 		}
-		
+
 		if (amountZ == 0.0f) {
 			member->interpDelta.z = 0.0f;
 		}
@@ -363,12 +364,12 @@ USER_FUNC(evt_audience_set_animpose) {
 USER_FUNC(evt_audience_entry) {
 	s32* args = event->args;
 	AudienceMemberType type;
-	s32 id; 
+	s32 id;
 
 	args = event->args;
 	id = evtGetValue(event, args[0]);
 	type = (AudienceMemberType)evtGetValue(event, args[1]);
-	if (BattleAudience_Entry(id, type, 0)) {
+	if (BattleAudience_Entry(id, type, 0) == TRUE) {
 		BattleAudience_SetAnim(id, 1, TRUE);
 	}
 	return EVT_RETURN_DONE;

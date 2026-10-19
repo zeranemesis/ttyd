@@ -11,11 +11,13 @@ typedef struct WindowWork {
     u32 buttonRep;              // 0x8
     u32 dirTrg;                 // 0xC
     u32 dirRep;                 // 0x10
-    u8 field_0x14[0x20 - 0x14]; // 0x14
+    s32 lectureStep;            // 0x14
+    EventEntry* lectureEvent;   // 0x18
+    u8 field_0x1C[4];           // 0x1C
     s32 menuState;              // 0x20, TODO: rename?
     u8 field_0x24[0x3C - 0x24]; // 0x24
     EventEntry* currentEvent;   // 0x3C
-    u8 field_40[0x1210 - 0x40]; // 0x40
+    u8 field_40[0x1218 - 0x40]; // 0x40
 } WindowWork;
 
 typedef struct WindowPartyDt {
@@ -42,3 +44,7 @@ void winMain(void);
 
 void winTexInit(TEXPalette* texture);
 void winTexSet(u32 textureId, Vec translate, Vec scale, GXColor color);
+void winTexSet_a(u32 textureId, Vec translate, Vec scale, GXColor color);
+void winTexSetRot(u32 textureId, Vec translate, Vec scale, f32 rot, GXColor color);
+void winTexInit_x2(TEXPalette* texture);
+void winTexSet_x2(u32 texId1, u32 texId2, Vec translate, Vec scale, GXColor color);

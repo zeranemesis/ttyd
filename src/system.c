@@ -68,6 +68,7 @@ static inline s32 __fpclassifyf(f32 x) {
 #define fpclassify(x) __fpclassifyf(x)
 #define isnan(x) (fpclassify(x) == FP_NAN)
 
+#if !defined(_MSC_VER)
 static inline f32 sqrtf(f32 x) {
     const f64 _half = .5;
     const f64 _three = 3.0;
@@ -85,6 +86,7 @@ static inline f32 sqrtf(f32 x) {
     }
     return x;
 }
+#endif
 
 //.data
 static f32 angleABTBL[] = { 1.0f,       1.273187f,  1.27303f,   1.272768f,  1.272402f,  1.271932f,  1.271358f,
@@ -959,6 +961,10 @@ asm void* memcpy_as4(void* dest, const void* src, u32 count) {
 	stwu    r11, 4(r3)
 	bdnz    @0
 	blr
+}
+#else
+void* memcpy_as4(void* dest, const void* src, u32 count) {
+	return memcpy(dest, src, count);
 }
 #endif
 // clang-format on

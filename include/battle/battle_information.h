@@ -10,7 +10,11 @@ typedef struct FieldBattleInfo {
 	u32 partyId; //0x8
 	NpcBattleInfo* setup; //0xC
 	u32 result; //0x10
-	u8 field_0x14[0x1C - 0x14]; //0x14
+	u8 field_0x14[4]; //0x14
+	u8 field_0x18; //0x18
+	u8 pad_19; //0x19
+	u8 field_0x1a; //0x1a
+	u8 field_0x1b; //0x1b
 } FieldBattleInfo;
 
 void BattleInformationSetMode(FieldBattleInfo* info, u32 mode);

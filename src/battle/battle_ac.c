@@ -5,6 +5,11 @@
 
 extern ActionCommandEntry ActionCommandList[];
 extern BattleWork* _battleWorkPointer;
+extern void BattleAudience_Case_ActionCommandBad(BattleWeapon* weapon);
+extern void BattleAudience_Case_ActionCommandGood(void);
+#ifndef TARGET_PC
+extern const f32 lbl_8042EC58;
+#endif
 
 //local prototypes
 u32 BattleACPadCheckRecordTrigger(s32 chan, s32 mask);
@@ -32,7 +37,11 @@ void BattleActionCommandManager(BattleWork* wp) {
 
 		disp = wp->actionCommands.dispcb;
 		if (disp) {
+#ifdef TARGET_PC
 			dispEntry(CAMERA_2D, 900.0f, 1, disp, wp);
+#else
+			dispEntry(CAMERA_2D, lbl_8042EC58, 1, disp, wp);
+#endif
 		}
 	}
 }
@@ -50,20 +59,24 @@ s32 BattleActionCommandResult(BattleWork* wp) {
 }
 
 void BattleActionCommandDeclareACResult(BattleWork* work, BattleWeapon* weapon, s32 result) {
-	if (result == -1) {
-		//BattleAudience_Case_ActionCommandBad(weapon);
-	}
-	else {
-		work->impendingBonuses.mWeapon = weapon;
-		work->impendingBonuses.mSpAcSuccessMultiplier = ((f32)result * 0.25f) + 0.5f;
-		work->impendingBonuses.field_0x9 = weapon->field_0x19;
-		work->impendingBonuses.mBingoSlotChance = weapon->mBingoSlotChance;
-		//BattleAudience_Case_ActionCommandGood();
-	}
+#ifndef TARGET_PC
+	StarPowerInfo* bonuses = (StarPowerInfo*)((u8*)work + 0x18FFC);
+#else
+	StarPowerInfo* bonuses = &work->impendingBonuses;
+#endif
+	if (result != -1) goto success;
+	BattleAudience_Case_ActionCommandBad(weapon);
+	return;
+success:
+	bonuses->mWeapon = weapon;
+	bonuses->mSpAcSuccessMultiplier = ((f32)result * 0.25f) + 0.5f;
+	bonuses->field_0x9 = weapon->field_0x19;
+	bonuses->mBingoSlotChance = weapon->mBingoSlotChance;
+	BattleAudience_Case_ActionCommandGood();
 }
 
 void BattleActionCommandSetup(BattleWork* work, s32 id, BattleUnit* unit, s32 a4, s32 a5) {
-	ActionCommandEntry* entry; // r6
+	ActionCommandEntry* entry = ActionCommandList; // r6
 
 	work->actionCommands.mAcUnit = unit;
 	work->actionCommands.field_0x4 = a4;
@@ -76,8 +89,7 @@ void BattleActionCommandSetup(BattleWork* work, s32 id, BattleUnit* unit, s32 a4
 	work->actionCommands.deletecb = NULL;
 	work->actionCommands.field_0x8 = a5;
 	work->actionCommands.field_0x30 = 0;
-	entry = ActionCommandList;
-	while (entry++->id) {
+	while (entry->id) {
 		if (entry->id == id) {
 			work->actionCommands.maincb = entry->main;
 			if (!(work->actionCommands.mAcUnit->mTokenFlags & 0x10)){
@@ -87,6 +99,7 @@ void BattleActionCommandSetup(BattleWork* work, s32 id, BattleUnit* unit, s32 a4
 			work->actionCommands.deletecb = entry->delete;
 			return;
 		}
+		entry++;
 	}
 }
 
@@ -114,8 +127,9 @@ s32 BattleActionCommandGetDefenceResult(void) {
 }
 
 void BattleActionCommandResetDefenceResult(void) {
-	_battleWorkPointer->actionCommands.mDefenseResult = 0;
-	BtlPad_WorkInit(&_battleWorkPointer->actionCommands.pad);
+	BattleWork* work = _battleWorkPointer;
+	work->actionCommands.mDefenseResult = 0;
+	BtlPad_WorkInit(&work->actionCommands.pad);
 }
 
 s8 BattleActionCommandGetDifficulty(BattleWork* work) {
@@ -126,7 +140,8 @@ void BattleActionCommandSetDifficulty(BattleWork* work, BattleUnit* unit, s32 di
 	s32 adjusted;
 
 	work->actionCommands.mBaseAcDifficulty = difficulty;
-	adjusted = difficulty - unit->badgesEquipped.Simplifier + unit->badgesEquipped.Unsimplifier;
+	adjusted = difficulty - unit->badgesEquipped.Simplifier;
+	adjusted += unit->badgesEquipped.Unsimplifier;
 	if (adjusted < 0) {
 		adjusted = 0;
 	}

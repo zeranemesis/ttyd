@@ -2,9 +2,16 @@
 #include "battle/battle_ac.h"
 #include "battle/battle_unit.h"
 #include "driver/dispdrv.h"
+#include "driver/icondrv.h"
+
+extern const Vec lbl_80305328;
+extern const f32 lbl_804310C0;
+extern const f32 lbl_804310C4;
 
 //local prototypes
-void accrobat_timing_icon_disp(CameraId camId, void* param);
+#pragma dont_inline on
+static void _accrobat_timing_icon_disp(CameraId camId, void* param);
+#pragma dont_inline reset
 
 s32 BattleAcrobatStart(BattleWork* work, s32 unitId, s32 windowStartFrame,
 						s32 windowEndFrame, s32 endFrame, s32 earlyFrames) {
@@ -36,35 +43,35 @@ s32 BattleAcrobatMain(BattleWork* work) {
 		work->mStylishResult = 1;
 		return EVT_RETURN_YIELD;
 	}
-	if ((work->badgeEquippedFlags & 4) && (work->mStylishWindowStart < work->mStylishCurFrame <= work->mStylishWindowEnd)) {
-		Vec v11 = { 0 };
+	if ((work->badgeEquippedFlags & 4) && work->mStylishCurFrame > work->mStylishWindowStart && work->mStylishCurFrame <= work->mStylishWindowEnd) {
+		Vec v11 = lbl_80305328;
 		v11.x = unit->mPosition.x;
 		v11.y = unit->mPosition.y;
 		v11.z = 15.0f + unit->mPosition.z;
-		dispEntry(CAMERA_3D, dispCalcZ(&v11), 1, accrobat_timing_icon_disp, unit);
+		dispEntry(CAMERA_3D, dispCalcZ(&v11), 1, _accrobat_timing_icon_disp, unit);
 	}
-	if (unit->badgesEquipped.AutoCommand && (work->mStylishWindowStart < work->mStylishCurFrame <= work->mStylishWindowEnd)) {
+	if (unit->badgesEquipped.AutoCommand && work->mStylishCurFrame > work->mStylishWindowStart && work->mStylishCurFrame <= work->mStylishWindowEnd) {
 		doSimplified = TRUE;
 	}
 	if (work->mStylishCurFrame <= 1 && work->mStylishEarlyFrames > 0) {
 		for (i = 0; i < work->mStylishEarlyFrames; ++i) {
-			if (BattlePadCheckRecordTrigger(i, 0x100)) {
+			if (BattlePadCheckRecordTrigger(i, 0x100) != FALSE) {
 				work->mStylishResult = -1;
 				return EVT_RETURN_YIELD;
 			}
 		}
 	}
-	if (BattlePadCheckTrigger(0x100) || doSimplified) {
+	if (BattlePadCheckTrigger(0x100) != FALSE || doSimplified != FALSE) {
 		if (work->mStylishCurFrame <= work->mStylishWindowStart) {
 			work->mStylishResult = -1;
 			return EVT_RETURN_YIELD;
 		}
-		else if (work->mStylishCurFrame > work->mStylishWindowEnd) {
-			work->mStylishResult = -2;
+		else if (work->mStylishCurFrame <= work->mStylishWindowEnd) {
+			work->mStylishResult = 2;
 			return EVT_RETURN_YIELD;
 		}
 		else {
-			work->mStylishResult = 2;
+			work->mStylishResult = -2;
 			return EVT_RETURN_YIELD;
 		}
 	}
@@ -78,15 +85,17 @@ s32 BattleAcrobatMain(BattleWork* work) {
 }
 
 //param = BattleUnit* unit;
-void accrobat_timing_icon_disp(CameraId camId, void* param) {
-	BattleUnit* unit = param; //cast to proper type
-	f32 x, y, z; //sp 8, c, 10
+#pragma dont_inline on
+static void _accrobat_timing_icon_disp(CameraId camId, void* param) {
+	BattleUnit* unit = param;
+	Vec position;
 
-	BtlUnit_GetPos(unit, &x, &y, &z);
-	x += 15.0f;
-	y += (f32)(BtlUnit_GetHeight(unit) + 5);
-	//iconDispGx();
+	BtlUnit_GetPos(unit, &position.x, &position.y, &position.z);
+	position.y += (f32)(BtlUnit_GetHeight(unit) + 5);
+	position.x += lbl_804310C0;
+	iconDispGx(&position, 0, 0xA2, lbl_804310C4);
 }
+#pragma dont_inline reset
 
 s32 BattleAcrobatGetResult(BattleWork* work, s32* result, s32* curFrame) {
 	*result = work->mStylishResult;

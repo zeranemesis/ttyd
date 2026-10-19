@@ -35,14 +35,19 @@ typedef struct LightWork {
 	LightEntry* entries; //0x4
 } LightWork;
 
+typedef struct LightEntry Light;
+#define field_0x24 position
+
 void lightInit(void);
 void lightReInit(void);
 void lightMain(void);
 s32 lightEntry(const char* name, s32 type, Vec position, Vec rotation, GXColor color, s32 attenType, s32 flags, f32 spotAngle, f32 attenAngle);
 LightEntry* lightNameToPtr(const char* name);
+LightEntry* lightGetPaperCraft(void);
+LightEntry* lightGetPaper(void);
+LightEntry* lightNumberToPtr(s32 index);
+s32 lightGetEntryNum(void);
+BOOL lightCheckCharaLight(void);
+LightEntry* lightGetCharaAmbient(void);
+LightEntry* lightGetAmbient(void);
 void lightGetNearObj(Vec position, LightEntry* entry, s32 count, LightEntryFlags flags);
-
-
-
-
-

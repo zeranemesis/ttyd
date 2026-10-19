@@ -45,6 +45,13 @@
 
 #include "win/win_main.h"
 
+#ifndef TARGET_PC
+#define printf(...) ((void)0)
+#define fflush(...) ((void)0)
+#define gcDvdCheckThread fn_800703BC
+#define DvdCheckThreadOn DvdCheckTreadOn
+#endif
+
 #include "countdown.h"
 #include "error_handler.h"
 #include "memory.h"
@@ -69,10 +76,16 @@ static u8 stack[0x1000];
 //.sdata
 static OSTime off_time[4] = {0, 0, 0, 0};
 static BOOL off_trg[4] = {FALSE, FALSE, FALSE, FALSE};
+#ifndef TARGET_PC
+#define gp wp_80422810
+#endif
 GlobalWork* gp = &marioSt;
 
 //.sbss
 OSTime none_key;
+#ifndef TARGET_PC
+#define _mariostSystemLevel work_8042B260
+#endif
 s32 _mariostSystemLevel;
 BOOL DvdCheckThreadOn; //DvdCheckTreadOn
 
@@ -160,7 +173,12 @@ void gcRumbleCheck(void);
 void gcResetCheck(void);
 
 void marioStInit(void) {
+	printf("[marioStInit] Starting marioStInit...\n"); fflush(stdout);
+#ifdef TARGET_PC
 	if (!OSIsRestart() || (OSGetResetCode() & OS_RESET_SHUTDOWN)) {
+#else
+	if (!(OSGetResetCode() & 0x80000000) || (OSGetResetCode() & OS_RESET_SHUTDOWN)) {
+#endif
 		DEMOInit(&GXNtsc480IntDfMarioSt);
 	}
 	else {
@@ -173,16 +191,19 @@ void marioStInit(void) {
 				break;
 		}
 	}
+	printf("[marioStInit] DEMOInit finished.\n"); fflush(stdout);
 	DEMOEnableGPHangWorkaround(5);
 	setupErrorHandler();
 	DEMOPadInit();
 	GXSetCopyClear((GXColor){0, 0, 0, 0}, 0xFFFFFF);
 	__GXSetIndirectMask(0);
+	printf("[marioStInit] Initializing GlobalWork gp...\n"); fflush(stdout);
 	memset(gp, 0, sizeof(GlobalWork));
 	gp->fbWidth = DEMOGetRenderModeObj()->fbWidth;
 	gp->efbHeight = DEMOGetRenderModeObj()->efbHeight;
 	gp->unk1294 = 1;
 	gp->unk1274 = 0;
+	printf("[marioStInit] GlobalWork basic fields set.\n"); fflush(stdout);
 
 	gp->retraceLocalTime = 0;
 	gp->retraceDeltaTime = 0;
@@ -204,60 +225,112 @@ void marioStInit(void) {
 	gp->areaFadeOutDuration = 300;
 	gp->areaFadeInType = FADE_OUT_BLACK;
 	gp->areaFadeInDuration = 300;
+#ifdef TARGET_PC
+	gp->language = 3; // 3 = French PAL ("Paper Mario: La Porte Millenaire")
+#else
 	if ((OSGetFontEncode() == OS_FONT_ENCODE_SJIS) && !(gp->flags & 0x1000))
 		gp->language = 0;
 	else
-		gp->language = 1;
-	gp->framerate = 60;
+		gp->language = 3; // 3 = French PAL ("Paper Mario: La Porte Millenaire")
+#endif
+	gp->framerate = VIGetTvFormat() == VI_NTSC ? 60 : 50;
 	gp->systemLevelFlags = 0;
+	printf("[marioStInit] badgeShop_init...\n"); fflush(stdout);
 	badgeShop_init(); //Badge Shop
+	printf("[marioStInit] yuugijou_init...\n"); fflush(stdout);
 	yuugijou_init(); //Pianta Parlor
+	printf("[marioStInit] johoya_init...\n"); fflush(stdout);
 	johoya_init(); //?????
+	printf("[marioStInit] __memAlloc mapAlloc (660KB)...\n"); fflush(stdout);
 	gp->mapAlloc = __memAlloc(HEAP_DEFAULT, 660 * 1024);
+	printf("[marioStInit] mapAlloc allocated at %p\n", gp->mapAlloc); fflush(stdout);
+	printf("[marioStInit] VISetPostRetraceCallback...\n"); fflush(stdout);
 	VISetPostRetraceCallback(viPostCallback);
+	printf("[marioStInit] Calling romFontInit...\n"); fflush(stdout);
 	romFontInit();
-	OSCreateThread(&DvdCheckThread, gcDvdCheckThread, NULL, (void*)((u32)&stack + sizeof(stack)), sizeof(stack), 16, OS_THREAD_ATTR_DETACH);
+	printf("[marioStInit] romFontInit done.\n"); fflush(stdout);
+	OSCreateThread(&DvdCheckThread, gcDvdCheckThread, NULL, (void*)(stack + sizeof(stack)), sizeof(stack), 16, OS_THREAD_ATTR_DETACH);
 	DvdCheckThreadOn = TRUE;
 	OSResumeThread(&DvdCheckThread);
+	printf("[marioStInit] Calling DVDMgrInit...\n"); fflush(stdout);
 	DVDMgrInit();
+	printf("[marioStInit] DVDMgrInit done.\n"); fflush(stdout);
 	psndInit();
+	printf("[marioStInit] psndInit done.\n"); fflush(stdout);
 	aramMgrInit();
+	printf("[marioStInit] aramMgrInit done.\n"); fflush(stdout);
 	fileInit();
+	printf("[marioStInit] fileInit done.\n"); fflush(stdout);
 	smartInit();
+	printf("[marioStInit] smartInit done.\n"); fflush(stdout);
 	dispInit();
+	printf("[marioStInit] dispInit done.\n"); fflush(stdout);
 	camInit();
+	printf("[marioStInit] camInit done.\n"); fflush(stdout);
 	fontmgrInit();
+	printf("[marioStInit] fontmgrInit done.\n"); fflush(stdout);
 	windowInit();
+	printf("[marioStInit] windowInit done.\n"); fflush(stdout);
 	mapInit();
+	printf("[marioStInit] mapInit done.\n"); fflush(stdout);
 	hitInit();
+	printf("[marioStInit] hitInit done.\n"); fflush(stdout);
 	itemInit();
+	printf("[marioStInit] itemInit done.\n"); fflush(stdout);
 	iconInit();
+	printf("[marioStInit] iconInit done.\n"); fflush(stdout);
 	fadeInit();
+	printf("[marioStInit] fadeInit done.\n"); fflush(stdout);
 	bgInit();
+	printf("[marioStInit] bgInit done.\n"); fflush(stdout);
 	shadowInit();
+	printf("[marioStInit] shadowInit done.\n"); fflush(stdout);
 	evtmgrInit();
+	printf("[marioStInit] evtmgrInit done.\n"); fflush(stdout);
 	animInit();
+	printf("[marioStInit] animInit done.\n"); fflush(stdout);
 	msgInit();
+	printf("[marioStInit] msgInit done.\n"); fflush(stdout);
 	npcInit();
+	printf("[marioStInit] npcInit done.\n"); fflush(stdout);
 	mobjInit();
+	printf("[marioStInit] mobjInit done.\n"); fflush(stdout);
 	effInit();
+	printf("[marioStInit] effInit done.\n"); fflush(stdout);
 	marioInit();
+	printf("[marioStInit] marioInit done.\n"); fflush(stdout);
 	caseInit();
+	printf("[marioStInit] caseInit done.\n"); fflush(stdout);
 	imgInit();
+	printf("[marioStInit] imgInit done.\n"); fflush(stdout);
 	lightInit();
+	printf("[marioStInit] lightInit done.\n"); fflush(stdout);
 	offscreenInit();
+	printf("[marioStInit] offscreenInit done.\n"); fflush(stdout);
 	arcInit();
+	printf("[marioStInit] arcInit done.\n"); fflush(stdout);
 	extInit();
+	printf("[marioStInit] extInit done.\n"); fflush(stdout);
 	swInit();
+	printf("[marioStInit] swInit done.\n"); fflush(stdout);
 	cardInit();
+	printf("[marioStInit] cardInit done.\n"); fflush(stdout);
 	winInit();
+	printf("[marioStInit] winInit done.\n"); fflush(stdout);
 	statusWinInit();
+	printf("[marioStInit] statusWinInit done.\n"); fflush(stdout);
 	envInit();
+	printf("[marioStInit] envInit done.\n"); fflush(stdout);
 	countDownInit();
+	printf("[marioStInit] countDownInit done.\n"); fflush(stdout);
 	nameEntInit();
+	printf("[marioStInit] nameEntInit done.\n"); fflush(stdout);
 	winMgrInit();
+	printf("[marioStInit] winMgrInit done.\n"); fflush(stdout);
 	seqInit_MARIOSTORY();
+	printf("[marioStInit] seqInit_MARIOSTORY done.\n"); fflush(stdout);
 	seqSetSeq(0, NULL, NULL);
+	printf("[marioStInit] seqSetSeq(0) done!\n"); fflush(stdout);
 	gp->unk1274 = 0;
 	if (OSGetSoundMode() == OS_SOUND_MODE_MONO) {
 		SoundSetOutputMode(SND_OUTPUTMODE_MONO);
@@ -265,47 +338,101 @@ void marioStInit(void) {
 	else {
 		SoundSetOutputMode(SND_OUTPUTMODE_STEREO);
 	}
+	printf("[marioStInit] === ALL SUBSYSTEMS INITIALIZED SUCCESSFULLY ===\n"); fflush(stdout);
 }
 
 void marioStMain(void) {
 	int i;
+#ifdef TARGET_PC
+	static int frame = 0;
+	static int s_lastSeq = -1;
+	static int s_seqFrames = 0;
+	BOOL verbose;
+	if (seqGetSeq() != s_lastSeq) {
+		s_lastSeq = seqGetSeq();
+		s_seqFrames = 0;
+	}
+	s_seqFrames++;
+	verbose = (frame < 5);
+	if (verbose) {
+		printf("[marioStMain] start frame=%d, seq=%d (seqFrame=%d)\n", frame, seqGetSeq(), s_seqFrames); fflush(stdout);
+	}
+#else
+#define verbose 0
+#endif
 
 	while (gp->dvdError) {
 		OSYieldThread();
 	}
 	makeKey();
+	if (verbose) { printf("  -> makeKey done\n"); fflush(stdout); }
 	seqMain();
+	if (verbose) { printf("  -> seqMain done\n"); fflush(stdout); }
 	cardMain();
+	if (verbose) { printf("  -> cardMain done\n"); fflush(stdout); }
 	bgMain();
+	if (verbose) { printf("  -> bgMain done\n"); fflush(stdout); }
 	shadowMain();
+	if (verbose) { printf("  -> shadowMain done\n"); fflush(stdout); }
 	animMain();
+	if (verbose) { printf("  -> animMain done\n"); fflush(stdout); }
 	battleMain();
+	if (verbose) { printf("  -> battleMain done\n"); fflush(stdout); }
 	camMain();
+	if (verbose) { printf("  -> camMain done\n"); fflush(stdout); }
 	windowMain();
+	if (verbose) { printf("  -> windowMain done\n"); fflush(stdout); }
 	mapMain();
+	if (verbose) { printf("  -> mapMain done\n"); fflush(stdout); }
 	hitMain();
+	if (verbose) { printf("  -> hitMain done\n"); fflush(stdout); }
 	evtmgrMain();
+	if (verbose) { printf("  -> evtmgrMain done\n"); fflush(stdout); }
 	mapDisp();
+	if (verbose) { printf("  -> mapDisp done\n"); fflush(stdout); }
 	marioMain();
+	if (verbose) { printf("  -> marioMain done\n"); fflush(stdout); }
 	mobjMain();
+	if (verbose) { printf("  -> mobjMain done\n"); fflush(stdout); }
 	npcMain();
+	if (verbose) { printf("  -> npcMain done\n"); fflush(stdout); }
 	fadeMain();
+	if (verbose) { printf("  -> fadeMain done\n"); fflush(stdout); }
 	imgMain();
+	if (verbose) { printf("  -> imgMain done\n"); fflush(stdout); }
 	lightMain();
+	if (verbose) { printf("  -> lightMain done\n"); fflush(stdout); }
 	offscreenMain();
+	if (verbose) { printf("  -> offscreenMain done\n"); fflush(stdout); }
 	itemMain();
+	if (verbose) { printf("  -> itemMain done\n"); fflush(stdout); }
 	caseMain();
+	if (verbose) { printf("  -> caseMain done\n"); fflush(stdout); }
 	iconMain();
+	if (verbose) { printf("  -> iconMain done\n"); fflush(stdout); }
 	extMain();
+	if (verbose) { printf("  -> extMain done\n"); fflush(stdout); }
 	psndMain();
+	if (verbose) { printf("  -> psndMain done\n"); fflush(stdout); }
 	winMain();
+	if (verbose) { printf("  -> winMain done\n"); fflush(stdout); }
 	statusWinMain();
+	if (verbose) { printf("  -> statusWinMain done\n"); fflush(stdout); }
 	envMain();
+	if (verbose) { printf("  -> envMain done\n"); fflush(stdout); }
 	countDownMain();
+	if (verbose) { printf("  -> countDownMain done\n"); fflush(stdout); }
 	nameEntMain();
+	if (verbose) { printf("  -> nameEntMain done\n"); fflush(stdout); }
 	winMgrMain();
+	if (verbose) { printf("  -> winMgrMain done\n"); fflush(stdout); }
 	effMain();
+	if (verbose) { printf("  -> effMain done\n"); fflush(stdout); }
 	gcResetCheck();
+	if (verbose) { printf("  -> gcResetCheck done\n"); fflush(stdout); }
+#ifdef TARGET_PC
+	frame++;
+#endif
 	if (gp->flags & 0x1000) {
 		for (i = 0; i < 4; i++) {
 			if (gp->dirs[i]) break;
@@ -449,6 +576,12 @@ exitcheck:
 
 //TODO: fuck up float conversions for 1:1 cuz this is cleaner
 void* gcDvdCheckThread(void* param) {
+#ifdef TARGET_PC
+	while (1) {
+		OSYieldThread();
+	}
+	return NULL;
+#else
 	const char* message;
 	s32 msgId;
 	f32 width;
@@ -509,6 +642,7 @@ void* gcDvdCheckThread(void* param) {
 		}
 		OSYieldThread();
 	}
+#endif
 }
 
 void gcRumbleCheck(void) {
@@ -528,6 +662,7 @@ void gcRumbleCheck(void) {
 	}*/
 }
 
+#pragma dont_inline on
 void gcResetCheck(void) {
 	u32 code;
 
@@ -567,3 +702,4 @@ void gcResetCheck(void) {
 		while (1) {}
 	}
 }
+#pragma dont_inline reset

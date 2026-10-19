@@ -10,7 +10,7 @@ extern int sprintf(char* str, const char* format, ...);
 const Vec decay_tbl[] = {
 	{1.0f, 0.0f, 0.0f},
 	{0.0f, 0.1f, 0.0f},
-	{0.0f, 0.0f, 0.01f}, 
+	{0.0f, 0.0f, 0.01f},
 	{0.0f, 0.0f, 0.01f}
 };
 
@@ -135,7 +135,9 @@ s32 lightEntry(const char* name, s32 type, Vec position, Vec rotation, GXColor c
 	entry->color = color;
 	entry->spotAngle = spotAngle;
 	entry->attenAngle = attenAngle;
-	entry->attenDistCoef = decay_tbl[attenType];
+	entry->attenDistCoef.x = decay_tbl[attenType].x;
+	entry->attenDistCoef.y = decay_tbl[attenType].y;
+	entry->attenDistCoef.z = decay_tbl[attenType].z;
 	entry->flags |= 1;
 	switch (type) {
 		case 0:
@@ -160,7 +162,7 @@ LightEntry* lightNameToPtr(const char* name) {
 	s32 i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
-		if (entry->flags & 1 && !strcmp(entry->name, name)) {
+		if (entry->flags & 1 && !strcmp(name, entry->name)) {
 			return entry;
 		}
 	}
@@ -171,12 +173,12 @@ LightEntry* lightNameToPtr(const char* name) {
 s32 _sort(const void* a, const void* b) {
 	f32 value1, value2;
 
-	value1 = *(f32*)(*(u32*)a + 4);
-	value2 = *(f32*)(*(u32*)b + 4);
-	if (value1 > value2) {
+	value1 = *(f32*)((const char*)a + 4);
+	value2 = *(f32*)((const char*)b + 4);
+	if (value2 < value1) {
 		return 1;
 	}
-	if (value1 >= value2) {
+	if (value2 <= value1) {
 		return 0;
 	}
 	return -1;
@@ -184,4 +186,83 @@ s32 _sort(const void* a, const void* b) {
 
 void lightGetNearObj(Vec position, LightEntry* entry, s32 count, LightEntryFlags flags) {
 
+}
+
+LightEntry* lightNumberToPtr(s32 index) {
+	LightWork* wp = lightGetWork();
+	LightEntry* entry;
+
+	entry = &wp->entries[index];
+	if (entry->flags & LIGHT_ENABLED) {
+		return entry;
+	}
+	return NULL;
+}
+
+s32 lightGetEntryNum(void) {
+	LightWork* wp = lightGetWork();
+	s32 count = 0;
+	s32 i;
+	LightEntry* entry = wp->entries;
+
+	for (i = 0; i < wp->count; i++, entry++) {
+		if (entry->flags & LIGHT_ENABLED) {
+			count++;
+		}
+	}
+	return count;
+}
+
+LightEntry* lightGetPaperCraft(void) {
+	return &paperCraft;
+}
+
+LightEntry* lightGetPaper(void) {
+	s32 cam = camGetCurNo();
+	if (cam == 4) {
+		return &paperLight3D;
+	}
+	if (cam == 6) {
+		return &paperLight3DImg;
+	}
+	return &paperLight3DImg;
+}
+
+BOOL lightCheckCharaLight(void) {
+	LightWork* wp = lightGetWork();
+	s32 i;
+	LightEntry* entry = wp->entries;
+
+	for (i = 0; i < wp->count; i++, entry++) {
+		if ((entry->flags & LIGHT_ENABLED) && (entry->flags & LIGHT_CHARA)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+LightEntry* lightGetCharaAmbient(void) {
+	LightWork* wp = lightGetWork();
+	s32 i;
+	LightEntry* entry = wp->entries;
+
+	for (i = 0; i < wp->count; i++, entry++) {
+		if ((entry->flags & LIGHT_ENABLED) && (entry->flags & LIGHT_CHARA) && (entry->flags & LIGHT_AMBIENT)) {
+			return entry;
+		}
+	}
+	return NULL;
+}
+
+LightEntry* lightGetAmbient(void) {
+	LightWork* wp = lightGetWork();
+	s32 i;
+	LightEntry* entry = wp->entries;
+
+	for (i = 0; i < wp->count; i++, entry++) {
+		if ((entry->flags & LIGHT_ENABLED) && !(entry->flags & LIGHT_CHARA) && (entry->flags & LIGHT_AMBIENT)) {
+			return entry;
+		}
+	}
+	return NULL;
 }

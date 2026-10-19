@@ -5,10 +5,21 @@ extern BattleWork* _battleWorkPointer;
 extern int sprintf(char* str, const char* format, ...);
 
 //.sbss
+#ifdef TARGET_PC
 s8 seq;
+#else
+extern s8 lbl_8042B4C0;
+#define seq lbl_8042B4C0
+#endif
 
 //.sdata
+#ifdef TARGET_PC
 GXColor seleItemCoordCol = {0xFF, 0xC0, 0xC0, 0xCF};
+#else
+extern GXColor lbl_804235E0;
+#define seleItemCoordCol lbl_804235E0
+extern const char lbl_802FB470[];
+#endif
 
 void SelectedItemCoordinateColorUpDate(void) {
     switch (seq) {
@@ -46,17 +57,30 @@ void SelectedItemCoordinateColorUpDate(void) {
 }
 
 BOOL BattleMenuKeyOKInACT(BattleWork* wp) {
-	return FALSE; //TODO: finish when I get the struct more done
+	if (wp->commandMenu.unk540[0x18] == 0 && ((u8*)wp->commandMenu.field_55C)[0x14] == 0) {
+		return FALSE;
+	}
+	return TRUE;
 }
 
 void battleMenuDispInit(void) {
 	BattleWork* wp = _battleWorkPointer;
 	char path[256];
 
+#ifdef TARGET_PC
 	sprintf(path, "%s/battle/common/battle_common.tpl", getMarioStDvdRoot());
+#else
+	sprintf(path, lbl_802FB470, getMarioStDvdRoot());
+#endif
 	wp->menuTex = fileAlloc(path, 4);
 }
 
 void battleMenuDispEnd(void) {
 	fileFree(_battleWorkPointer->menuTex);
 }
+
+void BattleMenuDisp_MultiItem_Main(void) {}
+void BattleMenuDisp_ChangePartySelect_Main(void) {}
+void BattleMenuDisp_Operation_Main(void) {}
+void BattleMenuDisp_WeaponSelect_Main(void) {}
+void BattleMenuDisp_ActSelect_Main(void) {}

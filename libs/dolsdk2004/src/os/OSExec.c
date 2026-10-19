@@ -7,6 +7,7 @@
 extern volatile u32 BOOT_REGION_START AT_ADDRESS(0x812FDFF0);
 extern volatile u32 BOOT_REGION_END AT_ADDRESS(0x812FDFEC);
 extern volatile u8 g_unk_800030E2 AT_ADDRESS(0x800030E2);
+extern const char lbl_803CDFD8[];
 
 static int Prepared;
 
@@ -61,7 +62,7 @@ static asm void Run(register void* entryPoint) {
     mr r31, entryPoint
     bl ICFlashInvalidate
     sync
-    isync 
+    isync
     mtlr r31
     blr
 
@@ -91,7 +92,7 @@ static void ReadDisc(void* addr, s32 length, s32 offset) {
 
     DVDReadAbsAsyncPrio(&block, addr, length, offset, NULL, 0);
 
-#if SDK_REVISION < 1    
+#if SDK_REVISION < 1
     start = OSGetTime();
 #endif
 
@@ -228,7 +229,7 @@ static void* LoadDol(const OSExecParams* params, AppLoaderCallback getInterface)
 }
 
 static BOOL IsNewApploader(AppLoaderStruct* header) {
-    return strncmp(header->date, "2004/02/01", 10) > 0 ? TRUE : FALSE;
+    return strncmp(header->date, lbl_803CDFD8, 10) > 0 ? TRUE : FALSE;
 }
 
 void __OSBootDolSimple(u32 doloffset, u32 restartCode, void* regionStart, void* regionEnd, BOOL argsUseDefault, s32 argc, char** argv) {

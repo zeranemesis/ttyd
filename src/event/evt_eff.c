@@ -1,9 +1,47 @@
 #include "evt/evt_eff.h"
 #include "driver/effdrv.h"
 #include "eff/n64/eff_expbom_n64.h"
+#include "eff/eff_kemuri.h"
 #include "eff/eff_n64.h"
 #include "evt/evt_cmd.h"
+#include "driver/animdrv.h"
+#include "mario/mariost.h"
 #include <string.h>
+
+extern void mobjEntry(const char* name, const char* animGroup);
+extern GlobalWork* wp_80422810;
+
+USER_FUNC(evt_mobj_entry) {
+	s32* args = event->args;
+	const char* name = (const char*)evtGetValue(event, args[0]);
+	const char* animGroup = (const char*)evtGetValue(event, args[1]);
+
+	if (!animGroupBaseAsync(animGroup, wp_80422810->inBattle != 0, NULL)) {
+		return EVT_RETURN_BLOCK;
+	}
+	mobjEntry(name, animGroup);
+	return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_eff_delete_ptr) {
+	effDelete((EffectEntry*)evtGetValue(event, *event->args));
+	return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_eff_softdelete_ptr) {
+	effSoftDelete((EffectEntry*)evtGetValue(event, *event->args));
+	return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_eff_delete) {
+	effDelete(effNameToPtr((const char*)evtGetValue(event, *event->args)));
+	return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_eff_softdelete) {
+	effSoftDelete(effNameToPtr((const char*)evtGetValue(event, *event->args)));
+	return EVT_RETURN_DONE;
+}
 
 USER_FUNC(evt_eff) {
 	s32* args = event->args;
@@ -53,7 +91,7 @@ USER_FUNC(evt_eff) {
 
 	switch (effGetSet(effSet)->id) {
 		case 0: //kemuri
-			//entry = effKemuriEntry(int2, float3, float4, float5, float6);
+			entry = effKemuriEntry(int2, float3, float4, float5);
 			break;
 
 		//insert more with internal order here

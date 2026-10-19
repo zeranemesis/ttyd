@@ -3,7 +3,7 @@
 #include "memory.h"
 #include "system.h"
 
-#ifdef __MWERKS__
+#if 1
 u8 wakka_dl_0_0[] ATTRIBUTE_ALIGN(32) = {
 	(GX_DRAW_TRIANGLE_STRIP | GX_VTXFMT0), // command
 	0, 4, //number of verts
@@ -12,7 +12,7 @@ u8 wakka_dl_0_0[] ATTRIBUTE_ALIGN(32) = {
 	21, 0, 0, 1, // 2
 	20, 0, 0, 0, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_1[] ATTRIBUTE_ALIGN(32) = {
@@ -23,7 +23,7 @@ u8 wakka_dl_0_1[] ATTRIBUTE_ALIGN(32) = {
 	22, 0, 0, 4, // 2
 	21, 0, 0, 1, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_2[] ATTRIBUTE_ALIGN(32) = {
@@ -34,7 +34,7 @@ u8 wakka_dl_0_2[] ATTRIBUTE_ALIGN(32) = {
 	23, 0, 0, 6, // 2
 	22, 0, 0, 4, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_3[] ATTRIBUTE_ALIGN(32) = {
@@ -45,7 +45,7 @@ u8 wakka_dl_0_3[] ATTRIBUTE_ALIGN(32) = {
 	19, 0, 0, 39, // 2
 	0, 0, 0, 3, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_4[] ATTRIBUTE_ALIGN(32) = {
@@ -56,7 +56,7 @@ u8 wakka_dl_0_4[] ATTRIBUTE_ALIGN(32) = {
 	18, 0, 0, 37, // 2
 	19, 0, 0, 39, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_5[] ATTRIBUTE_ALIGN(32) = {
@@ -67,7 +67,7 @@ u8 wakka_dl_0_5[] ATTRIBUTE_ALIGN(32) = {
 	17, 0, 0, 35, // 2
 	18, 0, 0, 37, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_6[] ATTRIBUTE_ALIGN(32) = {
@@ -78,7 +78,7 @@ u8 wakka_dl_0_6[] ATTRIBUTE_ALIGN(32) = {
 	16, 0, 0, 33, // 2
 	17, 0, 0, 35, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_7[] ATTRIBUTE_ALIGN(32) = {
@@ -89,7 +89,7 @@ u8 wakka_dl_0_7[] ATTRIBUTE_ALIGN(32) = {
 	15, 0, 0, 31, // 2
 	16, 0, 0, 33, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_8[] ATTRIBUTE_ALIGN(32) = {
@@ -100,7 +100,7 @@ u8 wakka_dl_0_8[] ATTRIBUTE_ALIGN(32) = {
 	14, 0, 0, 29, // 2
 	15, 0, 0, 31, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_9[] ATTRIBUTE_ALIGN(32) = {
@@ -111,7 +111,7 @@ u8 wakka_dl_0_9[] ATTRIBUTE_ALIGN(32) = {
 	13, 0, 0, 27, // 2
 	14, 0, 0, 29, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_10[] ATTRIBUTE_ALIGN(32) = {
@@ -122,7 +122,7 @@ u8 wakka_dl_0_10[] ATTRIBUTE_ALIGN(32) = {
 	12, 0, 0, 25, // 2
 	13, 0, 0, 27, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_11[] ATTRIBUTE_ALIGN(32) = {
@@ -133,7 +133,7 @@ u8 wakka_dl_0_11[] ATTRIBUTE_ALIGN(32) = {
 	11, 0, 0, 23, // 2
 	12, 0, 0, 25, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_12[] ATTRIBUTE_ALIGN(32) = {
@@ -144,7 +144,7 @@ u8 wakka_dl_0_12[] ATTRIBUTE_ALIGN(32) = {
 	10, 0, 0, 21, // 2
 	11, 0, 0, 23, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_13[] ATTRIBUTE_ALIGN(32) = {
@@ -155,7 +155,7 @@ u8 wakka_dl_0_13[] ATTRIBUTE_ALIGN(32) = {
 	9, 0, 0, 19, // 2
 	10, 0, 0, 21, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_14[] ATTRIBUTE_ALIGN(32) = {
@@ -166,7 +166,7 @@ u8 wakka_dl_0_14[] ATTRIBUTE_ALIGN(32) = {
 	8, 0, 0, 17, // 2
 	9, 0, 0, 19, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_15[] ATTRIBUTE_ALIGN(32) = {
@@ -177,7 +177,7 @@ u8 wakka_dl_0_15[] ATTRIBUTE_ALIGN(32) = {
 	7, 0, 0, 15, // 2
 	8, 0, 0, 17, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_16[] ATTRIBUTE_ALIGN(32) = {
@@ -188,7 +188,7 @@ u8 wakka_dl_0_16[] ATTRIBUTE_ALIGN(32) = {
 	6, 0, 0, 13, // 2
 	7, 0, 0, 15, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_17[] ATTRIBUTE_ALIGN(32) = {
@@ -199,7 +199,7 @@ u8 wakka_dl_0_17[] ATTRIBUTE_ALIGN(32) = {
 	5, 0, 0, 10, // 2
 	6, 0, 0, 13, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_18[] ATTRIBUTE_ALIGN(32) = {
@@ -210,7 +210,7 @@ u8 wakka_dl_0_18[] ATTRIBUTE_ALIGN(32) = {
 	4, 0, 0, 11, // 2
 	5, 0, 0, 10, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_19[] ATTRIBUTE_ALIGN(32) = {
@@ -221,7 +221,7 @@ u8 wakka_dl_0_19[] ATTRIBUTE_ALIGN(32) = {
 	40, 0, 1, 40, // 2
 	23, 0, 0, 6, // 3
 	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
-	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP, 
+	GX_NOP, GX_NOP, GX_NOP, GX_NOP, GX_NOP,
 };
 
 u8 wakka_dl_0_size_tbl[] = {
@@ -504,12 +504,12 @@ void effUltraHammerDisp(enum CameraId camId, void *param) { //minor regalloc
     Mtx sp30;
     GXTexObj sp10;
     u32 j;
-    
+
     effect = param;
     data = effect->userdata;
     temp_r31 = camGetPtr(camId);
     temp_r24 = data->unk0;
-    
+
     PSMTXTrans(spC0, data->position.x, data->position.y, data->position.z);
     PSMTXScale(sp60, data->scale, data->scale, data->scale);
     PSMTXRotRad(sp90, 'y', MTXDegToRad(-camGetPtr(camId)->viewYaw));

@@ -83,5 +83,9 @@ typedef struct PiantaParlorWork {
 	u32 field_0x134; //0x134
 } PiantaParlorWork;
 
+#ifdef TARGET_PC
 void yuugijou_init(void);
-
+#else
+void fn_8022D65C(void);
+#define yuugijou_init fn_8022D65C
+#endif

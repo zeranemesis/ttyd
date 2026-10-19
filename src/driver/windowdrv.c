@@ -15,8 +15,10 @@ extern int sprintf(char* str, const char* format, ...);
 static TEXPalette* tpldata; //new in retail
 static BOOL tpl_loaded; //new in retail
 f32 scrl;
-GXTexObj* wakuTexObj;
-WindowEntry* WinObjects;
+extern GXTexObj* lbl_8042B344;
+extern WindowEntry* lbl_8042B348;
+#define wakuTexObj lbl_8042B344
+#define WinObjects lbl_8042B348
 
 //local prototypes
 static void _callback(s32 error, DVDFileInfo* info);
@@ -84,28 +86,28 @@ void windowTexSetup(void) {
 }
 
 void windowReInit(void) {
-	WinObjects[0].flags = 0;
-	WinObjects[0].userdata = NULL;
-	WinObjects[1].flags = 0;
-	WinObjects[1].userdata = NULL;
-	WinObjects[2].flags = 0;
-	WinObjects[2].userdata = NULL;
-	WinObjects[3].flags = 0;
-	WinObjects[3].userdata = NULL;
-	WinObjects[4].flags = 0;
-	WinObjects[4].userdata = NULL;
-	WinObjects[5].flags = 0;
-	WinObjects[5].userdata = NULL;
-	WinObjects[6].flags = 0;
-	WinObjects[6].userdata = NULL;
+	WindowEntry* entry = WinObjects;
+	entry[0].flags = 0;
+	entry[0].userdata = NULL;
+	entry[1].flags = 0;
+	entry[1].userdata = NULL;
+	entry[2].flags = 0;
+	entry[2].userdata = NULL;
+	entry[3].flags = 0;
+	entry[3].userdata = NULL;
+	entry[4].flags = 0;
+	entry[4].userdata = NULL;
+	entry[5].flags = 0;
+	entry[5].userdata = NULL;
+	entry[6].flags = 0;
+	entry[6].userdata = NULL;
 }
 
 s32 windowEntry(u16 a1) {
-	WindowEntry* entry;
+	WindowEntry* entry = WinObjects;
 	int i;
 
-	for (i = 0; i < 7; i++) {
-		entry = &WinObjects[i];
+	for (i = 0; i < 7; i++, entry++) {
 		if (!(entry->flags & 1)) {
 			memset(entry, 0, sizeof(WindowEntry));
 			entry->flags = 1;
@@ -139,11 +141,10 @@ BOOL windowDeleteID(s32 id) {
 }
 
 void windowMain(void) {
-	WindowEntry* entry;
+	WindowEntry* entry = WinObjects;
 	int i;
 
-	for (i = 0; i < 7; i++) {
-		entry = &WinObjects[i];
+	for (i = 0; i < 7; i++, entry++) {
 		if (entry->flags & 1) {
 			if (entry->main) {
 				entry->main(entry);
@@ -197,7 +198,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 			GXSetNumTexGens(1);
 			GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
 			MTXScale(wood_mtx1, fabsf(72.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[29]),
-				fabsf(176.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[29]), 1.0f);
+				fabsf(176.0f) / (f32)GXGetTexObjHeight(&wakuTexObj[29]), 1.0f);
 			GXLoadTexMtxImm(wood_mtx1, 0x1E, GX_MTX2x4);
 			GXLoadTexObj(&wakuTexObj[29], GX_TEXMAP0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -218,7 +219,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 			GXSetNumTexGens(1);
 			GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
 			MTXScale(wood_mtx2, fabsf(416.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[31]),
-				fabsf(136.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[31]), 1.0f);
+				fabsf(136.0f) / (f32)GXGetTexObjHeight(&wakuTexObj[31]), 1.0f);
 			GXLoadTexMtxImm(wood_mtx2, 0x1E, GX_MTX2x4);
 			GXLoadTexObj(&wakuTexObj[31], GX_TEXMAP0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -234,12 +235,12 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 
 			GXPosition3f32(72.0f, -136.0f, 0.0f);
 			GXTexCoord2f32(0.0f, 1.0f);
-		
+
 			//right side of the frame
 			GXSetNumTexGens(1);
 			GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
 			MTXScale(wood_mtx3, fabsf(72.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[30]),
-				fabsf(176.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[30]), 1.0f);
+				fabsf(176.0f) / (f32)GXGetTexObjHeight(&wakuTexObj[30]), 1.0f);
 			GXLoadTexMtxImm(wood_mtx3, 0x1E, GX_MTX2x4);
 			GXLoadTexObj(&wakuTexObj[30], GX_TEXMAP0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -260,7 +261,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 			GXSetNumTexGens(1);
 			GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
 			MTXScale(wood_mtx4, fabsf(416.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[32]),
-				fabsf(40.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[32]), 1.0f);
+				fabsf(40.0f) / (f32)GXGetTexObjHeight(&wakuTexObj[32]), 1.0f);
 			GXLoadTexMtxImm(wood_mtx4, 0x1E, GX_MTX2x4);
 			GXLoadTexObj(&wakuTexObj[32], GX_TEXMAP0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -283,7 +284,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 			GXSetNumTexGens(1);
 			GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
 			MTXScale(lines_mtx1, fabsf(72.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[25]),
-				fabsf(176.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[25]), 1.0f);
+				fabsf(176.0f) / (f32)GXGetTexObjHeight(&wakuTexObj[25]), 1.0f);
 			GXLoadTexMtxImm(lines_mtx1, 0x1E, GX_MTX2x4);
 			GXLoadTexObj(&wakuTexObj[25], GX_TEXMAP0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -304,7 +305,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 			GXSetNumTexGens(1);
 			GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
 			MTXScale(lines_mtx2, fabsf(416.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[27]),
-				fabsf(136.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[27]), 1.0f);
+				fabsf(136.0f) / (f32)GXGetTexObjHeight(&wakuTexObj[27]), 1.0f);
 			GXLoadTexMtxImm(lines_mtx2, 0x1E, GX_MTX2x4);
 			GXLoadTexObj(&wakuTexObj[27], GX_TEXMAP0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -325,7 +326,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 			GXSetNumTexGens(1);
 			GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
 			MTXScale(lines_mtx3, fabsf(72.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[26]),
-				fabsf(176.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[26]), 1.0f);
+				fabsf(176.0f) / (f32)GXGetTexObjHeight(&wakuTexObj[26]), 1.0f);
 			GXLoadTexMtxImm(lines_mtx3, 0x1E, GX_MTX2x4);
 			GXLoadTexObj(&wakuTexObj[26], GX_TEXMAP0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -346,7 +347,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 			GXSetNumTexGens(1);
 			GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
 			MTXScale(lines_mtx4, fabsf(416.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[28]),
-				fabsf(40.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[28]), 1.0f);
+				fabsf(40.0f) / (f32)GXGetTexObjHeight(&wakuTexObj[28]), 1.0f);
 			GXLoadTexMtxImm(lines_mtx4, 0x1E, GX_MTX2x4);
 			GXLoadTexObj(&wakuTexObj[28], GX_TEXMAP0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -368,7 +369,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 			GXSetNumTexGens(1);
 			GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX0);
 			MTXScale(letter_mtx, fabsf(560.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[6]),
-				fabsf(176.0f) / (f32)GXGetTexObjWidth(&wakuTexObj[6]), 1.0f);
+				fabsf(176.0f) / (f32)GXGetTexObjHeight(&wakuTexObj[6]), 1.0f);
 			GXLoadTexMtxImm(letter_mtx, 0x1E, GX_MTX2x4);
 			GXLoadTexObj(&wakuTexObj[6], GX_TEXMAP0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4);
@@ -964,7 +965,7 @@ void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, 
 		else {
 			x = (0.38f * height) + x;
 		}
-		
+
 		if (a2 & 8) {
 			y2 = -((0.175f * width) - y);
 			y = ((0.225f * width) + y);
@@ -986,7 +987,7 @@ void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, 
 				width = a9;
 			}
 		}
-		
+
 		switch (type) {
 			case WINDOW_TYPE_NORMAL:
 			case WINDOW_TYPE_SMALL:
@@ -1001,21 +1002,21 @@ void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, 
 			default:
 				break;
 		}
-		
+
 		GXLoadPosMtxImm(camera->view, 0);
 		GXBegin(GX_QUADS, GX_VTXFMT0, 4u);
-		
+
 		height = (0.05f * height);
-		
+
 		GXPosition3f32(x - height, y2, 0.0f);
 		GXTexCoord2f32(0.0f, 0.0f);
-		
+
 		GXPosition3f32(x + height, y2, 0.0f);
 		GXTexCoord2f32(1.0f, 0.0f);
-		
+
 		GXPosition3f32(width + height, y, 0.0f);
 		GXTexCoord2f32(1.0f, 1.0f);
-		
+
 		GXPosition3f32(width - height, y, 0.0f);
 		GXTexCoord2f32(0.0f, 1.0f);
 	}
@@ -1045,7 +1046,7 @@ void windowDispGX_Message(s32 type, s32 a2, u8 alpha, f32 x, f32 y, f32 height, 
 	GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
 	GXSetCurrentMtx(0);
 	if (type == WINDOW_TYPE_TEC) {
-		_windowDispGX_Message(WINDOW_TYPE_TEC, 0, alpha, 1, x, y, height, width, a9, a10);
+		_windowDispGX_Message(type, 0, alpha, 1, x, y, height, width, a9, a10);
 	}
 	else {
 		_windowDispGX_Message(type, a2, alpha, 1, x, y, height, width, a9, a10);
@@ -1402,7 +1403,7 @@ void windowDispGX2_Waku_col(Mtx mtx, s16 gxTexMapID, GXColor color, f32 x, f32 y
 }
 
 s32 windowCheckID(s32 id) {
-	return WinObjects[id].flags & 2;
+	return *(u16*)((u8*)WinObjects + id * sizeof(WindowEntry) + 2) & 2;
 }
 
 WindowEntry* windowGetPointer(s32 id) {

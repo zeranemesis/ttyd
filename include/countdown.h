@@ -11,7 +11,12 @@ typedef struct CountdownWork {
 
 void countDownInit(void);
 void countDownSaveReStart(void);
-
-
-
+void countDownFlagOff(u16 flag);
+void countDownFlagOn(u16 flag);
+void countDownStop(void);
+void countDownEnd(void);
+s32 countDownGetStatus(void);
+void countDownSetRestartTime(s32 time);
+void countDownStart(s32 a0, s32 a1);
+void countDownDisp(void);
 void countDownMain(void);

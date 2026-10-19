@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dolphin/ar.h>
-//#include <dolphin/arq.h>
+#include <dolphin/arq.h>
 
 typedef struct ARAMWork {
 	u8 field_0x0[0x3C - 0x0]; //0x0

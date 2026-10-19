@@ -29,9 +29,16 @@ typedef struct ImageEntry {
 	Vec point; //0xF0, virtual point
 	f32 order; //0xFC
 	s32 shadowId; //0x100
-	s32 poseId; //0x104
-	s32 field_0x108; //0x108
-	u8 field_0x10C[0x118 - 0x10C]; //0x10C
+	union {
+		s32 poseId; //0x104
+		s32 paperPoseId;
+	};
+	union {
+		s32 time; //0x108
+		s32 field_0x108;
+	};
+	const char* animName; //0x10C
+	u8 field_0x10C[0x118 - 0x10C - sizeof(const char*)]; //0x110
 	f32 field_0x118; //0x118
 	f32 field_0x11C; //0x11C
 	Mtx field_0x120; //0x120

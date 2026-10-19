@@ -58,7 +58,20 @@
     0000dd7c 005e1c 8001335c  1 .text 	hitdrv.o
 */
 
-HitEntry* lbl_80418408; // TODO: proper name
+HitEntry* lbl_8042AF48; // head of active HitEntry list (siblingActive chain)
+
+extern void* mapalloc_base_ptr;
+void* fn_80030040(void* base, u32 size);
+void fn_8002FEAC(void* base, void* ptr);
+
+extern const f32 float_1_80419524;    // float_1_80419524
+extern const f32 float_4_80419538;    // float_4_80419538
+extern const f32 float_0p001_80419534; // float_0p001_80419534
+extern const f32 float_360_80419530;  // 1.0f
+extern const f32 float_6p2832_8041952c;
+extern const f32 lbl_8042C2D0;
+extern const Vec lbl_802CB374;
+extern const Vec lbl_802CB380;
 
 // local prototypes
 void hitReCalcMatrix2(HitEntry* hit, Mtx mtx, BOOL recursion);
@@ -77,7 +90,7 @@ void hitInit(void) {
     ; // stubbed in retail
 }
 
-void hitReInit(void) {
+void fn_80018FBC(void) {
     MapEntry* entry;
     MapWork* wp;
     s32 j;
@@ -91,10 +104,10 @@ void hitReInit(void) {
         if (hit != NULL) {
             for (j = 0; j < entry->hitNumJoints; j++, hit++) {
                 if (hit->vectors != NULL) {
-                    _mapFree(hit->vectors);
+                    fn_8002FEAC(mapalloc_base_ptr, hit->vectors);
                 }
             }
-            _mapFree(entry->hitEntries);
+            fn_8002FEAC(mapalloc_base_ptr, entry->hitEntries);
             entry->hitEntries = NULL;
             entry->hitNumJoints = 0;
         }
@@ -102,7 +115,7 @@ void hitReInit(void) {
 }
 
 // This function is cursed, managed to hit 99% - https://decomp.me/scratch/FjwSA
-HitEntry* _hitEnt(MapFileJoint* joint, HitEntry* parent, Mtx parentMtx, s32 mapIndex) {
+HitEntry* fn_80018B30(MapFileJoint* joint, HitEntry* parent, Mtx parentMtx, s32 mapIndex) {
     MapWork* wp = mapGetWork();
     HitEntry* hit = wp->entries[mapIndex].hitEntries;
     Mtx trans, scale, rotX, rotY, rotZ;
@@ -143,18 +156,18 @@ HitEntry* _hitEnt(MapFileJoint* joint, HitEntry* parent, Mtx parentMtx, s32 mapI
 
     if (joint->partCount) {
         VECAdd(&joint->bboxMin, &joint->bboxMax, &hit->centerLocal);
-        VECScale(&hit->centerLocal, &hit->centerLocal, 0.5f);
+        VECScale(&hit->centerLocal, &hit->centerLocal, float_4_80419538);
     } else {
         hit->centerLocal = joint->translation;
     }
     MTXMultVec(hit->worldMtx, &hit->centerLocal, &hit->centerWorld);
 
-    joint->bboxMin.x -= 0.1f;
-    joint->bboxMin.y -= 0.1f;
-    joint->bboxMin.z -= 0.1f;
-    joint->bboxMax.x += 0.1f;
-    joint->bboxMax.y += 0.1f;
-    joint->bboxMax.z += 0.1f;
+    joint->bboxMin.x -= lbl_8042C2D0;
+    joint->bboxMin.y -= lbl_8042C2D0;
+    joint->bboxMin.z -= lbl_8042C2D0;
+    joint->bboxMax.x += lbl_8042C2D0;
+    joint->bboxMax.y += lbl_8042C2D0;
+    joint->bboxMax.z += lbl_8042C2D0;
 
     MTXMultVec(hit->worldMtx, &hit->joint->bboxMax, &vtmp);
     hit->radius = PSVECDistance(&vtmp, &hit->centerWorld);
@@ -180,7 +193,7 @@ HitEntry* _hitEnt(MapFileJoint* joint, HitEntry* parent, Mtx parentMtx, s32 mapI
         }
 
         if (numVectors > 0) {
-            hit->vectors = _mapAlloc(sizeof(HitVector) * numVectors);
+            hit->vectors = fn_80030040(mapalloc_base_ptr, sizeof(HitVector) * numVectors);
             hit->unkA8 = hitCalcVtxPosition(hit);
         }
     }
@@ -188,7 +201,7 @@ HitEntry* _hitEnt(MapFileJoint* joint, HitEntry* parent, Mtx parentMtx, s32 mapI
 }
 
 HitEntry* hitEntrySub(MapFileJoint* joint, HitEntry* parent, Mtx parentMtx, BOOL ignoreSiblings, s32 mapIndex) {
-    HitEntry* entry = _hitEnt(joint, parent, parentMtx, mapIndex);
+    HitEntry* entry = fn_80018B30(joint, parent, parentMtx, mapIndex);
     if (joint->child != NULL) {
         entry->child = hitEntrySub(joint->child, entry, entry->worldMtx, FALSE, mapIndex);
     }
@@ -198,13 +211,13 @@ HitEntry* hitEntrySub(MapFileJoint* joint, HitEntry* parent, Mtx parentMtx, BOOL
     return entry;
 }
 
-HitEntry* hitEntry(MapFileJoint* root, Mtx rootMtx, s32 mapIndex) {
+HitEntry* fn_8001881C(MapFileJoint* root, Mtx rootMtx, s32 mapIndex) {
     MapWork* wp = mapGetWork();
     u32 size;
 
     wp->entries[mapIndex].hitNumJoints = mapGetJoints(root);
     size = OSRoundUp32B(((wp->entries[mapIndex].hitNumJoints + 128) * sizeof(HitEntry)));
-    wp->entries[mapIndex].hitEntries = _mapAlloc(size);
+    wp->entries[mapIndex].hitEntries = fn_80030040(mapalloc_base_ptr, size);
     memset(wp->entries[mapIndex].hitEntries, 0, size);
     return hitEntrySub(root, NULL, rootMtx, TRUE, mapIndex);
 }
@@ -265,7 +278,172 @@ void hitReCalcMatrix2(HitEntry* hit, Mtx mtx, BOOL recursion) {
 
 #pragma dont_inline on
 s16 hitCalcVtxPosition(HitEntry* hit) {
-    // TODO
+    MapFileMesh* mesh;
+    MapWork* wp;
+    u8* vbase;
+    u32* list;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 b;
+    s32 numElements;
+    s32 stride;
+    register s16 count;
+
+    if (hit->vectors == NULL) {
+        return 0;
+    }
+    count = 0;
+    for (i = 0; i < hit->joint->partCount; i++) {
+        mesh = hit->joint->parts[i].mesh;
+        if (mesh == NULL) {
+            continue;
+        }
+        if (!mesh->isPackedDisplay) {
+            for (k = 0; k < mesh->displayListCount; k++) {
+                list = mesh->displayLists.normalLists[k];
+                for (j = 0; j < (s32)*list - 2; j++) {
+                    s16 i0 = *((s16*)((u8*)list + (j * 0x18) + 4));
+                    s16 i1 = *((s16*)((u8*)list + ((j + 1) * 0x18) + 4));
+                    s16 i2 = *((s16*)((u8*)list + ((j + 2) * 0x18) + 4));
+                    Vec* verts = (Vec*)((u8*)*(u32**)mesh->vcdTableOffset + 4);
+                    HitVector* vector = &hit->vectors[count++];
+                    PSMTXMultVec(hit->worldMtx, (Vec*)((u8*)verts + (i0 * 0xc)), &vector->v0);
+                    PSMTXMultVec(hit->worldMtx, (Vec*)((u8*)verts + ((!(j & 1) ? i2 : i1) * 0xc)), &vector->v1);
+                    PSMTXMultVec(hit->worldMtx, (Vec*)((u8*)verts + ((!(j & 1) ? i1 : i2) * 0xc)), &vector->v2);
+                    PSVECSubtract(&vector->v2, &vector->v0, &vector->edge0);
+                    PSVECSubtract(&vector->v0, &vector->v1, &vector->edge1);
+                    PSVECSubtract(&vector->v1, &vector->v2, &vector->edge2);
+                    PSVECCrossProduct(&vector->edge0, &vector->edge1, &vector->normal);
+                }
+            }
+        } else {
+            u8* dl;
+            s32 off;
+
+            wp = mapGetWork();
+            numElements = 0;
+            for (b = 0; b < 12; b++) {
+                numElements += (mesh->elementMask >> b) & 1;
+            }
+            stride = numElements * 2;
+            for (k = 0; k < mesh->displayListCount; k++) {
+                dl = (u8*)mesh->displayLists.packedLists[k].offset;
+                off = 0;
+                for (j = 0; j < (s32)*(u16*)((u8*)dl + 1) - 2; j++) {
+                    u16 i0 = *(u16*)((u8*)dl + off + 3);
+                    u16 i1 = *(u16*)((u8*)dl + (stride * (j + 1)) + 3);
+                    u16 i2 = *(u16*)((u8*)dl + (stride * (j + 2)) + 3);
+                    u16 iA = !(j & 1) ? i2 : i1;
+                    u16 iB = !(j & 1) ? i1 : i2;
+                    Vec pos0;
+                    Vec pos1;
+                    Vec pos2;
+                    HitVector* vector;
+#if defined(TARGET_PC)
+                    {
+                        u8* vbase = (u8*)(uintptr_t)*(u32*)mesh->vcdTableOffset + 4;
+                        u32 scaleVal = *(u32*)(*(u8**)((u8*)wp + 0xA4 + (hit->mapIndex * 0x178)) + 0x44);
+                        f32 scaleFactor = ldexpf(1.0f, -(int)scaleVal);
+                        u32 i0e = i0 * 3;
+                        u32 iAe = iA * 3;
+                        u32 iBe = iB * 3;
+                        #define LOAD_COORD(idx) ((f32)(s16)((vbase[(idx) * 2] << 8) | vbase[(idx) * 2 + 1]) * scaleFactor)
+                        pos0.x = LOAD_COORD(i0e);
+                        pos0.y = LOAD_COORD(i0e + 1);
+                        pos0.z = LOAD_COORD(i0e + 2);
+                        pos1.x = LOAD_COORD(iAe);
+                        pos1.y = LOAD_COORD(iAe + 1);
+                        pos1.z = LOAD_COORD(iAe + 2);
+                        pos2.x = LOAD_COORD(iBe);
+                        pos2.y = LOAD_COORD(iBe + 1);
+                        pos2.z = LOAD_COORD(iBe + 2);
+                        #undef LOAD_COORD
+                    }
+#else
+                    {
+                        register u8* vbase;
+                        register f32 f0;
+                        register u32 eoff;
+                        register u32 gqr;
+                        u32 i0e;
+                        u32 iAe;
+                        u32 iBe;
+
+                        vbase = (u8*)*(u32**)mesh->vcdTableOffset + 4;
+                        gqr = *(u32*)(*(u8**)((u8*)wp + 0xA4 + (hit->mapIndex * 0x178)) + 0x44);
+                        gqr = (gqr << 8) | 0x7u;
+                        gqr = gqr | (gqr << 16);
+                        asm {
+                            mtspr GQR5, gqr
+                        }
+                        i0e = i0 * 3;
+                        iAe = iA * 3;
+                        iBe = iB * 3;
+                        eoff = i0e * 2;
+                        asm {
+                            psq_lx f0, vbase, eoff, 1, 5
+                        }
+                        pos0.x = f0;
+                        eoff = (i0e + 1) * 2;
+                        asm {
+                            psq_lx f0, vbase, eoff, 1, 5
+                        }
+                        pos0.y = f0;
+                        eoff = (i0e + 2) * 2;
+                        asm {
+                            psq_lx f0, vbase, eoff, 1, 5
+                        }
+                        pos0.z = f0;
+                        eoff = iAe * 2;
+                        asm {
+                            psq_lx f0, vbase, eoff, 1, 5
+                        }
+                        pos1.x = f0;
+                        eoff = (iAe + 1) * 2;
+                        asm {
+                            psq_lx f0, vbase, eoff, 1, 5
+                        }
+                        pos1.y = f0;
+                        eoff = (iAe + 2) * 2;
+                        asm {
+                            psq_lx f0, vbase, eoff, 1, 5
+                        }
+                        pos1.z = f0;
+                        eoff = iBe * 2;
+                        asm {
+                            psq_lx f0, vbase, eoff, 1, 5
+                        }
+                        pos2.x = f0;
+                        eoff = (iBe + 1) * 2;
+                        asm {
+                            psq_lx f0, vbase, eoff, 1, 5
+                        }
+                        pos2.y = f0;
+                        eoff = (iBe + 2) * 2;
+                        asm {
+                            psq_lx f0, vbase, eoff, 1, 5
+                        }
+                        pos2.z = f0;
+                    }
+#endif
+                    off += stride;
+                    vector = &hit->vectors[count];
+                    PSMTXMultVec(hit->worldMtx, &pos0, &vector->v0);
+                    PSMTXMultVec(hit->worldMtx, &pos1, &vector->v1);
+                    PSMTXMultVec(hit->worldMtx, &pos2, &vector->v2);
+                    PSVECSubtract(&vector->v2, &vector->v0, &vector->edge0);
+                    PSVECSubtract(&vector->v0, &vector->v1, &vector->edge1);
+                    PSVECSubtract(&vector->v1, &vector->v2, &vector->edge2);
+                    PSVECCrossProduct(&vector->edge0, &vector->edge1, &vector->normal);
+                    if (vector->normal.x || vector->normal.y || vector->normal.z) {
+                        count++;
+                    }
+                }
+            }
+        }
+    }
+    return count;
 }
 #pragma dont_inline reset
 
@@ -279,48 +457,48 @@ inline BOOL tempfunc(HitCheckQuery* query, HitVector* vector) {
     PSVECSubtract(&query->targetPos, &vector->v0, &sp80);
     dotProduct = PSVECDotProduct(&vector->normal, &sp80);
     if (query->singleSided) {
-        if (dotProduct < 0.0f) {
+        if (dotProduct < float_1_80419524) {
             return 0;
         }
-        if (((sp80.z * vector->edge0.x) - (sp80.x * vector->edge0.z)) < 0.0f) {
+        if (((sp80.z * vector->edge0.x) - (sp80.x * vector->edge0.z)) < float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v1, &sp8C);
-        if (((sp8C.z * vector->edge1.x) - (sp8C.x * vector->edge1.z)) < 0.0f) {
+        if (((sp8C.z * vector->edge1.x) - (sp8C.x * vector->edge1.z)) < float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v2, &sp98);
-        if (((sp98.z * vector->edge2.x) - (sp98.x * vector->edge2.z)) < 0.0f) {
+        if (((sp98.z * vector->edge2.x) - (sp98.x * vector->edge2.z)) < float_1_80419524) {
             return 0;
         }
     } else {
-        if ((vector->normal.y * dotProduct) <= 0.0f) {
+        if ((vector->normal.y * dotProduct) <= float_1_80419524) {
             return 0;
         }
-        if ((dotProduct * ((sp80.z * vector->edge0.x) - (sp80.x * vector->edge0.z))) < 0.0f) {
+        if ((dotProduct * ((sp80.z * vector->edge0.x) - (sp80.x * vector->edge0.z))) < float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v1, &sp8C);
-        if ((dotProduct * ((sp8C.z * vector->edge1.x) - (sp8C.x * vector->edge1.z))) < 0.0f) {
+        if ((dotProduct * ((sp8C.z * vector->edge1.x) - (sp8C.x * vector->edge1.z))) < float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v2, &sp98);
-        if ((dotProduct * ((sp98.z * vector->edge2.x) - (sp98.x * vector->edge2.z))) < 0.0f) {
+        if ((dotProduct * ((sp98.z * vector->edge2.x) - (sp98.x * vector->edge2.z))) < float_1_80419524) {
             return 0;
         }
     }
     temp_f2 = -vector->normal.y;
-    if ((query->targetDistance >= 0.0f) && ((-dotProduct / temp_f2) >= query->targetDistance)) {
+    if ((query->targetDistance >= float_1_80419524) && ((-dotProduct / temp_f2) >= query->targetDistance)) {
         return 0;
     }
     query->targetDistance = -dotProduct / temp_f2;
     query->hitPos.x = query->targetPos.x;
     query->hitPos.y = query->targetPos.y - query->targetDistance;
     query->hitPos.z = query->targetPos.z;
-    if (dotProduct >= 0.0f) {
+    if (dotProduct >= float_1_80419524) {
         query->hitNormal = vector->normal;
     } else {
-        PSVECScale(&vector->normal, &query->hitNormal, -1.0f);
+        PSVECScale(&vector->normal, &query->hitNormal, float_0p001_80419534);
     }
     return 1;
 }
@@ -335,48 +513,48 @@ inline BOOL tempfunc2(HitCheckQuery* query, HitVector* vector) {
     PSVECSubtract(&query->targetPos, &vector->v0, &sp5C);
     dotProduct = PSVECDotProduct(&vector->normal, &sp5C);
     if (query->singleSided) {
-        if (dotProduct < 0.0f) {
+        if (dotProduct < float_1_80419524) {
             return 0;
         }
-        if (((sp5C.z * vector->edge0.x) - (sp5C.x * vector->edge0.z)) > 0.0f) {
+        if (((sp5C.z * vector->edge0.x) - (sp5C.x * vector->edge0.z)) > float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v1, &sp68);
-        if (((sp68.z * vector->edge1.x) - (sp68.x * vector->edge1.z)) > 0.0f) {
+        if (((sp68.z * vector->edge1.x) - (sp68.x * vector->edge1.z)) > float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v2, &sp74);
-        if (((sp74.z * vector->edge2.x) - (sp74.x * vector->edge2.z)) > 0.0f) {
+        if (((sp74.z * vector->edge2.x) - (sp74.x * vector->edge2.z)) > float_1_80419524) {
             return 0;
         }
     } else {
-        if ((vector->normal.y * dotProduct) >= 0.0f) {
+        if ((vector->normal.y * dotProduct) >= float_1_80419524) {
             return 0;
         }
-        if ((dotProduct * ((sp5C.z * vector->edge0.x) - (sp5C.x * vector->edge0.z))) > 0.0f) {
+        if ((dotProduct * ((sp5C.z * vector->edge0.x) - (sp5C.x * vector->edge0.z))) > float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v1, &sp68);
-        if ((dotProduct * ((sp68.z * vector->edge1.x) - (sp68.x * vector->edge1.z))) > 0.0f) {
+        if ((dotProduct * ((sp68.z * vector->edge1.x) - (sp68.x * vector->edge1.z))) > float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v2, &sp74);
-        if ((dotProduct * ((sp74.z * vector->edge2.x) - (sp74.x * vector->edge2.z))) > 0.0f) {
+        if ((dotProduct * ((sp74.z * vector->edge2.x) - (sp74.x * vector->edge2.z))) > float_1_80419524) {
             return 0;
         }
     }
     temp_f2 = vector->normal.y;
-    if ((query->targetDistance >= 0.0f) && ((-dotProduct / temp_f2) >= query->targetDistance)) {
+    if ((query->targetDistance >= float_1_80419524) && ((-dotProduct / temp_f2) >= query->targetDistance)) {
         return 0;
     }
     query->targetDistance = -dotProduct / temp_f2;
     query->hitPos.x = query->targetPos.x;
     query->hitPos.y = query->targetPos.y + query->targetDistance;
     query->hitPos.z = query->targetPos.z;
-    if (dotProduct >= 0.0f) {
+    if (dotProduct >= float_1_80419524) {
         query->hitNormal = vector->normal;
     } else {
-        PSVECScale(&vector->normal, &query->hitNormal, -1.0f);
+        PSVECScale(&vector->normal, &query->hitNormal, float_0p001_80419534);
     }
     return 1;
 }
@@ -395,55 +573,55 @@ inline BOOL tempfunc3(HitCheckQuery* query, HitVector* vector) {
     PSVECSubtract(&query->targetPos, &vector->v0, &sp8);
     dotProduct = PSVECDotProduct(&vector->normal, &sp8);
     if (query->singleSided) {
-        if (dotProduct < 0.0f) {
+        if (dotProduct < float_1_80419524) {
             return 0;
         }
         PSVECCrossProduct(&query->targetDir, &vector->edge0, &sp2C);
-        if (PSVECDotProduct(&sp8, &sp2C) < 0.0f) {
+        if (PSVECDotProduct(&sp8, &sp2C) < float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v1, &sp14);
         PSVECCrossProduct(&query->targetDir, &vector->edge1, &sp38);
-        if (PSVECDotProduct(&sp14, &sp38) < 0.0f) {
+        if (PSVECDotProduct(&sp14, &sp38) < float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v2, &sp20);
         PSVECCrossProduct(&query->targetDir, &vector->edge2, &sp44);
-        if (PSVECDotProduct(&sp20, &sp44) < 0.0f) {
+        if (PSVECDotProduct(&sp20, &sp44) < float_1_80419524) {
             return 0;
         }
         var_f27 = PSVECDotProduct(&vector->normal, &query->targetDir);
     } else {
         var_f27 = PSVECDotProduct(&vector->normal, &query->targetDir);
-        if ((var_f27 * dotProduct) >= 0.0f) {
+        if ((var_f27 * dotProduct) >= float_1_80419524) {
             return 0;
         }
         PSVECCrossProduct(&query->targetDir, &vector->edge0, &sp2C);
-        if ((dotProduct * PSVECDotProduct(&sp8, &sp2C)) < 0.0f) {
+        if ((dotProduct * PSVECDotProduct(&sp8, &sp2C)) < float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v1, &sp14);
         PSVECCrossProduct(&query->targetDir, &vector->edge1, &sp38);
-        if ((dotProduct * PSVECDotProduct(&sp14, &sp38)) < 0.0f) {
+        if ((dotProduct * PSVECDotProduct(&sp14, &sp38)) < float_1_80419524) {
             return 0;
         }
         PSVECSubtract(&query->targetPos, &vector->v2, &sp20);
         PSVECCrossProduct(&query->targetDir, &vector->edge2, &sp44);
-        if ((dotProduct * PSVECDotProduct(&sp20, &sp44)) < 0.0f) {
+        if ((dotProduct * PSVECDotProduct(&sp20, &sp44)) < float_1_80419524) {
             return 0;
         }
     }
 
-    if ((query->targetDistance >= 0.0f) && ((-dotProduct / var_f27) >= query->targetDistance)) {
+    if ((query->targetDistance >= float_1_80419524) && ((-dotProduct / var_f27) >= query->targetDistance)) {
         return 0;
     }
     query->targetDistance = -dotProduct / var_f27;
     PSVECScale(&query->targetDir, &sp50, query->targetDistance);
     PSVECAdd(&query->targetPos, &sp50, &query->hitPos);
-    if (dotProduct >= 0.0f) {
+    if (dotProduct >= float_1_80419524) {
         query->hitNormal = vector->normal;
     } else {
-        PSVECScale(&vector->normal, &query->hitNormal, -1.0f);
+        PSVECScale(&vector->normal, &query->hitNormal, float_0p001_80419534);
     }
     return 1;
 }
@@ -468,13 +646,13 @@ HitEntry* hitCheckVecFilter(HitCheckQuery* query, HitFilterCallback callback) { 
     if (!PSVECSquareMag(&query->targetDir)) {
         return NULL;
     }
-    var_f29 = -1.0f;
-    temp = 0.5f;
+    var_f29 = float_0p001_80419534;
+    temp = float_4_80419538;
     temp_f28 = query->targetDistance * temp;
     PSVECScale(&query->targetDir, &spA4, temp_f28);
     PSVECAdd(&query->targetPos, &spA4, &spA4);
-    var_r29 = lbl_80418408;
-    if (query->targetDir.y == 0.0f) {
+    var_r29 = lbl_8042AF48;
+    if (query->targetDir.y == float_1_80419524) {
         while (var_r29 != NULL) {
             if (callback == NULL || callback(query, var_r29)) {
                 if (!(PSVECDistance(&spA4, &var_r29->centerWorld) > temp_f28 + var_r29->radius)) {
@@ -486,8 +664,8 @@ HitEntry* hitCheckVecFilter(HitCheckQuery* query, HitFilterCallback callback) { 
                     var_r31 = var_r29->vectors;
                     for (i = 0; i < var_r29->unkA8; i++, var_r31++) {
                         if ((query->singleSided == 0) ||
-                            !(PSVECDotProduct(&var_r31->normal, &query->targetDir) >= 0.0f)) {
-                            if (checkTriVec_xz(query, var_r31) && (var_f29 < 0.0f || var_f29 > query->targetDistance)) {
+                            !(PSVECDotProduct(&var_r31->normal, &query->targetDir) >= float_1_80419524)) {
+                            if (checkTriVec_xz(query, var_r31) && (var_f29 < float_1_80419524 || var_f29 > query->targetDistance)) {
                                 var_f29 = query->targetDistance;
                                 var_r28 = var_r29;
                                 distance = var_f29;
@@ -500,8 +678,8 @@ HitEntry* hitCheckVecFilter(HitCheckQuery* query, HitFilterCallback callback) { 
             }
             var_r29 = var_r29->siblingActive;
         }
-    } else if (query->targetDir.x == 0.0f && query->targetDir.z == 0.0f) {
-        if (query->targetDir.y == -1.0f) {
+    } else if (query->targetDir.x == float_1_80419524 && query->targetDir.z == float_1_80419524) {
+        if (query->targetDir.y == float_0p001_80419534) {
             while (var_r29 != NULL) {
                 if (callback == NULL || callback(query, var_r29)) {
                     if (!(PSVECDistance(&spA4, &var_r29->centerWorld) > temp_f28 + var_r29->radius)) {
@@ -512,8 +690,8 @@ HitEntry* hitCheckVecFilter(HitCheckQuery* query, HitFilterCallback callback) { 
                         }
                         vector = var_r29->vectors;
                         for (i = 0; i < var_r29->unkA8; i++, vector++) {
-                            if (query->singleSided == 0 || !(vector->normal.y <= 0.0f)) {
-                                if (tempfunc(query, vector) && (var_f29 < 0.0f || var_f29 > query->targetDistance)) {
+                            if (query->singleSided == 0 || !(vector->normal.y <= float_1_80419524)) {
+                                if (tempfunc(query, vector) && (var_f29 < float_1_80419524 || var_f29 > query->targetDistance)) {
                                     var_f29 = query->targetDistance;
                                     var_r28 = var_r29;
                                     distance = var_f29;
@@ -537,8 +715,8 @@ HitEntry* hitCheckVecFilter(HitCheckQuery* query, HitFilterCallback callback) { 
                         }
                         vector = var_r29->vectors;
                         for (i = 0; i < var_r29->unkA8; i++, vector++) {
-                            if (query->singleSided == 0 || !(vector->normal.y >= 0.0f)) {
-                                if (tempfunc2(query, vector) && (var_f29 < 0.0f || var_f29 > query->targetDistance)) {
+                            if (query->singleSided == 0 || !(vector->normal.y >= float_1_80419524)) {
+                                if (tempfunc2(query, vector) && (var_f29 < float_1_80419524 || var_f29 > query->targetDistance)) {
                                     var_f29 = query->targetDistance;
                                     var_r28 = var_r29;
                                     distance = var_f29;
@@ -566,8 +744,8 @@ HitEntry* hitCheckVecFilter(HitCheckQuery* query, HitFilterCallback callback) { 
                     }
                     vector = var_r29->vectors;
                     for (i = 0; i < var_r29->unkA8; i++, vector++) {
-                        if (query->singleSided == 0 || !(PSVECDotProduct(&vector->normal, &query->targetDir) >= 0.0f)) {
-                            if (tempfunc3(query, vector) && (var_f29 < 0.0f || var_f29 > query->targetDistance)) {
+                        if (query->singleSided == 0 || !(PSVECDotProduct(&vector->normal, &query->targetDir) >= float_1_80419524)) {
+                            if (tempfunc3(query, vector) && (var_f29 < float_1_80419524 || var_f29 > query->targetDistance)) {
                                 var_f29 = query->targetDistance;
                                 var_r28 = var_r29;
                                 distance = var_f29;
@@ -622,39 +800,39 @@ BOOL checkTriVec_xz(HitCheckQuery* query, HitVector* vector) {
     PSVECSubtract(&query->targetPos, &vector->v0, &v1);
     distToTrianglePlane = PSVECDotProduct(&vector->normal, &v1);
     if (query->singleSided != 0) {
-        if (distToTrianglePlane < 0.0f) {
+        if (distToTrianglePlane < float_1_80419524) {
             return FALSE;
         }
         if ((v1.x * (-vector->edge0.y * query->targetDir.z)) +
                 (v1.y * ((vector->edge0.x * query->targetDir.z) - (vector->edge0.z * query->targetDir.x))) +
                 (v1.z * (vector->edge0.y * query->targetDir.x)) <
-            0.0f) {
+            float_1_80419524) {
             return FALSE;
         }
         PSVECSubtract(&query->targetPos, &vector->v1, &v2);
         if ((v2.x * (-vector->edge1.y * query->targetDir.z)) +
                 (v2.y * ((vector->edge1.x * query->targetDir.z) - (vector->edge1.z * query->targetDir.x))) +
                 (v2.z * (vector->edge1.y * query->targetDir.x)) <
-            0.0f) {
+            float_1_80419524) {
             return FALSE;
         }
         PSVECSubtract(&query->targetPos, &vector->v2, &v3);
         if ((v3.x * (-vector->edge2.y * query->targetDir.z)) +
                 (v3.y * ((vector->edge2.x * query->targetDir.z) - (vector->edge2.z * query->targetDir.x))) +
                 (v3.z * (vector->edge2.y * query->targetDir.x)) <
-            0.0f) {
+            float_1_80419524) {
             return FALSE;
         }
     } else {
         if (((vector->normal.x * query->targetDir.x) + (vector->normal.z * query->targetDir.z)) * distToTrianglePlane >=
-            0.0f) {
+            float_1_80419524) {
             return FALSE;
         }
         if (((v1.x * (-vector->edge0.y * query->targetDir.z)) +
              (v1.y * ((vector->edge0.x * query->targetDir.z) - (vector->edge0.z * query->targetDir.x))) +
              (v1.z * (vector->edge0.y * query->targetDir.x))) *
                 distToTrianglePlane <
-            0.0f) {
+            float_1_80419524) {
             return FALSE;
         }
         PSVECSubtract(&query->targetPos, &vector->v1, &v2);
@@ -662,7 +840,7 @@ BOOL checkTriVec_xz(HitCheckQuery* query, HitVector* vector) {
              (v2.y * ((vector->edge1.x * query->targetDir.z) - (vector->edge1.z * query->targetDir.x))) +
              (v2.z * (vector->edge1.y * query->targetDir.x))) *
                 distToTrianglePlane <
-            0.0f) {
+            float_1_80419524) {
             return FALSE;
         }
         PSVECSubtract(&query->targetPos, &vector->v2, &v3);
@@ -670,22 +848,22 @@ BOOL checkTriVec_xz(HitCheckQuery* query, HitVector* vector) {
              (v3.y * ((vector->edge2.x * query->targetDir.z) - (vector->edge2.z * query->targetDir.x))) +
              (v3.z * (vector->edge2.y * query->targetDir.x))) *
                 distToTrianglePlane <
-            0.0f) {
+            float_1_80419524) {
             return FALSE;
         }
     }
     cosAngle = (vector->normal.x * query->targetDir.x) + (vector->normal.z * query->targetDir.z);
-    if (query->targetDistance >= 0.0f && -distToTrianglePlane / cosAngle >= query->targetDistance) {
+    if (query->targetDistance >= float_1_80419524 && -distToTrianglePlane / cosAngle >= query->targetDistance) {
         return FALSE;
     }
     query->targetDistance = -distToTrianglePlane / cosAngle;
     query->hitPos.x = query->targetPos.x + (query->targetDir.x * query->targetDistance);
     query->hitPos.y = query->targetPos.y;
     query->hitPos.z = query->targetPos.z + (query->targetDir.z * query->targetDistance);
-    if (distToTrianglePlane >= 0.0f) {
+    if (distToTrianglePlane >= float_1_80419524) {
         query->hitNormal = vector->normal;
     } else {
-        PSVECScale(&vector->normal, &query->hitNormal, -1.0f);
+        PSVECScale(&vector->normal, &query->hitNormal, float_0p001_80419534);
     }
     return TRUE;
 }
@@ -701,7 +879,7 @@ BOOL hitCheckVecHitObjXZ(HitCheckQuery* query, HitEntry* entry) { // 1:1
     }
     vector = entry->vectors;
     for (i = 0; i < entry->unkA8; i++, vector++) {
-        if ((query->singleSided == 0 || !(PSVECDotProduct(&vector->normal, &query->targetDir) >= 0.0f)) &&
+        if ((query->singleSided == 0 || !(PSVECDotProduct(&vector->normal, &query->targetDir) >= float_1_80419524)) &&
             checkTriVec_xz(query, vector)) {
             return 1;
         }
@@ -758,7 +936,7 @@ HitEntry* hitCheckSphereFilter(HitFilterCallback callback, f32 x, f32 y, f32 z,
     HitCheckQuery* query;
     int i;
 
-    var_f28 = -1.0f;
+    var_f28 = float_0p001_80419534;
     objectId = -1;
     query = &temp;
     sp68 = (Vec){ x, y, z };
@@ -771,7 +949,7 @@ HitEntry* hitCheckSphereFilter(HitFilterCallback callback, f32 x, f32 y, f32 z,
                     temp_f1 = PSVECDistance(&sp68, &var_r23->centerWorld);
                     if (!(temp_f1 > (distance + var_r23->radius))) {
                         if (callback == NULL || callback(query, var_r23)) {
-                            if (var_f28 < 0.0f || var_f28 > temp_f1) {
+                            if (var_f28 < float_1_80419524 || var_f28 > temp_f1) {
                                 var_f28 = temp_f1;
                                 var_f31 = var_r23->radius;
                                 objectId = j;
@@ -786,14 +964,14 @@ HitEntry* hitCheckSphereFilter(HitFilterCallback callback, f32 x, f32 y, f32 z,
     if (objectId < 0) {
         return 0;
     }
-    if (var_f28 < (0.5f * var_f31)) {
+    if (var_f28 < (float_4_80419538 * var_f31)) {
         return &wp->entries[entryId].hitEntries[objectId];
     }
     map = &wp->entries[entryId];
     temp_r27 = &map->hitEntries[objectId];
     PSVECSubtract(&temp_r27->centerWorld, &sp68, &query->targetDir);
     PSVECNormalize(&query->targetDir, &query->targetDir);
-    var_f30 = -1.0f;
+    var_f30 = float_0p001_80419534;
     var_r29 = -1;
     query->targetPos = sp68;
     query->targetDistance = distance;
@@ -804,8 +982,8 @@ HitEntry* hitCheckSphereFilter(HitFilterCallback callback, f32 x, f32 y, f32 z,
     }
     vector = temp_r27->vectors;
     for (i = 0; i < temp_r27->unkA8; i++, vector++) {
-        if ((query->singleSided == 0) || !(PSVECDotProduct(&vector->normal, &query->targetDir) >= 0.0f)) {
-            if (tempfunc3(query, vector) && ((var_f30 < 0.0f) || (var_f30 > query->targetDistance))) {
+        if ((query->singleSided == 0) || !(PSVECDotProduct(&vector->normal, &query->targetDir) >= float_1_80419524)) {
+            if (tempfunc3(query, vector) && ((var_f30 < float_1_80419524) || (var_f30 > query->targetDistance))) {
                 var_f30 = query->targetDistance;
                 var_r29 = 1;
             }
@@ -847,15 +1025,19 @@ HitEntry* hitNameToPtr(const char* name) { // 1:1
     return NULL;
 }
 
-void hitObjGetPosSub(HitEntry* hit, Vec* position, s32* counter, BOOL recursion) { // 1:1, awful inlining
+#pragma inline_depth(5)
+static void hitObjGetPosLeaf(HitEntry* hit, Vec* position, s32* counter) {
     Vec sp8;
+    PSMTXMultVec(hit->worldMtx, &hit->centerLocal, &sp8);
+    PSVECAdd(position, &sp8, position);
+    (*counter)++;
+}
 
+void hitObjGetPosSub(HitEntry* hit, Vec* position, s32* counter, BOOL recursion) { // 1:1, awful inlining
     if (hit->child != NULL) {
         hitObjGetPosSub(hit->child, position, counter, 1);
     } else {
-        PSMTXMultVec(hit->worldMtx, &hit->centerLocal, &sp8);
-        PSVECAdd(position, &sp8, position);
-        (*counter)++;
+        hitObjGetPosLeaf(hit, position, counter);
     }
     if (recursion != 0) {
         if (hit->sibling != NULL) {
@@ -877,7 +1059,7 @@ void hitObjGetPos(const char* name, Vec* position) { // 1:1
         return;
     }
     hitObjGetPosSub(hit, &spC, &counter, 0);
-    PSVECScale(&spC, position, 1.0f / (f32)counter);
+    PSVECScale(&spC, position, float_360_80419530 / (f32)counter);
 }
 
 void hitObjGetNormal(const char* name, Vec* normal) { // 1:1
@@ -893,7 +1075,8 @@ const char* hitGetName(HitEntry* hit) { // 1:1
     MapEntry* map;
     s32 count;
     int i;
-    u32 start, size;
+    uintptr_t start;
+    u32 size;
 
     if (hit == NULL) {
         return NULL;
@@ -901,9 +1084,9 @@ const char* hitGetName(HitEntry* hit) { // 1:1
     map = mapGetWork()->entries;
     count = map->count;
     for (i = 0; i < count; map++, i++) {
-        start = (u32)map->hitEntries;
+        start = (uintptr_t)map->hitEntries;
         size = OSRoundUp32B((map->hitNumJoints + 0x80) * sizeof(HitEntry));
-        if ((u32)hit >= start && (u32)hit < start + size) {
+        if ((uintptr_t)hit >= start && (uintptr_t)hit < start + size) {
             break;
         }
     }
@@ -977,10 +1160,218 @@ void hitBindUpdate(const char* name) {
             hitReCalcMatrix(hit, parent->worldMtx);
             return;
         }
-        PSMTXScale(mtx, 10.0f, 10.0f, 10.0f);
+        PSMTXScale(mtx, float_6p2832_8041952c, float_6p2832_8041952c, float_6p2832_8041952c);
         hitReCalcMatrix(hit, mtx);
     }
 }
+
+void hitAtrOn(HitEntry* hit, s32 attr, BOOL recursion) {
+    hit->attributes |= attr;
+    if (hit->child != NULL) {
+        hitAtrOn(hit->child, attr, TRUE);
+    }
+    if (recursion != FALSE && hit->sibling != NULL) {
+        hitAtrOn(hit->sibling, attr, TRUE);
+    }
+}
+
+void hitAtrOff(HitEntry* hit, s32 attr, BOOL recursion) {
+    hit->attributes &= ~attr;
+    if (hit->child != NULL) {
+        hitAtrOff(hit->child, attr, TRUE);
+    }
+    if (recursion != FALSE && hit->sibling != NULL) {
+        hitAtrOff(hit->sibling, attr, TRUE);
+    }
+}
+
+void hitObjAttrOn(const char* name, s32 attr) {
+    HitEntry* hit = hitNameToPtr(name);
+    if (hit == NULL) {
+        mapErrorEntry(1, name);
+    } else {
+        hit->attributes |= attr;
+    }
+}
+
+void hitObjAttrOff(const char* name, s32 attr) {
+    HitEntry* hit = hitNameToPtr(name);
+    if (hit == NULL) {
+        mapErrorEntry(1, name);
+    } else {
+        hit->attributes &= ~attr;
+    }
+}
+
+void hitGrpAttrOn(const char* name, s32 attr) {
+    HitEntry* hit = hitNameToPtr(name);
+    if (hit == NULL) {
+        mapErrorEntry(1, name);
+    } else {
+        hitAtrOn(hit, attr, FALSE);
+    }
+}
+
+void hitGrpAttrOff(const char* name, s32 attr) {
+    HitEntry* hit = hitNameToPtr(name);
+    if (hit == NULL) {
+        mapErrorEntry(1, name);
+    } else {
+        hitAtrOff(hit, attr, FALSE);
+    }
+}
+
+void hitFlgOn(HitEntry* hit, s32 flag, BOOL recursion) {
+    hit->flags |= flag;
+    if (hit->child != NULL) {
+        hitFlgOn(hit->child, flag, TRUE);
+    }
+    if (recursion != FALSE && hit->sibling != NULL) {
+        hitFlgOn(hit->sibling, flag, TRUE);
+    }
+}
+
+void hitFlgOff(HitEntry* hit, s32 flag, BOOL recursion) {
+    hit->flags &= ~(u16)flag;
+    if (hit->child != NULL) {
+        hitFlgOff(hit->child, flag, TRUE);
+    }
+    if (recursion != FALSE && hit->sibling != NULL) {
+        hitFlgOff(hit->sibling, flag, TRUE);
+    }
+}
+
+void hitObjFlagOn(const char* name, s32 flag) {
+    HitEntry* hit = hitNameToPtr(name);
+    if (hit == NULL) {
+        mapErrorEntry(1, name);
+    } else {
+        hit->flags |= flag;
+    }
+}
+
+void hitObjFlagOff(const char* name, s32 flag) {
+    HitEntry* hit = hitNameToPtr(name);
+    if (hit == NULL) {
+        mapErrorEntry(1, name);
+    } else {
+        hit->flags &= ~flag;
+    }
+}
+
+void hitGrpFlagOn(const char* name, s32 flag) {
+    HitEntry* hit = hitNameToPtr(name);
+    if (hit == NULL) {
+        mapErrorEntry(1, name);
+    } else {
+        hitFlgOn(hit, flag, FALSE);
+    }
+}
+
+void hitGrpFlagOff(const char* name, s32 flag) {
+    HitEntry* hit = hitNameToPtr(name);
+    if (hit == NULL) {
+        mapErrorEntry(1, name);
+    } else {
+        hitFlgOff(hit, flag, FALSE);
+    }
+}
+
+static void hitInsertActiveList(void) {
+    MapWork* wp = mapGetWork();
+    MapEntry* map = wp->entries;
+    s32 i, j;
+    HitEntry* hit;
+    HitEntry* prev;
+
+    lbl_8042AF48 = NULL;
+    for (i = 0, prev = NULL; i < wp->entries->count; map++, i++) {
+        hit = map->hitEntries;
+        for (j = 0; j < map->hitNumJoints; j++, hit++) {
+            if (hit->joint->partCount != 0 && !(hit->flags & 0x81)) {
+                if (prev == NULL) {
+                    lbl_8042AF48 = hit;
+                    prev = hit;
+                    continue;
+                }
+                prev->siblingActive = hit;
+                prev = hit;
+            }
+        }
+    }
+    if (prev != NULL) {
+        prev->siblingActive = NULL;
+    }
+}
+
+void hitDelete(const char* name) {
+    MapWork* wp = mapGetWork();
+    MapEntry* map = wp->entries;
+    MapEntry* new_var;
+    MapEntry* new_var2;
+    s32 i, j;
+    HitEntry* hit;
+
+    new_var = map;
+    new_var2 = new_var;
+    for (i = 0; i < new_var2->count; map++, i++) {
+        hit = map->hitEntries;
+        for (j = 0; j < map->hitNumJoints; j++, hit++) {
+            if (!(hit->flags & 0x80) && !strcmp(hit->joint->name, name)) {
+                hit->flags |= 0x80;
+                hitInsertActiveList();
+                return;
+            }
+        }
+    }
+}
+
+void hitMain(void) {
+    MapEntry* mapEntry;
+    MapWork* wp;
+    s32 j;
+    s32 k;
+    s32 i;
+    MapEntryAnimData* animEntry;
+    BOOL recalc;
+    MapEntryAnimBindList* list;
+    HitEntry* hit;
+    Mtx mtx;
+
+    wp = mapGetWork();
+    hitInsertActiveList();
+    for (i = 0, mapEntry = wp->entries; i < wp->entries[0].count; mapEntry++, i++) {
+        animEntry = mapEntry->animData;
+        recalc = FALSE;
+        for (j = 0; j < mapEntry->animCount; j++, animEntry++) {
+            list = animEntry->file->bindList;
+            if (!(animEntry->flags & 1)) {
+                continue;
+            }
+            if ((animEntry->flags & 2) && (animEntry->flags & 0x1000)) {
+                continue;
+            }
+            if (list == NULL) {
+                continue;
+            }
+            for (k = 0; k < list->count; k++) {
+                hit = hitNameToPtr(list->entries[k]->name);
+                if (hit != NULL) {
+                    mapCalcAnimMatrix(hit->unk6C, hit->localMtx, animEntry, list->entries[k]);
+                    hit->flags |= 0x10;
+                    hit->flags |= 0x40;
+                    animEntry->flags |= 0x1000;
+                    recalc = TRUE;
+                }
+            }
+        }
+        if (recalc) {
+            PSMTXScale(mtx, float_6p2832_8041952c, float_6p2832_8041952c, float_6p2832_8041952c);
+            hitReCalcMatrix2(mapEntry->rootHitObj, mtx, FALSE);
+        }
+    }
+}
+
 /*
 s32 hitGetEntNum(HitEntry* hit) {
     s32 numVectors;

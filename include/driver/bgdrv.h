@@ -26,7 +26,7 @@ void bgInit(void);
 void bgReInit(void);
 void bgEntry(const char* filename);
 void bgReEntry(const char* filename);
-void bgSetColor(GXColor color);
+void bgSetColor(GXColor* color);
 void bgDispOn(void);
 void bgDispOff(void);
 void bgSetScrlOffset(f32 x, f32 y);

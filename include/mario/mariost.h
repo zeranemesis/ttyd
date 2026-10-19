@@ -31,9 +31,15 @@ typedef struct GlobalWork {
 	s32 mapFadeOutDuration; //0xFC
 	FadeType mapFadeInType; //0x100
 	s32 mapFadeInDuration; //0x104
-	FadeType areaFadeOutType; //0x108
+	union {
+		FadeType areaFadeOutType; //0x108
+		s32 field_0x108;
+	};
 	s32 areaFadeOutDuration; //0x10C
-	FadeType areaFadeInType; //0x110
+	union {
+		FadeType areaFadeInType; //0x110
+		s32 field_0x110;
+	};
 	s32 areaFadeInDuration; //0x114
 	BOOL didAreaChange; //0x118
 	char beroEnterName[0x10]; //0x11C
@@ -45,16 +51,29 @@ typedef struct GlobalWork {
 	FieldBattleData* fbatData; //0x168
 	s32 language; //0x16C
 	u16 fbWidth; //0x170
-	u16 efbHeight; //0x172
+	union {
+		u16 efbHeight; //0x172
+		u16 fbHeight;
+	};
 	s32 mGSW0; //0x174
 	u32 mGSFW[0x100]; //0x178
 	u8 mGSW[0x800]; //0x578
 	u32 mLSWF[0x10]; //0xD78
 	u8 mLSW[0x400]; //0xDB8
-	s32 unk11B8; //0x11B8
-	u8 field_0x11BC[0x11D4 - 0x11BC]; //0x11BC
+	union {
+		s32 unk11B8; //0x11B8
+		s32 field_0x11B8;
+	};
+	u8 field_0x11BC[0x11D0 - 0x11BC]; //0x11BC
+	s32 field_0x11D0; //0x11D0
 	Vec savePlayerPos; //0x11D4
-    s32 savePartyId[2]; //0x11E0
+	union {
+		s32 savePartyId[2]; //0x11E0
+		struct {
+			s32 field_0x11E0;
+			s32 field_0x11E4;
+		};
+	};
     OSTime saveTime; //0x11E8
     s32 saveCount; //0x11F0
 	u8 field_0x11F4[0x1274 - 0x11F4]; //0x11F4
@@ -65,7 +84,10 @@ typedef struct GlobalWork {
 	u8 field_0x1284[0x1288 - 0x1284]; //0x1284
 	OSTime softResetTimeout; //0x1288
 	BOOL field_0x1290; //0x1290
-	BOOL unk1294; //0x1294
+	union {
+		BOOL unk1294; //0x1294
+		BOOL rumbleMode;
+	};
 	u8 field_0x1298[0x12E8 - 0x1298]; //0x1298
 	u8 field_0x12E8[4]; //0x12E8
 	u8 field_0x12EC[4]; //0x12EC
@@ -97,7 +119,12 @@ typedef struct GlobalWork {
 } GlobalWork;
 extern GlobalWork* gp;
 
+#ifdef TARGET_PC
 void marioStInit(void);
+#else
+void fn_80070D18(void);
+#define marioStInit fn_80070D18
+#endif
 void marioStMain(void);
 void marioStDisp(void);
 void marioStSystemLevel(s32 level);

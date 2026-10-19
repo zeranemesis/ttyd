@@ -1,0 +1,90 @@
+Sections:
+	.text       type:code align:4
+	.ctors      type:rodata align:4
+	.dtors      type:rodata align:4
+	.rodata     type:rodata align:8
+	.data       type:data align:8
+	.bss        type:bss align:8
+
+gra_00.c:
+	.text       start:0x00000000 end:0x00000434
+	.rodata     start:0x00000000 end:0x00000358
+	.data       start:0x00000000 end:0x00001BB0
+
+gra_01.c:
+	.rodata     start:0x00000358 end:0x000009E8
+	.data       start:0x00001BB0 end:0x00002038
+
+gra_02.c:
+	.text       start:0x00000434 end:0x00000470
+	.data       start:0x00002038 end:0x00002568
+
+gra_03.c:
+	.data       start:0x00002568 end:0x00002710
+
+gra_04.c:
+	.text       start:0x00000470 end:0x000004B8
+	.data       start:0x00002710 end:0x00002E50
+
+gra_05.c:
+	.text       start:0x000004B8 end:0x00000510
+	.rodata     start:0x000009E8 end:0x00000A60
+	.data       start:0x00002E50 end:0x00003EF8
+
+gra_06.c:
+	.data       start:0x00003EF8 end:0x00005038
+
+gra.c:
+	.text       start:0x00000510 end:0x0000071C
+	.rodata     start:0x00000A60 end:0x00000A68
+	.bss        start:0x00000000 end:0x00000008
+
+event/evt_kagemario.c:
+	.text       start:0x0000071C end:0x00000B28
+	.rodata     start:0x00000A68 end:0x00000A70
+
+event/evt_iwamove.c:
+	.text       start:0x00000B28 end:0x00000CF4
+	.rodata     start:0x00000A70 end:0x00000AA0
+	.bss        start:0x00000008 end:0x0000001C
+
+data/battle/battle_database_gra.c:
+	.rodata     start:0x00000AA0 end:0x00000D00
+	.data       start:0x00005038 end:0x00007284
+
+unit/unit_kuriboo.c:
+	.text       start:0x00000CF4 end:0x00000E78
+	.rodata     start:0x00000D00 end:0x00000F24
+	.data       start:0x00007284 end:0x00007D58
+
+unit/unit_faker_mario_gra.c:
+	.text       start:0x00000E78 end:0x00000EA8
+	.rodata     start:0x00000F24 end:0x0000102C
+	.data       start:0x00007D58 end:0x00009C18
+
+unit/unit_hyper_kuriboo.c:
+	.text       start:0x00000EA8 end:0x00000FC0
+	.rodata     start:0x0000102C end:0x0000119C
+	.data       start:0x00009C18 end:0x0000AAD0
+
+unit/unit_hyper_patakuri.c:
+	.text       start:0x00000FC0 end:0x000010D8
+	.rodata     start:0x0000119C end:0x0000147C
+	.data       start:0x0000AAD0 end:0x0000C798
+
+unit/unit_hyper_togekuri.c:
+	.text       start:0x000010D8 end:0x000013F0
+	.rodata     start:0x0000147C end:0x00001658
+	.data       start:0x0000C798 end:0x0000DB28
+
+unit/unit_hyper_sinemon.c:
+	.rodata     start:0x00001658 end:0x00001818
+	.data       start:0x0000DB28 end:0x0000EEA8
+
+unit/unit_pansy.c:
+	.rodata     start:0x00001818 end:0x000018F0
+	.data       start:0x0000EEA8 end:0x0000F940
+
+unit/unit_twinkling_pansy.c:
+	.rodata     start:0x000018F0 end:0x00001A82
+	.data       start:0x0000F940 end:0x0001043C

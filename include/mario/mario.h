@@ -112,18 +112,23 @@ typedef enum MarioTrigFlags {
 typedef struct MarioWork {
     u32 flags;                     // 0x0
     s32 dispFlags;                 // 0x4
-    u32 field_0x8;                 // 0x8
+    union {
+        u32 field_0x8;             // 0x8
+        u32 flags2;
+    };
     u32 trigFlags;                 // 0xC
     s32 peachFlags;                // 0x10
     u8 field_0x14[0x18 - 0x14];    // 0x14
     const char* animName;          // 0x18
     const char* paperAnimName;     // 0x1C
     u8 field_0x20[0x28 - 0x20];    // 0x20
-    s16 poseTime;                  // 0x28
+    u16 poseTime;                  // 0x28
     u8 field_0x2A[0x2E - 0x2A];    // 0x2A
     MarioMotion currMotionId;      // 0x2E
     MarioMotion prevMotionId;      // 0x30, TODO check
-    u8 field_0x32[0x3C - 0x32];    // 0x32
+    u8 field_0x32[0x39 - 0x32];    // 0x32
+    s8 keyLock;                    // 0x39
+    u8 field_0x3A[0x3C - 0x3A];    // 0x3A
     s8 characterId;                // 0x3C
     s8 colorId;                    // 0x3D
     u8 field_0x3E[0x40 - 0x3E];    // 0x3E
@@ -145,7 +150,10 @@ typedef struct MarioWork {
     s16 field_0x7A;                // 0x7A
     u8 field_0x7C[0x8C - 0x7C];    // 0x7C
     Vec position;                  // 0x8C
-    u8 field_0x98[0xC8 - 0x98];    // 0x98
+    Vec field_0x98;                // 0x98
+    Vec field_A4;                  // 0xA4
+    Vec field_0xB0;                // 0xB0
+    Vec field_0xBC;                // 0xBC
     Vec scale;                     // 0xC8
     u8 field_0xD4[0xEC - 0xD4];    // 0xD4
     Vec field_EC;                  // 0xEC
@@ -160,40 +168,79 @@ typedef struct MarioWork {
     f32 unk14C;                    // 0x14C
     Vec unk150;                    // 0x150
     f32 camFollowRate;             // 0x15C
-    u8 unk160[0x168 - 0x160];      // 0x160
+    f32 unk160;                    // 0x160
+    u8 unk164[0x168 - 0x164];      // 0x164
     s32 unk168;                    // 0x168
     s32 unk16C;                    // 0x16C
     u8 unk170[0x180 - 0x170];      // 0x170
 	f32 baseSpeed;                 // 0x180, same on US
     f32 mBaseWalkSpeed;            // 0x184
     f32 mBaseDashSpeed;            // 0x188, same on US
+#if defined(VERSION_G8MP01) || defined(VERSION_G8ME01)
+    f32 unk18C;                    // 0x18C
+    u8 unk190[0x194 - 0x190];      // 0x190
+    f32 controlStickSensitivity;   // 0x194
+    f32 controlStickAngle;         // 0x198
+    f32 targetYaw;                 // 0x19C
+    f32 unk1A0;                    // 0x1A0
+    f32 directionView;             // 0x1A4
+    f32 unk1A8;                    // 0x1A8
+    f32 unk1AC;                    // 0x1AC
+    f32 unk1B0;                    // 0x1B0
+    u8 unk1B4[0x1B8 - 0x1B4];      // 0x1B4
+    Vec wPlayerCollisionBox;       // 0x1B8
+    u8 field_0x1C4[0x1D8 - 0x1C4]; // 0x1C4
+    s32 field_0x1D8;               // 0x1D8
+    u8 field_0x1DC[0x1E0 - 0x1DC]; // 0x1DC
+    void* field_0x1E0;             // 0x1E0
+    void* field_0x1E4;             // 0x1E4
+    void* hitobjStandOn;           // 0x1E8
+    void* hitobjJumpFrom;          // 0x1EC
+    void* hitobjPush;              // 0x1F0
+#else
     u8 unk18C[0x190 - 0x18C];      // 0x18C
-	f32 controlStickSensitivity;   // 0x190
-	f32 controlStickAngle;         // 0x194
+    f32 controlStickSensitivity;   // 0x190
+    f32 controlStickAngle;         // 0x194
     f32 targetYaw;                 // 0x198
     u8 unk19C[0x1A0 - 0x19C];      // 0x19C
-	f32 directionView;             // 0x1A0
-	f32 unk1A4;                    // 0x1A4
+    f32 directionView;             // 0x1A0
+    f32 unk1A4;                    // 0x1A4
     f32 unk1A8;                    // 0x1A8
     u8 unk1AC[0x1B4 - 0x1AC];      // 0x1AC
     Vec wPlayerCollisionBox;       // 0x1B4 JP, 0x1B8 US
     u8 field_0x1C0[0x1D8 - 0x1C0]; // 0x1C0
     s32 field_0x1D8;               // 0x1D8
     u8 field_0x1DC[0x1E4 - 0x1DC]; // 0x1DC
-	void* hitobjStandOn;           // 0x1E4, 0x1E8 US HitEntry
-	void* hitobjJumpFrom;          // 0x1E8, 0x1EC US HitEntry
-	void* hitobjPush;              // 0x1EC JP, 0x1F0 US HitEntry
+    void* hitobjStandOn;           // 0x1E4
+    void* hitobjJumpFrom;          // 0x1E8
+    void* hitobjPush;              // 0x1EC
+#endif
+#if defined(VERSION_G8MP01) || defined(VERSION_G8ME01)
+    void* field_0x1F4;             // 0x1F4
+	u8 field_0x1F8[0x228 - 0x1F8]; // 0x1F8
+	f32 playerGravity;             // 0x228
+    s32 paperAnimGroupId[3];       // 0x22C
+    u8 field_0x238[0x240 - 0x238]; // 0x238
+    s32 paperPoseId;               // 0x240
+    u8 field_0x244[0x245 - 0x244]; // 0x244
+    s8 currPartySlotId[2];         // 0x245
+    s8 prevPartyMemberId[2];       // 0x247
+    u8 field_0x249[0x252 - 0x249]; // 0x249
+	u8 wStickDir1;                 // 0x252
+	u8 wStickDir2;                 // 0x253
+#else
 	u8 field_0x1F0[0x224 - 0x1F0]; // 0x1F0
-	f32 playerGravity;             // 0x224 JP, 228 US
-    s32 paperAnimGroupId[3];       // 0x228 JP, 0x22C US
+	f32 playerGravity;             // 0x224 JP
+    s32 paperAnimGroupId[3];       // 0x228 JP
     u8 field_0x234[0x23C - 0x234]; // 0x234
-    s32 paperPoseId;               // 0x23C JP, 0x240 US
+    s32 paperPoseId;               // 0x23C JP
     u8 field_0x240[0x241 - 0x240]; // 0x240
-    s8 currPartySlotId[2];         // 0x241 JP, 0x245 US
-    s8 prevPartyMemberId[2];       // 0x243 JP, 0x247 US
+    s8 currPartySlotId[2];         // 0x241 JP
+    s8 prevPartyMemberId[2];       // 0x243 JP
     u8 field_0x245[0x24E - 0x245]; // 0x245
-	u8 wStickDir1;                 // 0x24E JP, 0x252 US
-	u8 wStickDir2;                 // 0x24F JP, 0x253 US
+	u8 wStickDir1;                 // 0x24E JP
+	u8 wStickDir2;                 // 0x24F JP
+#endif
 	u8 field_0x250[0x288 - 0x250]; // 0x250
     void* motStruct;               // 0x288, motion userdata, TODO rename?
     u8 field_0x28C[0x2A8 - 0x28C]; // 0x28C
@@ -238,7 +285,12 @@ void marioReset(void);
 void marioOfsRotReset(void);
 void marioSoundInit(void);
 void marioPoseInit(void);
+#ifdef TARGET_PC
 void marioInit(void);
+#else
+void fn_8005B700(void);
+#define marioInit fn_8005B700
+#endif
 void marioReInit(void);
 void marioMain(void);
 void marioCtrlOff2Main(void);

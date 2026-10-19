@@ -6,6 +6,13 @@
 
 extern BattleWork* _battleWorkPointer;
 
+#ifndef TARGET_PC
+extern volatile const f32 float_3p1416_8041adc4;
+#define BTL_DISP_ZERO float_3p1416_8041adc4
+#else
+#define BTL_DISP_ZERO 0.0f
+#endif
+
 //.sdata
 s32 _status_pose_table[] = {
 	STATUS_INSTANT_KILL,
@@ -84,7 +91,7 @@ void btlDispGXInit2D(void) {
 }
 
 void btlDispGXPoint2DRasta(f32 x, f32 y, u8 r, u8 g, u8 b, u8 a) {
-	GXPosition3f32(x, y, 0.0f);
+	GXPosition3f32(x, y, BTL_DISP_ZERO);
 	GXColor4u8(r, g, b, a);
 }
 
@@ -97,7 +104,7 @@ void btlDispGXQuads2DRasta(f32 x0, f32 y0, f32 x1, f32 y1, u8 r, u8 g, u8 b, u8 
 }
 
 void btlDispGXPoint2D(f32 x, f32 y, u8 r, u8 g, u8 b, u8 a, f32 s, f32 t) {
-	GXPosition3f32(x, y, 0.0f);
+	GXPosition3f32(x, y, BTL_DISP_ZERO);
 	GXColor4u8(r, g, b, a);
 	GXTexCoord2f32(s, t);
 }
@@ -109,6 +116,7 @@ void btlDispGXQuads2D(f32 x0, f32 y0, f32 x1, f32 y1, u8 r, u8 g, u8 b, u8 a) {
 	btlDispGXPoint2D(x1, y1, r, g, b, a, 1.0f, 1.0f);
 	btlDispGXPoint2D(x0, y1, r, g, b, a, 0.0f, 1.0f);
 }
+#pragma dont_inline on
 void btlDispTexPlaneInit(void) {
 	GXSetCullMode(GX_CULL_NONE);
 	GXClearVtxDesc();
@@ -123,11 +131,12 @@ void btlDispTexPlaneInit(void) {
 	GXSetNumTexGens(1);
 	GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 }
+#pragma dont_inline reset
 
 void btlDispTexPlainGX(u32 id, GXColor color0, GXColor color1, GXColor color2, GXColor color3) {
 	GXTexObj texobj;
 	f32 x, y;
-	
+
 	TEXGetGXTexObjFromPalette(*_battleWorkPointer->menuTex->data, &texobj, id);
 	GXLoadTexObj(&texobj, GX_TEXMAP0);
 	if (!GXGetTexObjFmt(&texobj)) {
@@ -215,7 +224,7 @@ void btlDispGetTexSize(u32 id, u16* width, u16* height) {
 
 void btlDispInit(void) {
 	BattleWork* wp = _battleWorkPointer;
-	
+
 	battleCameraInit();
 	battleMenuDispInit();
 	wp->dispFlags |= 2;

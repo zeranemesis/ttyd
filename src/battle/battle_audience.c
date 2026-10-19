@@ -11,6 +11,25 @@
 
 extern BattleWork* _battleWorkPointer;
 extern int sprintf(char* str, const char* format, ...);
+#ifndef TARGET_PC
+static const char lbl_80431570[] = "%s/%s";
+extern const f32 lbl_80431470;
+extern const f32 lbl_80431564;
+extern const f32 lbl_80431478;
+extern const f32 lbl_804314BC;
+extern const f32 lbl_80431494;
+#define BAUD_Y_0 lbl_80431470
+#define BAUD_Y_499 lbl_80431564
+#define BAUD_ONE lbl_80431478
+#define BAUD_NEG_ONE lbl_804314BC
+#define BAUD_QUARTER lbl_80431494
+#else
+#define BAUD_Y_0 0.0f
+#define BAUD_Y_499 499.0f
+#define BAUD_ONE 1.0f
+#define BAUD_NEG_ONE -1.0f
+#define BAUD_QUARTER 0.25f
+#endif
 
 //local prototypes
 FileEntry* tplRead(const char* path);
@@ -67,24 +86,34 @@ void BattleAudienceSoundMain(void);
 
 
 FileEntry* tplRead(const char* path) {
+#ifdef TARGET_PC
 	return fileAllocf(4, "%s/%s", getMarioStDvdRoot(), path);
+#else
+	return fileAllocf(4, lbl_80431570, getMarioStDvdRoot(), path);
+#endif
 }
 
+#pragma dont_inline on
 BattleAudience* BattleAudienceBaseGetPtr(void) {
 	return &_battleWorkPointer->audience;
 }
+#pragma dont_inline reset
 
+#pragma dont_inline on
 BattleAudienceMember* BattleAudienceGetPtr(s32 id) {
 	return &BattleAudienceBaseGetPtr()->members[id];
 }
+#pragma dont_inline reset
 
 BattleAudienceItem* BattleAudienceItemGetPtr(s32 id) {
 	return &BattleAudienceBaseGetPtr()->items[id];
 }
 
+#pragma dont_inline on
 BattleAudienceWindow* BattleAudienceWinGetPtr(void) {
 	return &BattleAudienceBaseGetPtr()->window;
 }
+#pragma dont_inline reset
 
 BattleAudienceSound* BattleAudienceSoundGetPtr(s32 id) {
 	return &BattleAudienceBaseGetPtr()->sounds[id];
@@ -358,13 +387,13 @@ void BattleAudience_Disp(void) {
 	BattleAudienceBaseGetPtr();
 	BattleAudienceAnimProcess();
 	if (!(BattleAudienceBaseGetPtr()->flags & 0x20000)) {
-		dispEntry(CAMERA_3D, 0.0f, 1, BattleAudienceDispAudience, NULL);
-		dispEntry(CAMERA_3D, 0.0f, 2, BattleAudienceDispAudience, NULL);
-		dispEntry(CAMERA_3D, 0.0f, 1, BattleAudienceDispItem, NULL);
-		dispEntry(CAMERA_2D, 499.0f, 0, BattleAudienceDispApSrc, NULL);
+		dispEntry(CAMERA_3D, BAUD_Y_0, 1, BattleAudienceDispAudience, NULL);
+		dispEntry(CAMERA_3D, BAUD_Y_0, 2, BattleAudienceDispAudience, NULL);
+		dispEntry(CAMERA_3D, BAUD_Y_0, 1, BattleAudienceDispItem, NULL);
+		dispEntry(CAMERA_2D, BAUD_Y_499, 0, BattleAudienceDispApSrc, NULL);
 	}
 	if (pouchGetPtr()->mStarPowersObtained) {
-		dispEntry(CAMERA_2D, 499.0f, 1, BattleAudienceDispWin, NULL);
+		dispEntry(CAMERA_2D, BAUD_Y_499, 1, BattleAudienceDispWin, NULL);
 	}
 }
 
@@ -452,9 +481,11 @@ void BattleAudienceGXInit(void) {
 
 }
 
+#pragma dont_inline on
 void BattleAudienceAnimProcess(void) {
 
 }
+#pragma dont_inline reset
 
 void BattleAudienceDispAudience(CameraId camId, void* param) {
 
@@ -812,28 +843,28 @@ void BattleAudienceAddTargetNumSub(f32 value) {
 	while (1) {
 		if (value == 0.0f) return;
 		if (value > 0.0f) { //positive
-			subtract = min(value, 1.0f);
+			subtract = min(value, BAUD_ONE);
 			value -= subtract;
 			if (value < 0.0f) {
 				value = 0.0f;
 			}
 		}
 		if (value < 0.0f) { //negative
-			subtract = max(value, -1.0f);
+			subtract = max(value, BAUD_NEG_ONE);
 			value -= subtract;
 			if (value > 0.0f) {
 				value = 0.0f;
 			}
 		}
 		if (subtract > 0.0f) {
-			skew = (s32)(((audience->mTargetAudienceCount / audience->mAudienceDeltaMultiplier) - 1.0f) / 0.25f);
-			if (skew <= 1) {
+			skew = (s32)(((audience->mTargetAudienceCount / audience->mAudienceDeltaMultiplier) - BAUD_ONE) / BAUD_QUARTER);
+			if (skew >= 1) {
 				audience->mTargetAudienceCount += subtract / (skew + 1);
 				continue;
 			}
 		}
 		if (subtract < 0.0f) {
-			skew = (s32)(((audience->mTargetAudienceCount / audience->mAudienceDeltaMultiplier) - 1.0f) / 0.25f);
+			skew = (s32)(((audience->mTargetAudienceCount / audience->mAudienceDeltaMultiplier) - BAUD_ONE) / BAUD_QUARTER);
 			if (skew <= -1) {
 				audience->mTargetAudienceCount -= subtract / (skew - 1);
 				continue;

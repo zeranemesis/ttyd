@@ -33,9 +33,28 @@ typedef struct StatusWindowWork {
 } StatusWindowWork;
 
 typedef struct StatusValue {
-	u8 unk0[0x18]; //0x0
+	s16 hp; // 0x0
+	s16 maxHp; // 0x2
+	s16 fp; // 0x4
+	s16 maxFp; // 0x6
+	s16 partyId; // 0x8
+	s16 partyHp; // 0xA
+	s16 partyMaxHp; // 0xC
+	s16 starPoints; // 0xE
+	s16 coins; // 0x10
+	s16 ap; // 0x12
+	s16 maxAp; // 0x14
+	s16 unk16; // 0x16
 } StatusValue;
 
 void statusWinInit(void);
 void statusWinReInit(void);
 void statusWinMain(void);
+void statusWinDispOn(void);
+void statusWinDispOff(void);
+void statusWinForceOff(void);
+void statusWinForceOpen(void);
+void statusWinForceClose(void);
+void statusWinForceUpdate(void);
+BOOL statusWinCheckUpdate(void);
+void statusGetValue(StatusValue* values);

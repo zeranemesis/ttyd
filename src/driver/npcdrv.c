@@ -1,14 +1,20 @@
 #include "driver/npcdrv.h"
 #include "dolphin/gx/GXStruct.h"
 #include "driver/animdrv.h"
+#include "driver/dispdrv.h"
 #include "driver/msgdrv.h"
 #include "mario/mario.h"
 #include "mario/mariost.h"
 #include "memory.h"
+#include "manager/evtmgr.h"
 #include "system.h"
 #include <string.h>
 
-extern GlobalWork* gp;
+extern GlobalWork* wp_80422810;
+#define gp wp_80422810
+#define work lbl_8042B1D4
+#define release_wp lbl_8042B1D0
+#define npcMainCount lbl_8042B1CC
 extern NpcTribeInfo npcTribe[];
 
 typedef struct NpcWork2 {
@@ -208,7 +214,7 @@ void npcDisp_xlu(CameraId cameraId, void* param) {
         }
         angle = reviseAngle((angle - animPose->rotationY));
 
-        
+
         if ((angle > 90.0f && angle <= 270.0f) || (angle < -90.0f && angle >= -270.0f)) {
             for (i = 0; i < 14; i++) {
                 if (!strcmp(luigi_pose[i][0], anim->name)) {
@@ -483,6 +489,10 @@ void npcMain(void) {
             } else {
                 entry->field_198 = gp->renderTime;
             }
+
+            if (entry->poseId >= 0) {
+                dispEntry(entry->cameraId ? entry->cameraId : CAMERA_3D, 0.0f, 2, npcDisp_xlu, entry);
+            }
         }
     }
 }
@@ -586,4 +596,89 @@ NpcTerritoryType dbGetDefData(NpcTerritoryInfo* info, const char* description) {
         info++;
     }
     return type;
+}
+
+void npcExecAllInitEvt(void) {
+    NpcWork* wp = npcGetWorkPtr();
+    NpcEntry* entry = wp->entries;
+    EventEntry* evt;
+    int i;
+    for (i = 0; i < wp->total; i++, entry++) {
+        if (!entry) continue;
+        if (!(entry->flags & 1)) continue;
+        if (entry->initEvent) {
+            if (entry->initEvtId) {
+                evtDeleteID(entry->initEvtId);
+            }
+            evt = evtEntry(entry->initEvent, 0, 0);
+            if (evt) {
+                evt->wNpcEventType = 0;
+                evt->ownerNPC = entry;
+                entry->initEvtId = evt->eventId;
+            }
+        } else {
+            entry->initEvtId = 0;
+        }
+    }
+}
+
+s32 npcWaitAllInitEvtEnd(void) {
+    NpcWork* wp = npcGetWorkPtr();
+    NpcEntry* entry = wp->entries;
+    int i;
+    s32 done = 1;
+    for (i = 0; i < wp->total; i++, entry++) {
+        if (!entry) continue;
+        if (!(entry->flags & 1)) continue;
+        if (entry->flags & 2) continue;
+        if (entry->initEvtId) {
+            done = 0;
+            if (!evtCheckID(entry->initEvtId)) {
+                entry->initEvtId = 0;
+                entry->flags |= 2;
+            }
+        } else {
+            entry->flags |= 2;
+        }
+    }
+    return done;
+}
+
+void npcExecAllReglEvt(void) {
+    NpcWork* wp = npcGetWorkPtr();
+    NpcEntry* entry = wp->entries;
+    EventEntry* evt;
+    int i;
+    for (i = 0; i < wp->total; i++, entry++) {
+        if (!entry) continue;
+        if (!(entry->flags & 1)) continue;
+        if (entry->moveEvent) {
+            if (entry->regularEvtId) {
+                evtDeleteID(entry->regularEvtId);
+            }
+            evt = evtEntry(entry->moveEvent, 0, 0x20);
+            if (evt) {
+                evt->wNpcEventType = 1;
+                evt->ownerNPC = entry;
+                entry->regularEvtId = evt->eventId;
+            }
+        }
+    }
+}
+
+void npcClearDeadInfo(void) {
+    if (gp && gp->fbatData) {
+        memset((u8*)gp->fbatData + 0x4C, 0, 0x500);
+    }
+}
+
+void npcTuningRy(NpcEntry* entry, f32 angle) {
+    entry->direction = reviseAngle(angle);
+}
+
+static char s_marioAutoTalkPose1[32];
+static char s_marioAutoTalkPose2[32];
+void npcSetMarioAutoTalkPose(const char* pose1, const char* pose2) {
+    if (pose1) strncpy(s_marioAutoTalkPose1, pose1, sizeof(s_marioAutoTalkPose1) - 1);
+    if (pose2) strncpy(s_marioAutoTalkPose2, pose2, sizeof(s_marioAutoTalkPose2) - 1);
 }

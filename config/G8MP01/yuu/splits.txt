@@ -1,0 +1,60 @@
+Sections:
+	.text       type:code align:4
+	.ctors      type:rodata align:4
+	.dtors      type:rodata align:4
+	.rodata     type:rodata align:8
+	.data       type:data align:8
+	.bss        type:bss align:8
+
+yuu_02.c:
+	.text       start:0x00000000 end:0x000011D4
+	.rodata     start:0x00000000 end:0x00000208
+	.data       start:0x00000000 end:0x000011E0
+	.bss        start:0x00000010 end:0x00000034
+
+yuu_03.c:
+	.text       start:0x000011D4 end:0x0000370C
+	.rodata     start:0x00000208 end:0x00000458
+	.data       start:0x000011E0 end:0x00001C0C
+	.bss        start:0x00000034 end:0x000000E4
+
+yuu.c:
+	.text       start:0x0000370C end:0x0000375C
+	.rodata     start:0x00000458 end:0x000004B0
+	.data       start:0x00001C0C end:0x00001CD0
+
+yuu_00.c:
+	.text       start:0x0000375C end:0x0000435C
+	.rodata     start:0x000004B0 end:0x00000930
+	.data       start:0x00001CD0 end:0x00004A60
+
+yuu_01.c:
+	.text       start:0x0000435C end:0x0000538C
+	.rodata     start:0x00000930 end:0x00000D44
+	.data       start:0x00004A60 end:0x00006490
+
+event/evt_yuuranking.c:
+	.text       start:0x0000538C end:0x0000A054
+	.rodata     start:0x00000D44 end:0x000011B8
+	.data       start:0x00006490 end:0x000064A0
+
+event/evt_yuutitle.c:
+	.text       start:0x0000A054 end:0x0000A428
+	.rodata     start:0x000011B8 end:0x000011F0
+	.data       start:0x000064A0 end:0x00006578
+
+event/evt_yuucounter.c:
+	.text       start:0x0000A428 end:0x0000AF34
+	.rodata     start:0x000011F0 end:0x00001238
+	.data       start:0x00006578 end:0x00006588
+
+event/evt_yuuminigame.c:
+	.text       start:0x0000AF34 end:0x0000B528
+	.rodata     start:0x00001238 end:0x00001254
+	.data       start:0x00006588 end:0x00006658
+	.bss        start:0x000000E4 end:0x000000E8
+
+event/evt_yuunpc.c:
+	.text       start:0x0000B528 end:0x00015210
+	.rodata     start:0x00001254 end:0x000015AC
+	.data       start:0x00006658 end:0x0000809C

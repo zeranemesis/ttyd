@@ -10,7 +10,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef TARGET_PC
 extern GlobalWork* gp;
+#else
+extern GlobalWork* wp_80422810;
+#define gp wp_80422810
+#endif
 extern int sprintf(char* str, const char* format, ...);
 
 typedef struct MsgLookupEntry {
@@ -53,15 +58,20 @@ MessageWork msgWork;
 
 //.sdata
 MessageWork* msgw = &msgWork;
+#ifdef TARGET_PC
 const char* ErrMessage[2] = {
 	"<col ff0000ff>\x83\x81\x83\x62\x83\x5A\x81\x5B\x83\x57\x82\xAA\x82\xA0\x82\xE8\x82\xDC\x82\xB9\x82\xF1</col>\n<key>", /*"メッセージがありません"*/
 	"<col ff0000ff>No messages.<col>\n<key>"
 };
+#else
+extern const char* lbl_804228F4[7];
+#define ErrMessage lbl_804228F4
+#endif
 const char* paperPoseTbl[6] = {
 	"PM_Y_1B", "PM_Y_2B", "PM_F_1B",
 	"PM_F_3B", "PM_C_1B", "PM_C_2B"
 };
-const char* language_dir[2] = {"msg", "emsg"};
+static const char* language_dir[6] = { "msg", "msg/US", "msg/DE", "msg/FR", "msg/SP", "msg/IT" };
 
 
 
@@ -84,6 +94,8 @@ void msgInit(void) {
 	msgLoad("global", 1);
 }
 
+#include <stdint.h>
+
 void msgLoad(const char* filename, s32 index) {
 	MessageEntry* entry;
 	DVDEntry* dvd;
@@ -92,12 +104,15 @@ void msgLoad(const char* filename, s32 index) {
 	char filepath[64];
 	char dvdpath[128]; //TODO: double check size
 	int i;
-	u32 r27, r30;
+	u32 r27;
+	uintptr_t r30;
 	MsgLookupEntry* lookup;
+	s32 lang;
 
 	entry = &msgw->entries[index];
-	sprintf(filepath, "./%s/%s.txt", language_dir[gp->language], filename);
-	
+	lang = (gp->language >= 0 && gp->language < 6) ? gp->language : 3;
+	sprintf(filepath, "./%s/%s.txt", language_dir[lang], filename);
+
 	if (entry->address) {
 		if (index == 1) {
 			__memFree(HEAP_DEFAULT, entry->address);
@@ -141,7 +156,7 @@ void msgLoad(const char* filename, s32 index) {
 	if (entry->count) {
 		r27 = 0;
 		entry->lookup = smartAlloc(entry->count * sizeof(MsgLookupEntry), 0);
-		r30 = (u32)entry->address;
+		r30 = (uintptr_t)entry->address;
 		lookup = entry->lookup->address;
 		for (i = 0; i < entry->count; i++) {
 			lookup->startaddr = r27;
@@ -174,14 +189,22 @@ MessageWork* msgGetWork(void) {
 }
 
 int msg_compare(const void* a, const void* b) {
-	return 0;
+	const MsgLookupEntry* entryA = (const MsgLookupEntry*)a;
+	const MsgLookupEntry* entryB = (const MsgLookupEntry*)b;
+	const char* tagA = (const char*)((uintptr_t)msgSortDvdData + entryA->startaddr);
+	const char* tagB = (const char*)((uintptr_t)msgSortDvdData + entryB->startaddr);
+	s32 result = strcmp(tagA, tagB);
+	if (result <= 0) {
+		return result >> 31;
+	}
+	return 1;
 }
 
 const char* msgSearch(const char* tag) { //1:1
 	MessageEntry* entry;
 	MsgLookupEntry* lookup;
 	smartEntry* smart;
-	u32 i, max, j, index;
+	s32 i, max, j, index;
 	s32 result;
 
 	for (i = 0; i < 2; i++) { //check both entries
@@ -192,13 +215,13 @@ const char* msgSearch(const char* tag) { //1:1
 			j = 0;
 			max = entry->count;
 			while (max >= j) {
-				index = (u32)((s32)(j + max) / 2); //tag, message
-				if (index >= entry->count) {
+				index = (j + max) / 2; //tag, message
+				if (index >= (s32)entry->count) {
 					break;
 				}
-				result = strcmp(tag, (const char*)((u32)entry->address + lookup[index].startaddr));
+				result = strcmp(tag, (const char*)((uintptr_t)entry->address + lookup[index].startaddr));
 				if (!result) {
-					return (const char*)((u32)entry->address + lookup[index].endaddr);
+					return (const char*)((uintptr_t)entry->address + lookup[index].endaddr);
 				}
 				if (result < 0) {
 					max = index - 1;
@@ -230,16 +253,21 @@ BOOL _ismbblead(u32 a1) {
 
 
 BOOL msgDisp(smartEntry* smart, u8 alpha, f32 x, f32 y) {
-
+	return FALSE;
 }
 
 
 void msgWindow_Disp(CameraId camId, void* param) {
-	WindowEntry* window = param; //cast to correct type
+	WindowEntry* window = (WindowEntry*)param; //cast to correct type
 	CameraEntry* camera = camGetCurPtr();
 	s32 type;
+	GXColor fogColor;
 
-	GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, (GXColor){0, 0, 0, 0});
+	fogColor.r = 0;
+	fogColor.g = 0;
+	fogColor.b = 0;
+	fogColor.a = 0;
+	GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, fogColor);
 	type = window->type;
 
 	switch (type) {
@@ -316,13 +344,13 @@ void msgAnalize(smartEntry* smart, char* msg) {
 
 
 s32 msgIconStr2ID(const char* str) {
-	MsgIcon* icon;
-	int i;
+	register MsgIcon* icon;
+	u32 i;
 
 	icon = msgIcon;
 	for (i = 0; i < 18; i++, icon++) {
 		if (!strcmp(icon->name, str)) {
-			return msgIcon[i].value;
+		return msgIcon[i].value;
 		}
 	}
 	return -1;

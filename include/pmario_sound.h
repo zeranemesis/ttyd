@@ -53,12 +53,19 @@ typedef struct PaperSoundBGM {
 } PaperSoundBGM;
 
 typedef struct PaperSoundEffect {
-    s32 unk0;              // 0x0
-    u8 unk4[0x6 - 0x4];    // 0x4
-    s16 unk6;              // 0x6
-    u8 unk8[0x18 - 0x8];   // 0x8
-    s32 unk18;             // 0x0
-    u8 unk1C[0x28 - 0x1C]; // 0x1C
+    union {
+        s32 sfxId;             // 0x0
+        s32 unk0;
+    };
+    u16 unk4;              // 0x4
+    u16 unk6;              // 0x6
+    u8 volume;             // 0x8
+    u8 unk9[0x12 - 0x9];   // 0x9
+    u16 dist;              // 0x12
+    u16 pitch;             // 0x14
+    u8 unk16[0x18 - 0x16]; // 0x16
+    s32 unk18;             // 0x18
+    Vec pos;               // 0x1C
 } PaperSoundEffect;
 
 typedef struct PaperSoundEnv {
@@ -102,8 +109,9 @@ BOOL psndBGMOn(u32 r3, char* bgm_name);
 void psndStopAllFadeOut(void);
 BOOL psndENVOff(u32 r3);
 void psndSFXAllOff(void);
+void psndSFXOff(s32 sfxId);
 
-void psndSFXOn(const char* name);
+u32 psndSFXOn(const char* name);
 void psndSFXOn_3D(const char* name, Vec* position);
 
 BOOL psndBGMOff_f_d(s32 flags, u16 fadetime, BOOL someswitch);

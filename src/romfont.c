@@ -3,6 +3,8 @@
 #include "dolphin/types.h"
 #include "memory.h"
 #include <dolphin/os.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 //.sbss
 static RomFontWork work;

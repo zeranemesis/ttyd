@@ -100,3 +100,39 @@ u32 weaponGetACOutputParam(BattleUnit* unit1, BattleWeapon* weapon, BattleUnit* 
     }
     return result;
 }
+
+u32 weaponGetPowerHPHalf(BattleUnit* unit1, BattleWeapon* weapon, BattleUnit* unit2, BattleUnitPart* part) {
+    s32 hp;
+
+    hp = unit2->currentHp;
+    if ((hp & 1) == 1) {
+        return hp / 2 + 1;
+    } else {
+        return hp / 2;
+    }
+}
+
+u32 weaponGetPowerHPHalf2(BattleUnit* unit1, BattleWeapon* weapon, BattleUnit* unit2, BattleUnitPart* part) {
+    return unit2->currentHp / 2;
+}
+
+u32 weaponGetFPPowerFPHalf(BattleUnit* unit1, BattleWeapon* weapon, BattleUnit* unit2, BattleUnitPart* part) {
+    s32 fp;
+
+    fp = unit2->currentFp;
+    if ((fp & 1) == 1) {
+        return fp / 2 + 1;
+    } else {
+        return fp / 2;
+    }
+}
+
+u32 weaponGetPowerTatsumaki(BattleUnit* unit1, BattleWeapon* weapon, BattleUnit* unit2, BattleUnitPart* part) {
+    BattleUnit* mario;
+    s32 power;
+
+    mario = BattleGetMarioPtr(_battleWorkPointer);
+    power = weapon->hpDamageWork[0];
+    power += weapon->hpDamageWork[1] * pouchEquipCheckBadge(0xF3);
+    return power;
+}

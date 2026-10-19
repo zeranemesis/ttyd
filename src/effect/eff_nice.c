@@ -38,10 +38,12 @@ BOOL effNiceAsync(s32 group) {
 	const char* name;
 	BOOL valid;
 	int i;
+	s32 l;
 
 	valid = TRUE;
+	l = (gp->language == 0) ? 0 : 1;
 	for (i = 0; i < 7; i++) {
-		name = anim_tbl[gp->language][i];
+		name = anim_tbl[l][i];
 		if (name && !animGroupBaseAsync(name, group, NULL)) {
 			valid = FALSE;
 		}
@@ -64,6 +66,7 @@ EffectEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z) {
 	EffectEntry* effect;
 	u32 size, count;
 	int i;
+	s32 l;
 
 	effect = effEntry();
 	if (type == 5) { //guard for unused slot
@@ -111,7 +114,8 @@ EffectEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z) {
 		}
 	}
 	else {
-		userdata->poseId = animPoseEntry(anim_tbl[gp->language][type], gp->inBattle != 0);
+		l = (gp->language == 0) ? 0 : 1;
+		userdata->poseId = animPoseEntry(anim_tbl[l][type], gp->inBattle != 0);
 		animPoseSetAnim(userdata->poseId, "A_1", TRUE);
 		animPoseSetMaterialFlagOn(userdata->poseId, 0x1800);
 		animPoseSetGXFunc(userdata->poseId, rendermodeFunc, FALSE);

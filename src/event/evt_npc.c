@@ -1,4 +1,5 @@
 #include "evt/evt_npc.h"
+#include "battle/battle_information.h"
 #include "driver/animdrv.h"
 #include "driver/effdrv.h"
 #include "driver/npcdrv.h"
@@ -9,8 +10,29 @@
 #include "system.h"
 #include <string.h>
 
+#ifdef TARGET_PC
+extern GlobalWork* gp;
+#define wp gp
+#else
+extern GlobalWork* wp_80422810;
+#define wp wp_80422810
+#endif
+extern const Vec lbl_802CCFF0;
+extern u8 lbl_8042B200;
+extern const char lbl_802CD050[];
+extern const f32 lbl_8042C808;
+extern const f32 lbl_8042C80C;
+extern const f32 lbl_8042C830;
+extern const f32 lbl_8042C834;
+extern const f32 lbl_8042C838;
+
 extern char* strcat(char* dest, const char* src);
+extern const f32 lbl_8042C804;
+extern const char lbl_8042C888[];
+extern void fn_80043528(NpcEntry* npc);
 extern EffectEntry* effKemuri10N64Entry(s32 a1, f32 a2, f32 a3, f32 a4, f32 a5, f32 a6, f32 a7, f32 a8);
+extern void npcStartForEvent(EventEntry* event, s32 isFirstCall);
+extern void npcStopForEvent(EventEntry* event, s32 isFirstCall);
 
 // TODO: need to figure out better flags, since I've had to use dont_inline in a couple places, this
 // might just be -inline deferred? No auto
@@ -61,6 +83,7 @@ static inline s32 __fpclassifyf(f32 x) {
 #define fpclassify(x) __fpclassifyf(x)
 #define isnan(x) (fpclassify(x) == FP_NAN)
 
+#if !defined(_MSC_VER)
 static inline f32 sqrtf(f32 x) {
     const f64 _half = .5;
     const f64 _three = 3.0;
@@ -78,6 +101,7 @@ static inline f32 sqrtf(f32 x) {
     }
     return x;
 }
+#endif
 
 // clang-format off
 // .sdata
@@ -95,7 +119,7 @@ USER_FUNC(evt_npc_entry) {
 
     desc = (const char*)evtGetValue(event, *args++);
     name = (const char*)evtGetValue(event, *args++);
-    if (!animGroupBaseAsync(name, gp->inBattle != 0, NULL)) {
+    if (!animGroupBaseAsync(name, wp->inBattle != 0, NULL)) {
         return EVT_RETURN_BLOCK;
     }
     npcEntry(desc, name);
@@ -271,7 +295,10 @@ USER_FUNC(evt_npc_set_position) {
     y = evtGetFloat(event, args[2]);
     z = evtGetFloat(event, args[3]);
     npc = evtNpcNameToPtr(event, name);
-    temp = (Vec){ x, y, z };
+    temp = lbl_802CCFF0;
+    temp.x = x;
+    temp.y = y;
+    temp.z = z;
     npc->prevPosition = temp;
     npc->position = npc->prevPosition;
     return EVT_RETURN_DONE;
@@ -485,7 +512,7 @@ USER_FUNC(evt_npc_move_position) {
     f32 targetZ = evtGetFloat(event, *args++);
     f32 moveTime = (f32)evtGetValue(event, *args++) / 1000.0f;
     f32 speed = evtGetFloat(event, *args++);
-    s32 moveFlags = args[5];
+    s32 moveFlags = *args++;
 
     NpcEntry* npc = evtNpcNameToPtr(event, npcName);
     Vec diff;
@@ -525,7 +552,7 @@ USER_FUNC(evt_npc_move_position) {
             npc->moveTime = 0.0f;
         }
 
-        npc->footstepAccum = 0.0f;
+        npc->footstepAccum = lbl_8042C804;
         npc->footstepToggle = TRUE;
         event->userdata[0] = 0;
     }
@@ -597,7 +624,7 @@ USER_FUNC(evt_npc_move_position) {
                 psndSFXOnEx_3D(sfxFlag | searchPSSFXList(npc->footstepSfxB), &npc->position, 0xff, 0xff, 0, 8);
             }
         }
-        npc->footstepAccum = 0.0f;
+        npc->footstepAccum = lbl_8042C804;
         npc->footstepToggle = (s8)(1 - npc->footstepToggle); // alternate L/R
     }
 
@@ -810,9 +837,7 @@ USER_FUNC(evt_npc_jump_position_nohit) {
         }
     }
 
-    elapsed = (s32)OSTicksToMilliseconds((OSTick)event->lifetime - (OSTick)event->savedTime);
-
-    if (elapsed < duration) {
+    if ((elapsed = OSTicksToMilliseconds((OSTick)event->lifetime - (OSTick)event->savedTime)) < duration) {
         t = (f32)elapsed / (f32)duration;
         npc->position.x = intplGetValue(0, elapsed, duration, npc->jumpStartPos.x, targetX);
         npc->position.z = intplGetValue(0, elapsed, duration, npc->jumpStartPos.z, targetZ);
@@ -906,6 +931,109 @@ NpcEntry* evtNpcNameToPtr_NoAssert(EventEntry* event, const char* name) {
 }
 #pragma dont_inline reset
 
+USER_FUNC(evt_npc_set_camid) {
+    s32* args = event->args;
+    const char* name;
+    s32 camId;
+    NpcEntry* npc;
+
+    name = (const char*)evtGetValue(event, args[0]);
+    camId = evtGetValue(event, args[1]);
+    npc = evtNpcNameToPtr(event, name);
+    npc->cameraId = camId;
+    return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_npc_pera_onoff) {
+    s32* args = event->args;
+    const char* name;
+    s32 type;
+    NpcEntry* npc;
+
+    name = (const char*)evtGetValue(event, args[0]);
+    type = evtGetValue(event, args[1]);
+    npc = evtNpcNameToPtr(event, name);
+    switch (type) {
+        case 0:
+            animPosePeraOff(npc->poseId);
+            break;
+        case 1:
+            animPosePeraOn(npc->poseId);
+            break;
+    }
+    return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_npc_status_check) {
+    s32* args = event->args;
+    const char* name;
+    s32 mask;
+    NpcEntry* npc;
+
+    name = (const char*)evtGetValue(event, args[0]);
+    mask = evtGetValue(event, args[1]);
+    npc = evtNpcNameToPtr(event, name);
+    evtSetValue(event, args[2], npc->statusFlags & mask);
+    return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_npc_status_onoff) {
+    s32* args = event->args;
+    s32 type, mask;
+    const char* name;
+    NpcEntry* npc;
+
+    type = evtGetValue(event, args[0]);
+    name = (const char*)evtGetValue(event, args[1]);
+    mask = evtGetValue(event, args[2]);
+    npc = evtNpcNameToPtr(event, name);
+    switch (type) {
+        case 0:
+            npc->statusFlags &= ~mask;
+            break;
+        case 1:
+            npc->statusFlags |= mask;
+            break;
+    }
+    return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_npc_reaction_flag_onoff) {
+    s32* args = event->args;
+    s32 type, mask;
+    const char* name;
+    NpcEntry* npc;
+
+    type = evtGetValue(event, args[0]);
+    name = (const char*)evtGetValue(event, args[1]);
+    mask = evtGetValue(event, args[2]);
+    npc = evtNpcNameToPtr(event, name);
+    switch (type) {
+        case 0: {
+            u32 flags = npc->reactionFlags;
+            npc->reactionFlags = flags & ~mask;
+            break;
+        }
+        case 1:
+            npc->reactionFlags |= mask;
+            break;
+    }
+    return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_npc_flag_check) {
+    s32* args = event->args;
+    const char* name;
+    s32 mask;
+    NpcEntry* npc;
+
+    name = (const char*)evtGetValue(event, args[0]);
+    mask = evtGetValue(event, args[1]);
+    npc = evtNpcNameToPtr(event, name);
+    evtSetValue(event, args[2], npc->flags & mask);
+    return EVT_RETURN_DONE;
+}
+
 // s32 type (off/on), const char* npcName, s32 mask
 USER_FUNC(evt_npc_flag_onoff) {
     s32* args = event->args;
@@ -918,9 +1046,11 @@ USER_FUNC(evt_npc_flag_onoff) {
     mask = evtGetValue(event, args[2]);
     npc = evtNpcNameToPtr(event, name);
     switch (type) {
-        case 0:
-            npc->flags &= ~mask;
+        case 0: {
+            u32 flags = npc->flags;
+            npc->flags = flags & ~mask;
             break;
+        }
         case 1:
             npc->flags |= mask;
     }
@@ -928,6 +1058,13 @@ USER_FUNC(evt_npc_flag_onoff) {
 }
 
 USER_FUNC(evt_npc_get_drop_fixitem) {
+    s32* args = event->args;
+    const char* npcName = (const char*)evtGetValue(event, *args++);
+    NpcEntry* npc = evtNpcNameToPtr(event, npcName);
+    s32 index = *args++;
+
+    evtSetValue(event, index, *(s32*)&npc->battleInfo.field_8);
+    return 2;
 }
 
 USER_FUNC(evt_npc_get_drop_item) {
@@ -1035,7 +1172,7 @@ USER_FUNC(evt_npc_get_drop_coin) {
 USER_FUNC(evt_npc_getback_item_entry) {
     const char* npcName = (const char*)evtGetValue(event, *event->args);
     NpcEntry* npc = evtNpcNameToPtr(event, npcName);
-    npcGetBackItemEntry(npc);
+    fn_80043528(npc);
     return EVT_RETURN_DONE;
 }
 
@@ -1125,7 +1262,7 @@ USER_FUNC(evt_npc_set_tribe) {
     npc->landSfx = tribe->landSfx;
     npc->footstepStride = tribe->footstepStride;
     npc->footstepToggle = TRUE;
-    npc->footstepAccum = 0.0f;
+    npc->footstepAccum = lbl_8042C804;
     return EVT_RETURN_YIELD;
 }
 
@@ -1157,7 +1294,7 @@ USER_FUNC(evt_npc_majo_disp_on) {
     f32 prevY = evtGetFloat(event, *args++);
     f32 prevZ = evtGetFloat(event, *args++);
     BOOL toggle = evtGetValue(event, *args++); // TODO: better name
-    s32 group = gp->inBattle != 0;
+    s32 group = wp->inBattle != 0;
     NpcEntry* npc = evtNpcNameToPtr(event, npcName);
 
     if (isFirstCall) {
@@ -1237,7 +1374,7 @@ USER_FUNC(evt_npc_majo_disp_on) {
 
 USER_FUNC(evt_npc_majo_disp_off) {
     const char* npcName = (const char*)evtGetValue(event, *event->args);
-    s32 group = gp->inBattle != 0;
+    s32 group = wp->inBattle != 0;
     NpcEntry* npc = evtNpcNameToPtr(event, npcName);
 
     if (isFirstCall) {
@@ -1320,12 +1457,11 @@ USER_FUNC(evt_npc_calc_score) {
 
 #pragma dont_inline on
 void _kamek_houki_kemuri(NpcEntry* npc, s32 arg1) {
-    static u8 cnt;
     f32 a2, a5;
     u8 mask;
     EffectEntry* effect;
 
-    cnt += 1;
+    lbl_8042B200 += 1;
     switch (arg1) {
         case 3:
             mask = 0x7;
@@ -1337,17 +1473,17 @@ void _kamek_houki_kemuri(NpcEntry* npc, s32 arg1) {
             return;
     }
 
-    if (!(cnt & mask)) {
+    if (!(lbl_8042B200 & mask)) {
         if ((0.0f < npc->direction) && (npc->direction < 180.0f)) {
-            a5 = 1.0f;
-            a2 = -((36.0f * npc->scale.x) - npc->position.x);
+            a5 = lbl_8042C808;
+            a2 = -((lbl_8042C834 * npc->scale.x) - npc->position.x);
         } else {
-            a5 = -1.0f;
-            a2 = (36.0f * npc->scale.x) + npc->position.x;
+            a5 = lbl_8042C80C;
+            a2 = (lbl_8042C834 * npc->scale.x) + npc->position.x;
         }
-        effect = effKemuri10N64Entry(0, a2, (18.0f * npc->scale.x) + npc->position.y, npc->position.z, a5, 0.0f, 0.0f,
+        effect = effKemuri10N64Entry(0, a2, (lbl_8042C838 * npc->scale.x) + npc->position.y, npc->position.z, a5, 0.0f, 0.0f,
                                      npc->scale.x);
-        if (!strcmp(gp->currentMapName, "kpa_01")) {
+        if (!strcmp(wp->currentMapName, lbl_802CD050)) {
             *(u32*)((u32)effect->userdata + 0x6C) = 7;
         }
     }
@@ -1559,7 +1695,7 @@ USER_FUNC(evt_npc_sound_data_reset) {
         npc->landSfx = tribe->landSfx;
         npc->footstepStride = tribe->footstepStride;
         npc->footstepToggle = 1;
-        npc->footstepAccum = 0.0f;
+        npc->footstepAccum = lbl_8042C804;
     }
     return EVT_RETURN_DONE;
 }
@@ -1597,7 +1733,7 @@ USER_FUNC(evt_npc_sound_data_set) {
         npc->footstepStride = footstepStride;
     }
     npc->footstepToggle = TRUE;
-    npc->footstepAccum = 0.0f;
+    npc->footstepAccum = lbl_8042C804;
     return EVT_RETURN_DONE;
 }
 
@@ -1609,5 +1745,22 @@ USER_FUNC(evt_npc_release_fieldnpc) {
     } else {
         wp->flags &= ~2;
     }
+    return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_npc_start_for_event) {
+    npcStartForEvent(event, isFirstCall);
+    return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_npc_stop_for_event) {
+    npcStopForEvent(event, isFirstCall);
+    return EVT_RETURN_DONE;
+}
+
+USER_FUNC(evt_npc_get_battle_result) {
+    s32 index = *event->args;
+    FieldBattleInfo* info = (FieldBattleInfo*)((u8*)fbatGetPointer() + 0x20);
+    evtSetValue(event, index, BattleInformationGetResult(info));
     return EVT_RETURN_DONE;
 }

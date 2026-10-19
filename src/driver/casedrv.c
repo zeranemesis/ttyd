@@ -9,7 +9,8 @@ typedef struct CaseWork {
 
 //.sbss
 static CaseWork work;
-static CaseWork* wp = &work;
+static CaseWork* fontname = &work;
+#define wp fontname
 
 
 void caseInit(void) {

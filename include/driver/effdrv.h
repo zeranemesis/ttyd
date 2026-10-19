@@ -40,4 +40,5 @@ void effMain(void);
 void effDelete(EffectEntry* effect);
 void effSoftDelete(EffectEntry* effect);
 EffectEntry* effNameToPtr(const char* name);
+BOOL effStageClearEndChk(EffectEntry* eff);
 EffectSet* effGetSet(const char* name);

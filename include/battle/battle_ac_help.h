@@ -4,6 +4,5 @@
 
 void BattleAcHelpInit(void);
 void BattleAcHelpMain(void);
-
-
-
+void BattleAcHelpSetDispType(s32 type);
+void BattleAcHelpSetHelp(void* help);

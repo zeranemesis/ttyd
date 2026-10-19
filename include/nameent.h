@@ -31,4 +31,7 @@ typedef struct NameEntryWork {
 
 void nameEntInit(void);
 void nameEntReInit(void);
+BOOL nameEntIsCancel(void);
+BOOL nameEntWait(void);
+void nameEntOff(void);
 void nameEntMain(void);

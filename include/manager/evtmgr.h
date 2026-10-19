@@ -129,6 +129,8 @@ typedef enum EventOpcode {
 #pragma enumsalwaysint on
 
 typedef struct EventEntry EventEntry;
+typedef struct EventEntry EvtEntry;
+typedef s32 EvtScript;
 
 typedef s32 (*UserFunction)(EventEntry* evt, BOOL blocked);
 
@@ -196,7 +198,10 @@ struct EventEntry {
     }; // 0x150
     s32* uwBase;                // 0x154, validated
     s32* ufBase;                // 0x158, validated
-    s32 eventId;                // 0x15C, validated
+    union {
+        s32 eventId;                // 0x15C, validated
+        s32 id;
+    };
     s32 unitId;                 // 0x160
     f32 timescale;              // 0x164, number of instructions per frame
     f32 commandsLeft;           // 0x168, TODO rename/retype

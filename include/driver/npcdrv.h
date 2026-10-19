@@ -127,6 +127,7 @@ typedef struct NpcEntry {
     f32 jumpGravity;                // 0x1CC
     f32 field_1D0;                  // 0x1D0
     s32 jumpFlags;                  // 0x1D4, TODO verify
+#define statusFlags jumpFlags
     s16 footstepToggle;             // 0x1D8
     f32 footstepAccum;              // 0x1DC
     const char* footstepSfxA;       // 0x1E0
@@ -143,7 +144,10 @@ typedef struct NpcEntry {
     f32 searchAngle;                // 0x224, verified
     f32 homingRange;                // 0x228, verified
     f32 homingAngle;                // 0x22C, verified
-    NpcBattleInfo battleInfo;       // 0x230
+    union {
+        NpcBattleInfo battleInfo;       // 0x230
+        u8 field_0x230[sizeof(NpcBattleInfo)];
+    };
     s32 field_2F8;                  // 0x2F8
     u32 field_2FC;                  // 0x2FC
     u8 field_300[0x304 - 0x300];    // 0x300

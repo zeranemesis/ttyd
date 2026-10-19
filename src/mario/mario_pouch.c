@@ -5,12 +5,20 @@
 #include "data/item_data.h"
 #include "memory.h"
 #include <string.h>
+#ifndef TARGET_PC
+extern const f32 lbl_8042E318;
+#endif
 
 extern PiantaParlorWork* yuwp;
 extern BadgeShopWork* bdsw;
+#ifndef TARGET_PC
+extern BadgeShopWork* lbl_8042B658;
+#define bdsw lbl_8042B658
+#endif
 extern ItemData itemDataTable[];
 
-static PouchData* mpp;
+extern PouchData* lbl_8042B420;
+#define mpp lbl_8042B420
 
 
 //.data
@@ -78,25 +86,25 @@ void pouchInit(void) {
 }
 
 ItemType pouchKeyItem(s32 id) {
-	return mpp->keyItems[id];
-}
-
-ItemType pouchHaveItem(s32 id) {
 	return mpp->heldItems[id];
 }
 
-ItemType pouchKeepItem(s32 id) {
+ItemType pouchHaveItem(s32 id) {
 	return mpp->storedItems[id];
 }
 
-ItemType pouchHaveBadge(s32 id) {
+ItemType pouchKeepItem(s32 id) {
 	return mpp->badges[id];
 }
 
-s32 pouchGetHaveItemCnt(void) {
-	s32 i, count;
+ItemType pouchHaveBadge(s32 id) {
+	return mpp->equippedBadges[id];
+}
 
-	for (i = 0, count = 0; i < MAX_HELD_ITEMS; i++) {
+s32 pouchGetHaveItemCnt(void) {
+	s32 count, i;
+
+	for (count = 0, i = 0; i < MAX_HELD_ITEMS; i++) {
 		if (mpp->heldItems[i] != ITEM_NULL) {
 			count++;
 		}
@@ -105,9 +113,9 @@ s32 pouchGetHaveItemCnt(void) {
 }
 
 s32 pouchGetKeepItemCnt(void) {
-	s32 i, count;
+	s32 count, i;
 
-	for (i = 0, count = 0; i < MAX_STORED_ITEMS; i++) {
+	for (count = 0, i = 0; i < MAX_STORED_ITEMS; i++) {
 		if (mpp->storedItems[i] != ITEM_NULL) {
 			count++;
 		}
@@ -116,9 +124,9 @@ s32 pouchGetKeepItemCnt(void) {
 }
 
 s32 pouchGetHaveBadgeCnt(void) {
-	s32 i, count;
+	s32 count, i;
 
-	for (i = 0, count = 0; i < MAX_BADGES; i++) {
+	for (count = 0, i = 0; i < MAX_BADGES; i++) {
 		if (mpp->badges[i] != ITEM_NULL) {
 			count++;
 		}
@@ -127,9 +135,9 @@ s32 pouchGetHaveBadgeCnt(void) {
 }
 
 s32 pouchGetEquipBadgeCnt(void) {
-	s32 i, count;
+	s32 count, i;
 
-	for (i = 0, count = 0; i < MAX_BADGES; i++) {
+	for (count = 0, i = 0; i < MAX_BADGES; i++) {
 		if (mpp->equippedBadges[i] != ITEM_NULL) {
 			count++;
 		}
@@ -149,9 +157,9 @@ s32 pouchGetEmptyHaveItemCnt(void) {
 }
 
 s32 pouchGetEmptyKeepItemCnt(void) {
-	s32 i, count;
+	s32 count, i;
 
-	for (i = 0, count = 0; i < MAX_STORED_ITEMS; i++) {
+	for (count = 0, i = 0; i < MAX_STORED_ITEMS; i++) {
 		if (mpp->storedItems[i] == ITEM_NULL) {
 			count++;
 		}
@@ -220,8 +228,8 @@ void pouchSetYoshiName(char* name) {
 	strcpy(mpp->yoshiName, name);
 }
 
-void pouchSetPartyColor(PartyId partnerId, u16 color) {
-	mpp->partyData[partnerId].flags = (u16)((mpp->partyData[partnerId].flags & 0x1FFF) | (color << 13));
+void pouchSetPartyColor(PartyId partnerId, s32 color) {
+	mpp->partyData[partnerId].flags = (mpp->partyData[partnerId].flags & 0x1FFF) | ((color & 7) << 13);
 }
 
 s32 pouchGetPartyColor(PartyId partnerId) {
@@ -243,26 +251,31 @@ void pouchOpenMail(s32 mailId) {
 }
 
 void pouchReceiveMail(s32 mailId) {
-	s32 index, shift, count;
-	int i;
+	s32 count;
+	s32 i;
+	PouchData* pouch;
+	s32 index;
+	s32 shift;
 
-	shift = mailId % 32;
+	count = 0;
 	index = mailId / 32;
+	shift = mailId % 32;
+	pouch = mpp;
 
 	//increment through known IDs to add to mEmailIds
-	for (i = 0, count = 0; i < 99; i++) {
-		if (mpp->mEmailReceivedFlags[i / 32] & (1 << (i % 32))) {
+	for (i = 0; i < 99; i++) {
+		if (pouch->mEmailReceivedFlags[i / 32] & (1 << (i % 32))) {
 			count++;
 		}
 	}
-	mpp->mEmailReceivedFlags[index] |= (1 << shift);
+	pouch->mEmailReceivedFlags[index] |= (1 << shift);
 	mpp->mEmailIds[count] = (u8)mailId;
 }
 
 s32 pouchReceiveMailCount(void) {
-	s32 i, count;
+	s32 count, i;
 
-	for (i = 0, count = 0; i < 99; i++) {
+	for (count = 0, i = 0; i < 99; i++) {
 		if (mpp->mEmailReceivedFlags[i / 32] & (1 << (i % 32))) {
 			count++;
 		}
@@ -272,7 +285,11 @@ s32 pouchReceiveMailCount(void) {
 
 void pouchGetStarStone(u32 id) {
 	if (!mpp->mStarPowersObtained) {
+#ifdef TARGET_PC
 		mpp->audienceCount = 2.0f;
+#else
+		mpp->audienceCount = lbl_8042E318;
+#endif
 	}
 	mpp->mStarPowersObtained |= 1 << id;
 	mpp->maximumSP = (s16)(100 * (id + 1));
@@ -307,7 +324,7 @@ u8 pouchGetKpaCoin(void) {
 	return mpp->mSuperBowserCoins;
 }
 
-void pouchMajinaiInit(u32 curseCount) {
+void pouchMajinaiInit(s32 curseCount) {
 	if (mpp->mMerleeCurseUsesRemaining < curseCount) {
 		mpp->mMerleeCurseUsesRemaining = (u8)curseCount;
 		mpp->mTurnsUntilMerleeActivation = -1;
@@ -464,11 +481,11 @@ BOOL pouchAddKeepItem(s16 id) {
 }
 
 s32 pouchGetPartyAttackLv(PartyId partyId) {
-	return mpp->partyData[partyId].attackLevel;
+	return *(s16*)&mpp->partyData[partyId].attackLevel;
 }
 
 s32 pouchGetHammerLv(void) {
-	s8 level = 0;
+	s32 level = 0;
 
 	if (pouchCheckItem(ITEM_ULTRA_HAMMER)) {
 		level = 3;
@@ -484,7 +501,7 @@ s32 pouchGetHammerLv(void) {
 }
 
 s32 pouchGetJumpLv(void) {
-	s8 level = 0;
+	s32 level = 0;
 
 	if (pouchCheckItem(ITEM_ULTRA_BOOTS)) {
 		level = 3;
@@ -589,8 +606,8 @@ s16 pouchGetHP(void) {
 	return mpp->currentHP;
 }
 
-s16 pouchAddHP(s16 points) {
-	mpp->currentHP += points;
+s16 pouchAddHP(s32 points) {
+	mpp->currentHP += (s16)points;
 	if (mpp->currentHP < 0) {
 		mpp->currentHP = 0;
 	}
@@ -714,28 +731,28 @@ BOOL pouchRemoveItem(ItemType type) {
 
 
 
-u32 pouchCheckItem(u32 itemId) {
-	u32 itemCnt;
+s32 pouchCheckItem(s32 itemId) {
+	s32 itemCnt;
 	int i;
 
-	if (KEY_ITEM_MIN <= itemId <= KEY_ITEM_MAX) {
-		for (i = 0, itemCnt = 0; i < MAX_KEY_ITEMS; i++) {
-			if (mpp->keyItems[i] == itemId) {
-				itemCnt++;
-			}
-		}
-		return itemCnt;
-	}
-	else if (ITEM_MIN <= itemId <= ITEM_MAX) {
-		for (i = 0, itemCnt = 0; i < MAX_HELD_ITEMS; i++) {
+	if (itemId >= ITEM_MIN && itemId < ITEM_MAX) {
+		for (itemCnt = 0, i = 0; i < MAX_HELD_ITEMS; i++) {
 			if (mpp->heldItems[i] == itemId) {
 				itemCnt++;
 			}
 		}
 		return itemCnt;
 	}
-	else if (BADGE_MIN <= itemId <= BADGE_MAX) {
-		for (i = 0, itemCnt = 0; i < MAX_BADGES; i++) {
+	else if (itemId >= KEY_ITEM_MIN && itemId < KEY_ITEM_MAX) {
+		for (itemCnt = 0, i = 0; i < MAX_KEY_ITEMS; i++) {
+			if (mpp->keyItems[i] == itemId) {
+				itemCnt++;
+			}
+		}
+		return itemCnt;
+	}
+	else if (itemId >= BADGE_MIN && itemId < BADGE_MAX) {
+		for (itemCnt = 0, i = 0; i < MAX_BADGES; i++) {
 			if (mpp->badges[i] == itemId) {
 				itemCnt++;
 			}

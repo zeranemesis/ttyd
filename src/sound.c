@@ -56,12 +56,19 @@ void SoundInit(void) { // 1:1, assuming sndMalloc inlines
     u32 size;
     SoundTemp* slot;
 
+    printf("[SoundInit] ARInit...\n"); fflush(stdout);
     ARInit(aramMemArray, 8);
+    printf("[SoundInit] ARQInit...\n"); fflush(stdout);
     ARQInit();
+    printf("[SoundInit] AIInit...\n"); fflush(stdout);
     AIInit(0);
+    printf("[SoundInit] ARAlloc...\n"); fflush(stdout);
     ARAlloc(0xBFC000); // 12MB-16KB (reserved)
+    printf("[SoundInit] sndSetHooks...\n"); fflush(stdout);
     sndSetHooks(&hooks);
+    printf("[SoundInit] sndInit...\n"); fflush(stdout);
     sndInit(0x40, 0xC, 0x2C, 1, 1, 0xBFC000);
+    printf("[SoundInit] sndInit done.\n"); fflush(stdout);
     revH.tempDisableFX = 0;
     revH.time = 3.0f;
     revH.preDelay = 0.1f;
@@ -108,9 +115,11 @@ void SoundInit(void) { // 1:1, assuming sndMalloc inlines
     sound.unk224 = 0;
     sound.unkE8 = 0;
 
+    printf("[SoundInit] Allocating sound data (128KB)...\n"); fflush(stdout);
     data = sndMalloc(0x20000);
     sound.filedata = data;
     if (data == 0) {
+        printf("[SoundInit] ERROR: sndMalloc failed for filedata!\n"); fflush(stdout);
         while (1)
             ;
     } // infinite loop
@@ -118,9 +127,11 @@ void SoundInit(void) { // 1:1, assuming sndMalloc inlines
     sound.groups = 0;
 
     // force register
+    printf("[SoundInit] Allocating songs...\n"); fflush(stdout);
     tempsong = (sound.songs = sndMalloc(sizeof(SoundSong) * 4));
     songs = tempsong;
     if (songs == 0) {
+        printf("[SoundInit] ERROR: sndMalloc failed for songs!\n"); fflush(stdout);
         while (1)
             ;
     } // infinite loop
@@ -224,6 +235,7 @@ void SoundInit(void) { // 1:1, assuming sndMalloc inlines
     slot->data = &cho;
     slot->unk8 = 0xFF;
     slot->unkC = 0;
+    printf("[SoundInit] Completed SoundInit successfully!\n"); fflush(stdout);
 }
 
 void SoundMain(void) {
@@ -242,8 +254,10 @@ void SoundMain(void) {
     SoundSSMain();
 }
 
+void fn_800DDC8C(void);
+
 void SoundMainInt(void) {
-    SoundSSMainInt();
+    fn_800DDC8C();
 }
 
 void SoundSetFadeTime(u16 in, u16 out) { // 1:1
@@ -442,13 +456,23 @@ BOOL SoundSLibLoadDVD(const char* path) { // regalloc, stack, otherwise 1:1
 
     while (1) {
         temp_r28 = *var_r27;
-        if (*var_r27 == 0xFFFFFFFF) {
+        if (temp_r28 == 0xFFFFFFFF) {
+            break;
+        }
+#if defined(_WIN32)
+        {
+            u32 swapped = ((temp_r28 >> 24) & 0xFF) | ((temp_r28 >> 8) & 0xFF00) | ((temp_r28 << 8) & 0xFF0000) | ((temp_r28 << 24) & 0xFF000000);
+            if (temp_r28 > 0x1000000 && swapped < 0x1000000) {
+                temp_r28 = swapped;
+            }
+        }
+#endif
+        if (temp_r28 == 0 || temp_r28 > length) {
             break;
         }
         group = __memAlloc(HEAP_DEFAULT, 0x10);
         if (group == NULL) {
-            while (1)
-                ;
+            break;
         }
         temp_r0 = sound.groups;
         id = 0;
@@ -465,7 +489,7 @@ BOOL SoundSLibLoadDVD(const char* path) { // regalloc, stack, otherwise 1:1
         }
         temp_r0_3 = var_r27 + 8;
         group->flags = 1;
-        var_r27 = (u32*)((u32)var_r27 + (u32)temp_r28);
+        var_r27 = (u32*)((char*)var_r27 + temp_r28);
         group->unk2 = id;
         group->groupId = 0;
         group->songId = 0;
@@ -964,7 +988,7 @@ void SoundEfxSetVolume(s32 chan, u8 vol) {
 }
 
 u8 SoundEfxGetVolume(s32 chan) {
-    return (u8)sound.effects[chan].vol;
+    return *(u16*)((char*)sound.effects + chan * sizeof(SoundEffect) + 4);
 }
 
 void SoundEfxSetAux1(s32 chan, u8 reverb) {
@@ -1229,6 +1253,24 @@ void SoundSSPlayChEx_main(s32 result, DVDFileInfo* fileInfo) {
     if (result >= 0) {}
 }
 
+u16 SoundSSCheck(s32 chan) {
+    return sound.streams[chan].flags;
+}
+
+void SoundSSMuteOn(s32 chan) {
+    SoundStream* stream = &sound.streams[chan];
+    if (stream->flags != 0) {
+        stream->flags |= 2;
+    }
+}
+
+void SoundSSMuteOff(s32 chan) {
+    SoundStream* stream = &sound.streams[chan];
+    if (stream->flags != 0) {
+        stream->flags &= ~2;
+    }
+}
+
 s32 SoundSSGetVolCh(s32 chan) {
     SoundStream* stream;
 
@@ -1238,6 +1280,21 @@ s32 SoundSSGetVolCh(s32 chan) {
     } else {
         return 0;
     }
+}
+
+void SoundSSContinueCh(s32 chan) {
+    SoundStream* stream = &sound.streams[chan];
+    if (stream->flags != 0) {
+        stream->flags &= ~2;
+        stream->unk14 = stream->vol;
+        stream->flags |= 0x10;
+    }
+}
+
+void SoundSSPlayChEx(s32 chan, const char* name, s32 r5);
+
+void SoundSSPlayCh(s32 chan, const char* name) {
+    SoundSSPlayChEx(chan, name, 0);
 }
 
 void SoundSSMainInt(void) {
@@ -1257,7 +1314,7 @@ void SoundAIDMACallback(void) {
     u8* address;
 
     sound.callback();
-    sound.dmaAddress = (u8*)(AIGetDMAStartAddr() | 0x80000000);
+    sound.dmaAddress = (u8*)(uintptr_t)(AIGetDMAStartAddr() | 0x80000000);
     length = AIGetDMALength();
     address = sound.dmaAddress;
 }

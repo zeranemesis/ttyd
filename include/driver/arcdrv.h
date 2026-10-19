@@ -11,6 +11,8 @@ typedef struct ArchiveEntry {
 } ArchiveEntry;
 
 void arcInit(void);
+void arcDelete(s32 id);
 void* arcOpen(const char* filename, void** addr, u32* length);
 
 void arcEntry(s32 id, void* data, u32 size);
+BOOL arcDataCheck(void* data);

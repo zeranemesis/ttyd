@@ -2,6 +2,7 @@
 #include "system.h"
 #include <dolphin/os.h>
 #include <string.h>
+#include <stdint.h>
 
 //HEAP_MALLOC block is a series of these nodes
 typedef struct MapAllocEntry MapAllocEntry;
@@ -19,12 +20,21 @@ SmartWork smartWork;
 //.sdata
 //flag, size / 0x400 (>> 10)
 s32 size_table[6][2] = {
+#if defined(TARGET_PC)
+	{1, 0x7000}, // 28 MiB for HEAP_DEFAULT
+	{1, 0x4000}, // 16 MiB for HEAP_MALLOC
+	{1, 0x400},  // 1 MiB
+	{1, 0x200},  // 512 KiB
+	{1, 0x400},  // 1 MiB
+	{0, 0x64}
+#else
 	{1, 0x1C84}, //0x721000, 7300 KiB/7.13 MiB
 	{1, 0xD90}, //0x364000, 3472 KiB/3.39 MiB
 	{1, 0xE0}, //0x38000, 224 KiB
 	{1, 0x80}, //0x20000, 128 KiB
 	{1, 0x100}, //0x40000, 256 KiB
 	{0, 0x64}
+#endif
 };
 static SmartWork* wp = &smartWork;
 
@@ -44,10 +54,10 @@ void memInit(void) { //almost 1:1, stubborn regalloc at the end
     MapAllocEntry* entry;
     void* arenaLo;
     void* arenaHi;
-    u32 temp_r31;
+    uintptr_t temp_r31;
     int i;
     int size;
-    u32 temp;
+    uintptr_t temp;
 
     arenaLo = OSGetArenaLo();
     arenaHi = OSGetArenaHi();
@@ -55,7 +65,7 @@ void memInit(void) { //almost 1:1, stubborn regalloc at the end
     OSSetArenaLo(arenaLo);
     arenaLo = (void*)OSRoundUp32B(arenaLo);
     arenaHi = (void*)OSRoundDown32B(arenaHi);
-    temp = (u32)arenaLo;
+    temp = (uintptr_t)arenaLo;
 
     for (i = 0; i < 6; i++) {
         if (size_table[i][0] == 1) {
@@ -66,10 +76,10 @@ void memInit(void) { //almost 1:1, stubborn regalloc at the end
         }
     }
 
-    temp_r31 = (u32)arenaHi - temp;
+    temp_r31 = (uintptr_t)arenaHi - temp;
     for (i = 0; i < 6; i++) {
         if (size_table[i][0] == 0) {
-            size = (size_table[i][1] * (u64)temp_r31) / 100Ull;
+            size = (int)((size_table[i][1] * (u64)temp_r31) / 100Ull);
             heapStart[i] = (void*)temp;
             size -= (size & 0x1F);
             heapEnd[i] = (void*)(temp + size);
@@ -84,7 +94,7 @@ void memInit(void) { //almost 1:1, stubborn regalloc at the end
         OSDestroyHeap(heapHandle[i]);
         OSCreateHeap(heapStart[i], heapEnd[i]);
         if (i == 1) {
-            size = ((u32)heapEnd[1] - (u32)heapStart[1]) - 0x20;
+            size = (int)(((uintptr_t)heapEnd[1] - (uintptr_t)heapStart[1]) - 0x20);
             entry = OSAllocFromHeap(heapHandle[1], size);
             if (entry) {
                 memset(entry, 0, size);
@@ -108,7 +118,7 @@ void memClear(HEAP_TYPE heap) {
 	OSDestroyHeap(heapHandle[heap]);
 	OSCreateHeap(heapStart[heap], heapEnd[heap]);
 	if (heap == HEAP_MALLOC) {
-		size = (u32)heapEnd[1] - (u32)heapStart[1] - 32;
+		size = (u32)((uintptr_t)heapEnd[1] - (uintptr_t)heapStart[1] - 32);
 		//inline __memAlloc?
 		ptr = OSAllocFromHeap(heapHandle[1], size);
 		entry = ptr;
@@ -170,9 +180,9 @@ void* _mapAlloc(u32 size) {
 		entry = entry->next;
 	}
 	if (maxSize) {
-		usableData = (void*)((u32)currEntry + 0x20);
+		usableData = (void*)((uintptr_t)currEntry + 0x20);
 
-		currEntry->next = (void*)((u32)currEntry + fullSize);
+		currEntry->next = (MapAllocEntry*)((uintptr_t)currEntry + fullSize);
 		currEntry->size = usableSize;
 		currEntry->inuse = 1;
 		currEntry->currId = count++;
@@ -223,14 +233,14 @@ void* _mapAllocTail(u32 size) {
 		memset(currEntry, 0, fullSize);
 		DCFlushRange(currEntry, fullSize);
 
-		currEntry->next = (MapAllocEntry*)(((u32)currEntry + maxSize) - fullSize);
+		currEntry->next = (MapAllocEntry*)(((uintptr_t)currEntry + maxSize) - fullSize);
 		currEntry->size = maxSize - fullSize;
 		currEntry->inuse = 0;
 		currEntry->currId = 0;
 
 		nextptr = currEntry->next;
 		nextptr->next = tailEntry;
-		tailEntry = (void*)((u32)nextptr + 0x20);
+		tailEntry = (void*)((uintptr_t)nextptr + 0x20);
 		nextptr->size = usableSize;
 		nextptr->inuse = 1;
 		nextptr->currId = count++;
@@ -251,7 +261,7 @@ void _mapFree(void* alloc) {
 	MapAllocEntry* entry;
 
 	if (!alloc) return;
-	entry = (MapAllocEntry*)((u32)alloc - 0x20);
+	entry = (MapAllocEntry*)((uintptr_t)alloc - 0x20);
 	if (!entry->inuse) return;
 	nextEntry = entry->next;
 	newSize = entry->size;
@@ -268,7 +278,7 @@ void _mapFree(void* alloc) {
 			}
 			break;
 		}
-		if ((u32)loopEntry > (u32)entry || !loopEntry->next) break;
+		if ((uintptr_t)loopEntry > (uintptr_t)entry || !loopEntry->next) break;
 		loopEntry = loopEntry->next;
 	}
 	entry->next = nextEntry;
@@ -281,8 +291,11 @@ void smartInit(void) {
 	u32 size;
 	int i;
 
-	size = (u32)heapEnd[5] - (u32)heapStart[5] - 32;
+	size = (u32)((uintptr_t)heapEnd[5] - (uintptr_t)heapStart[5] - 32);
 	ptr = OSAllocFromHeap(heapHandle[5], size);
+#ifdef TARGET_PC
+	printf("[smartInit] wp->ptr=%p, allocated_size=%u, heapStart=%p, heapEnd=%p\n", ptr, size, heapStart[5], heapEnd[5]); fflush(stdout);
+#endif
 	if (ptr) {
 		memset(ptr, 0, size);
 		DCFlushRange(ptr, size);
@@ -311,7 +324,7 @@ void smartReInit(void) {
 
 	wp->field_0xE008 = 0;
 	wp->field_0xE00C = 0;
-	size = (u32)heapEnd[5] - (u32)heapStart[5] - 32;
+	size = (u32)((uintptr_t)heapEnd[5] - (uintptr_t)heapStart[5] - 32);
 	wp->bytesLeft = size;
 	memset(wp->ptr, 0, size);
 	memset(wp->work, 0, sizeof(wp->work));
@@ -392,15 +405,18 @@ smartEntry* smartAlloc(u32 size, u8 type) {
 		}
 		wp->field_0xE008 = entry2;
 		if (!entry2->next) {
-			entry2->field_0x10 = (u32)wp->ptr + (u32)heapEnd[5] - (u32)heapStart[5] - 32 - (u32)entry2->address - entry2->size;
+			entry2->field_0x10 = (u32)((uintptr_t)wp->ptr + (uintptr_t)heapEnd[5] - (uintptr_t)heapStart[5] - 32 - (uintptr_t)entry2->address - entry2->size);
 			wp->field_0xE00C = entry2;
 		}
+#ifdef TARGET_PC
+		printf("[smartAlloc] first: size=%u, entry=%p, addr=%p\n", size, entry2, entry2->address); fflush(stdout);
+#endif
 		return entry2;
 	}
 	else {
 		for (entry1 = wp->field_0xE008; entry1; entry1 = entry1->next) {
 			if (entry1->field_0x10 >= size) {
-				entry2->address = (void*)((u32)entry1->address + entry1->size);
+				entry2->address = (void*)((uintptr_t)entry1->address + entry1->size);
 				entry2->field_0x10 = entry1->field_0x10 - size;
 				entry2->next = entry1->next;
 				entry2->prev = entry1;
@@ -412,6 +428,9 @@ smartEntry* smartAlloc(u32 size, u8 type) {
 					wp->field_0xE00C = entry2;
 				}
 				entry1->next = entry2;
+#ifdef TARGET_PC
+				printf("[smartAlloc] chain: size=%u, entry=%p, addr=%p\n", size, entry2, entry2->address); fflush(stdout);
+#endif
 				return entry2;
 			}
 		}
@@ -428,7 +447,7 @@ smartEntry* smartAlloc(u32 size, u8 type) {
 			smartGarbage();
 			entry1 = wp->field_0xE00C;
 			if (entry1->field_0x10 >= size) {
-				entry2->address = (void*)((u32)entry1->address + entry1->size);
+				entry2->address = (void*)((uintptr_t)entry1->address + entry1->size);
 				entry2->field_0x10 = entry1->field_0x10 - size;
 				entry2->next = entry1->next;
 				entry2->prev = entry1;

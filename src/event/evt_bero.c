@@ -12,6 +12,11 @@
 #include <string.h>
 
 extern GlobalWork* gp;
+extern s32 lbl_8042B330;
+extern s32 lbl_8042B334;
+extern s32 WinObjects;
+extern const f32 lbl_8042CFA0;
+extern const f32 lbl_8042CFA8;
 
 //.bss
 s32 BeroSW[16]; //switches
@@ -26,6 +31,28 @@ f32 BeroSX, BeroSY, BeroSZ; //start position
 f32 BeroEX, BeroEY, BeroEZ; //end position
 Vec BeroPT, BeroAT;
 BOOL BeroMarioGO;
+
+extern void camShiftReset(void);
+
+s32 evt_bero_mario_go_wait(void) {
+	return *(volatile s32*)&BeroEZ ? EVT_RETURN_DONE : EVT_RETURN_BLOCK;
+}
+
+s32 evt_bero_mario_go(void) {
+	*(volatile s32*)&BeroEZ = TRUE;
+	return EVT_RETURN_DONE;
+}
+
+s32 evt_bero_mario_go_init(void) {
+	*(volatile s32*)&BeroEZ = FALSE;
+	return EVT_RETURN_DONE;
+}
+
+s32 evt_bero_cam_shift_init(void) {
+	camRoadReset();
+	camShiftReset();
+	return EVT_RETURN_DONE;
+}
 
 EVT_BEGIN(evt_bero_mario_enter)
 CALL(evt_seq_wait, SEQ_GAME)
@@ -61,35 +88,35 @@ USER_FUNC(evt_bero_set_reset_position_current) {
 }
 
 s32 bero_get_BeroEXEC(void) {
-	return BeroEXEC;
+	return lbl_8042B334;
 }
 
 s32 bero_get_BeroNUM(void) {
-	return BeroNUM;
+	return lbl_8042B330;
 }
 
 f32 bero_get_BeroSX(void) {
-	return BeroSX;
+	return *(volatile f32*)&BeroEXEC;
 }
 
 f32 bero_get_BeroSY(void) {
-	return BeroSY;
+	return *(volatile f32*)&BeroNUM;
 }
 
 f32 bero_get_BeroSZ(void) {
-	return BeroSZ;
+	return *(volatile f32*)&BeroNOWNUM;
 }
 
 f32 bero_get_BeroEX(void) {
-	return BeroEX;
+	return *(volatile f32*)&BeroCAM;
 }
 
 f32 bero_get_BeroEY(void) {
-	return BeroEY;
+	return BeroOX;
 }
 
 f32 bero_get_BeroEZ(void) {
-	return BeroEZ;
+	return BeroOY;
 }
 
 BeroEntry** bero_get_ptr(void) {
@@ -140,9 +167,25 @@ USER_FUNC(evt_bero_mapchange) {
 	return EVT_RETURN_BLOCK;
 }
 
+static char s_beroEnterNameBss[64];
+
 //s32 retIndex
 USER_FUNC(evt_bero_get_entername) {
-	evtSetValue(event, *event->args, (s32)&gp->beroEnterName);
+	const char* name;
+	s32 targetVar;
+	s32 ptrVal;
+
+	name = (gp && gp->beroEnterName[0]) ? gp->beroEnterName : "";
+	strncpy(s_beroEnterNameBss, name, sizeof(s_beroEnterNameBss) - 1);
+	s_beroEnterNameBss[sizeof(s_beroEnterNameBss) - 1] = '\0';
+	targetVar = event->args[0];
+	ptrVal = (s32)(uintptr_t)s_beroEnterNameBss;
+	evtSetValue(event, targetVar, ptrVal);
+#ifdef TARGET_PC
+	printf("[evt_bero_get_entername] EnterName='%s', targetVar=%d, ptrVal=0x%08X, lwData[0]=0x%08X\n",
+	       s_beroEnterNameBss, targetVar, ptrVal, event->lwData[0]);
+	fflush(stdout);
+#endif
 	return EVT_RETURN_DONE;
 }
 
@@ -154,32 +197,32 @@ USER_FUNC(evt_bero_exec_onoff) {
 
 	onoff = evtGetValue(event, args[0]);
 	mask = evtGetValue(event, args[1]);
-	value = BeroEXEC | mask;
+	value = lbl_8042B334 | mask;
 	if (onoff) {
-		value = BeroEXEC & ~mask;
+		value = lbl_8042B334 & ~mask;
 	}
-	BeroEXEC = value;
+	lbl_8042B334 = value;
 	return EVT_RETURN_DONE;
 }
 
 //s32 retIndex
 USER_FUNC(evt_bero_exec_get) {
-	evtSetValue(event, *event->args, BeroEXEC);
+	evtSetValue(event, *event->args, lbl_8042B334);
 	return EVT_RETURN_DONE;
 }
 
 //s32* mask, TODO: add states, change EvtStatus to s32 and do #defines
 USER_FUNC(evt_bero_exec_wait) {
-	return evtGetValue(event, *event->args) & BeroEXEC ? EVT_RETURN_DONE : 0;
+	return evtGetValue(event, *event->args) & lbl_8042B334 ? EVT_RETURN_DONE : 0;
 }
 
 //f32 retX, f32 retY, f32 retZ
 USER_FUNC(evt_bero_get_start_position) {
 	s32* args = event->args;
 
-	evtSetFloat(event, args[0], BeroSX);
-	evtSetFloat(event, args[1], BeroSY);
-	evtSetFloat(event, args[2], BeroSZ);
+	evtSetFloat(event, args[0], *(volatile f32*)&BeroEXEC);
+	evtSetFloat(event, args[1], *(volatile f32*)&BeroNUM);
+	evtSetFloat(event, args[2], *(volatile f32*)&BeroNOWNUM);
 	return EVT_RETURN_DONE;
 }
 
@@ -187,16 +230,16 @@ USER_FUNC(evt_bero_get_start_position) {
 USER_FUNC(evt_bero_get_end_position) {
 	s32* args = event->args;
 
-	evtSetFloat(event, args[0], BeroEX);
-	evtSetFloat(event, args[1], BeroEY);
-	evtSetFloat(event, args[2], BeroEZ);
+	evtSetFloat(event, args[0], *(volatile f32*)&BeroCAM);
+	evtSetFloat(event, args[1], BeroOX);
+	evtSetFloat(event, args[2], BeroOY);
 	return EVT_RETURN_DONE;
 }
 
 //s32* id, s32 retIndex1, s32 retIndex2, s32 retIndex3, s32 retIndex4
 USER_FUNC(evt_bero_get_info_anime) {
-	s32* args = event->args;
 	BeroEntry* bero;
+	s32* args = event->args;
 
 	bero = BeroINFOARR[evtGetValue(event, args[0])];
 	evtSetValue(event, args[1], bero->animeArg1);
@@ -223,16 +266,16 @@ USER_FUNC(evt_bero_get_info_length) {
 		case 0:
 		case 3:
 		case 0xF00:
-			storeme = 30.0f;
+			storeme = lbl_8042CFA0;
 			break;
 		case 1:
-			storeme = 60.0f;
+			storeme = lbl_8042CFA8;
 			break;
 		case 2:
-			storeme = 60.0f;
+			storeme = lbl_8042CFA8;
 			break;
 		default:
-			storeme = 60.0f;
+			storeme = lbl_8042CFA8;
 			break;
 	}
 	evtSetFloat(event, args[1], storeme);
@@ -240,8 +283,8 @@ USER_FUNC(evt_bero_get_info_length) {
 }
 
 USER_FUNC(evt_bero_get_info_kinddir) {
-	s32* args = event->args;
 	BeroEntry* bero;
+	s32* args = event->args;
 
 	bero = BeroINFOARR[evtGetValue(event, args[0])];
 	evtSetValue(event, args[1], bero->kinddirArg1);
@@ -251,8 +294,8 @@ USER_FUNC(evt_bero_get_info_kinddir) {
 }
 
 USER_FUNC(evt_bero_get_info_nextarea) {
-	s32* args = event->args;
 	BeroEntry* bero;
+	s32* args = event->args;
 
 	bero = BeroINFOARR[evtGetValue(event, args[0])];
 	evtSetValue(event, args[1], bero->nextareaArg1);
@@ -261,12 +304,12 @@ USER_FUNC(evt_bero_get_info_nextarea) {
 }
 
 USER_FUNC(evt_bero_set_now_number) {
-	BeroNOWNUM = evtGetValue(event, *event->args);
+	WinObjects = evtGetValue(event, *event->args);
 	return EVT_RETURN_DONE;
 }
 
 USER_FUNC(evt_bero_get_now_number) {
-	evtSetValue(event, *event->args, BeroNOWNUM);
+	evtSetValue(event, *event->args, WinObjects);
 	return EVT_RETURN_DONE;
 }
 

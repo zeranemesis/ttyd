@@ -402,9 +402,12 @@ typedef struct PouchData {
     s16 field_0x80;                    // 0x80
     s16 field_0x82;                    // 0x82
     f32 audienceCount;                 // 0x84
-    s16 rank;                          // 0x88
+    union {
+        s16 rank;                          // 0x88
+        s16 field_0x88;
+    };
     s16 level;                         // 0x8A
-    s16 mStarPowersObtained;           // 0x8C
+    u16 mStarPowersObtained;           // 0x8C
     s16 baseMaxHP;                     // 0x8E
     s16 baseMaxFP;                     // 0x90
     s16 availableBP;                   // 0x92
@@ -425,7 +428,7 @@ typedef struct PouchData {
     u32 mEmailReceivedFlags[4];        // 0x580
     u32 mEmailReadFlags[4];            // 0x590
     u8 field_0x5A0[0x10];              // 0x5A0
-    u16 mShopPoints;                   // 0x5B0
+    s16 mShopPoints;                   // 0x5B0
     u8 field_0x5B2[2];                 // 0x5B2
     u32 field_0x5B4;                   // 0x5B4
     u8 mMerleeCurseUsesRemaining;      // 0x5B8
@@ -451,7 +454,7 @@ s32 pouchGetEmptyHaveItemCnt(void);
 s32 pouchGetEmptyKeepItemCnt(void);
 BOOL pouchGetItem(ItemType type);
 
-u32 pouchCheckItem(u32 itemId);
+s32 pouchCheckItem(s32 itemId);
 
 BOOL pouchRemoveItem(ItemType type);
 
@@ -462,7 +465,7 @@ s16 pouchGetSuperCoin(void);
 s16 pouchSetSuperCoin(s16 count);
 s16 pouchGetStarPiece(void);
 s16 pouchAddStarPiece(s16 count);
-s16 pouchAddHP(s16 points);
+s16 pouchAddHP(s32 points);
 s16 pouchGetHP(void);
 s16 pouchGetMaxHP(void);
 void pouchSetHP(s16 points);
@@ -494,7 +497,7 @@ BOOL pouchEquipCheckBadgeIndex(s32 index);
 BOOL pouchEquipBadgeID(s32 badgeId);
 BOOL pouchUnEquipBadgeID(s32 badgeId);
 s32 pouchArriveBadge(s32 id);
-void pouchMajinaiInit(u32 curseCount);
+void pouchMajinaiInit(s32 curseCount);
 u8 pouchGetKpaCoin(void);
 void pouchAddKpaCoin(u8 coins);
 u32 pouchGetKpaScore(void);
@@ -505,6 +508,6 @@ void pouchReceiveMail(s32 mailId);
 void pouchOpenMail(s32 mailId);
 u32 pouchCheckMail(s32 mailId);
 s32 pouchGetPartyColor(PartyId partnerId);
-void pouchSetPartyColor(PartyId partnerId, u16 color);
+void pouchSetPartyColor(PartyId partnerId, s32 color);
 void pouchSetYoshiName(char* name);
 char* pouchGetYoshiName(void);

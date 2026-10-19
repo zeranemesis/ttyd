@@ -34,9 +34,15 @@ typedef struct {
         BadgeShopWork badgeShop; //0x1EB4
         PiantaParlorWork parlor; //0x1FD8
         InformantUnknown informant; //0x2110
+#if defined(VERSION_G8MP01)
+        u8 unk213B[0x2260 - 0x213B]; //0x213B
+    } data;
+    u8 __align[0x3FF0 - 0x2260]; //0x2260
+#else
         u8 unk213B[0x2140 - 0x213B]; //0x213B
     } data;
     u8 __align[0x3FF0 - 0x2140]; //0x2140
+#endif
     char version[4]; //0x3FF0
     s32 size; //0x3FF4
     u32 checksum1; //0x3FF8
@@ -81,7 +87,12 @@ typedef struct {
 
 CardData* cardGetFilePtr(void);
 void cardBufReset(void);
+#ifdef TARGET_PC
 void cardInit(void);
+#else
+void fn_800B3CB4(void);
+#define cardInit fn_800B3CB4
+#endif
 void cardED0(void); //called by evt_memcard, TODO: rename
 void cardEAC(void); //called by evt_memcard, TODO: rename
 BOOL cardE80(void); //called by evt_memcard, TODO: rename

@@ -13,10 +13,23 @@
 #include "mario/mariost.h"
 #include "pmario_sound.h"
 
+#ifdef TARGET_PC
 extern GlobalWork* gp;
+#else
+extern GlobalWork* wp_80422810;
+#define gp wp_80422810
+#endif
+
+#ifndef TARGET_PC
+extern const GXColor lbl_8042BF18;
+extern const GXColor lbl_8042BF1C;
+extern const GXColor lbl_8042BF20;
+#define maku_spread lbl_80421768
+#endif
 
 //.sbss
-static OSTime none_key;
+u32 lbl_8042AEC4;
+u32 comp;
 
 //.sdata
 EVT_BEGIN(maku_spread)
@@ -25,11 +38,6 @@ CALL(evt_fade_entry, TITLE_SCREEN_CURTAIN_LEAVE_GRADUAL2, 0, 0, 0, 0)
 RETURN
 EVT_END()
 
-void seq_gameInit(SequenceWork* wp) {
-	none_key = OSGetTime();
-	gp->systemLevelFlags &= ~0x10;
-}
-
 void seq_gameMain(SequenceWork* wp) {
     CameraEntry *camera, *camera2;
     Vec position;
@@ -37,13 +45,31 @@ void seq_gameMain(SequenceWork* wp) {
     switch (wp->state) {
         case 0:
             if ((gp->flags & 0x10) != 0) {
-                fadeEntry(FADE_IN_WHITE2, 900, (GXColor){0, 0, 0, 0xFF});
+                fadeEntry(FADE_IN_WHITE2, 900,
+#ifdef TARGET_PC
+                    (GXColor){0, 0, 0, 0xFF}
+#else
+                    lbl_8042BF18
+#endif
+                );
                 evtEntryType(maku_spread, 0, 0, 0);
                 gp->flags &= ~0x10;
             } else if (!gp->didAreaChange) {
-                fadeEntry(gp->mapFadeOutType, gp->mapFadeOutDuration, (GXColor){0, 0, 0, 0xFF});
+                fadeEntry(gp->mapFadeOutType, gp->mapFadeOutDuration,
+#ifdef TARGET_PC
+                    (GXColor){0, 0, 0, 0xFF}
+#else
+                    lbl_8042BF1C
+#endif
+                );
             } else {
-                fadeEntry(gp->areaFadeOutType, gp->areaFadeOutDuration, (GXColor){0, 0, 0, 0xFF});
+                fadeEntry(gp->areaFadeOutType, gp->areaFadeOutDuration,
+#ifdef TARGET_PC
+                    (GXColor){0, 0, 0, 0xFF}
+#else
+                    lbl_8042BF20
+#endif
+                );
             }
             gp->mapFadeOutType = FADE_IN_BLACK;
             gp->mapFadeOutDuration = 300;
@@ -51,7 +77,7 @@ void seq_gameMain(SequenceWork* wp) {
             gp->areaFadeOutDuration = 300;
             wp->state++;
             break;
-    
+
         case 1:
             if (gp->flags & 0x1000 && gp->flags & 0x2000 && fadeIsFinish() && seqCheckSeq() == SEQ_LOGO) {
                 gp->flags &= ~0x2000;

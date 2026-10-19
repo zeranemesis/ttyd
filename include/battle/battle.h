@@ -134,6 +134,10 @@ typedef struct BattleWorkPartyInfo {
     u8 field_4[0x1E];         // 0x4
     u8 field_22[0x24 - 0x22]; // 0x22
     s32 field_24;             // 0x24
+#if defined(VERSION_G8MP01)
+    u16 field_28;             // 0x28
+    u16 field_2A;             // 0x2A
+#endif
 } BattleWorkPartyInfo;
 
 struct BattleWork {
@@ -174,15 +178,35 @@ struct BattleWork {
     BattleAudience audience;            // 0x2858
     u8 field_1616C[0x162A0 - 0x1616C];  // 0x1616C
     BattleWorkPartyInfo partyInfo[7];   // 0x162A0
+#if defined(VERSION_G8MP01)
+    u32 tattledUnitTypeFlags[8];        // 0x163D4
+    s32 badgeEquippedFlags;             // 0x163F4
+    FileEntry* menuTex;                 // 0x163F8
+    u8 field_163FC[0x16418 - 0x163FC];  // 0x163FC
+    BattleStage stage;                  // 0x16418
+    u8 field_16F1C[0x1715C - 0x16F54];  // 0x16F54
+    BattleStageObject stageObjects[32]; // 0x1715C
+    u8 field_180C0[0x182CC - 0x180DC];  // 0x180DC
+    BattleIcon icons[16];               // 0x182CC
+    u8 field_188C8[0x18FFC - 0x18C8C];  // 0x18C8C
+    s8 alertTick;                       // 0x18FFC
+    u8 field_18FE1[0x19000 - 0x18FFD];  // 0x18FFD
+    StarPowerInfo impendingBonuses;     // 0x19000
+    u8 field_18FF0[0x19060 - 0x1900C];  // 0x1900C
+    u32 reserveItems[4];                // 0x19060
+    s32 field_19060;                    // 0x19070
+    u8 field_19064[0x19098 - 0x19074];  // 0x19074
+#else
     u32 tattledUnitTypeFlags[8];        // 0x163B8
     s32 badgeEquippedFlags;             // 0x163D8
     FileEntry* menuTex;                 // 0x163DC
-    BattleStage stage;                  // 0x163E0
-    u8 field_16F1C[0x17140 - 0x16F1C];  // 0x16F1C
+    u8 field_163E0[0x163FC - 0x163E0];  // 0x163E0
+    BattleStage stage;                  // 0x163FC
+    u8 field_16F1C[0x17140 - 0x16F38];  // 0x16F38
     BattleStageObject stageObjects[32]; // 0x17140
     u8 field_180C0[0x182B0 - 0x180C0];  // 0x180C0
-    BattleIcon icons[10];               // 0x182B0
-    u8 field_188C8[0x18FE0 - 0x188C8];  // 0x188C8
+    BattleIcon icons[16];               // 0x182B0
+    u8 field_188C8[0x18FE0 - 0x18C70];  // 0x18C70
     s8 alertTick;                       // 0x18FE0
     u8 field_18FE1[0x18FE4 - 0x18FE1];  // 0x18FE1
     StarPowerInfo impendingBonuses;     // 0x18FE4
@@ -190,6 +214,7 @@ struct BattleWork {
     u32 reserveItems[4];                // 0x19050
     s32 field_19060;                    // 0x19060
     u8 field_19064[0x19088 - 0x19064];  // 0x19064
+#endif
 };
 extern BattleWork* _battleWorkPointer;
 

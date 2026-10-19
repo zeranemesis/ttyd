@@ -47,9 +47,13 @@ USER_FUNC(evt_npc_set_rotate);
 USER_FUNC(evt_npc_add_rotate);
 USER_FUNC(evt_npc_set_rotate_offset);
 USER_FUNC(evt_npc_move_position);
-
-
-
+USER_FUNC(evt_npc_set_camid);
+USER_FUNC(evt_npc_pera_onoff);
+USER_FUNC(evt_npc_status_check);
+USER_FUNC(evt_npc_status_onoff);
+USER_FUNC(evt_npc_reaction_flag_onoff);
+USER_FUNC(evt_npc_flag_check);
+USER_FUNC(evt_npc_flag_onoff);
 
 NpcEntry* evtNpcNameToPtr(EventEntry* event, const char* name);
 NpcEntry* evtNpcNameToPtr_NoAssert(EventEntry* evt, const char* name);

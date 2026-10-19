@@ -24,6 +24,9 @@ static s32 depth_image[32] = {
 static ImageWork work;
 
 //.sdata
+#ifndef TARGET_PC
+#define wp lbl_80422848
+#endif
 static ImageWork* wp = &work;
 
 //local prototypes
@@ -114,7 +117,7 @@ void imgCapture_Prim(ImageEntry* entry, s32 id) {
 
 void imgCapture(CameraId camId, void* param) {
 	//param is NULL
-	
+
 }
 
 void imgInit(void) { //1:1

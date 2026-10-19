@@ -1,6 +1,9 @@
 #include "mri_puni.h"
 #include "driver/camdrv.h"
 #include "memory.h"
+#include "driver/swdrv.h"
+#include "driver/dispdrv.h"
+#include "manager/evtmgr_cmd.h"
 #include <string.h>
 #include "forcedata.h"
 
@@ -59,6 +62,18 @@ u16* toge_patern_table[] = { toge_nom_patern_data, toge_wlk_patern_data, toge_ru
                              toge_hag_patern_data, toge_hag_patern_data };
 
 //.bss
+#define Punidat lbl_19_bss_68
+#define Punigp lbl_19_bss_64
+#define Punitex lbl_19_bss_60
+extern void puniCountDisp(CameraId cameraId, void* param);
+volatile f32 lbl_19_rodata_5374 = 1000.0f;
+void fn_19_A948(void) {}
+void fn_19_AA04(void) {}
+
+void* npcGetTribeName(void* arg) {
+    return *(void**)arg;
+}
+
 void* Punimap;
 PuniTexInfo* Punitex;
 PuniWork* Punigp;
@@ -122,6 +137,11 @@ USER_FUNC(evt_make_texbuf) {
     return EVT_RETURN_DONE;
 }
 
+USER_FUNC(evt_puni_attack_on) {
+    Punigp->unk43c = 3;
+    return EVT_RETURN_DONE;
+}
+
 USER_FUNC(evt_puni_mem_init) {
     Punigp = _mapAlloc(sizeof(PuniWork));
     memset(Punigp, 0, sizeof(PuniWork));
@@ -133,16 +153,59 @@ USER_FUNC(evt_puni_mem_init) {
 }
 
 USER_FUNC(puni_disp_info_sub) {
-    /*int i;
-    int v3;
+    s32* args = event->args;
+    s32 count = 0;
+    s32 total;
+    s32 i;
 
-    for (i = 1; i < 103; i++) {
-        if ((Punidat[i].unk4 & 0x400) && !(Punidat[i].unk4 & 0x804000) && !(Punidat[i].unk4 & 0x80)) {
-            if ((Punidat[i].unkC != 16 && Punidat[i].unkC != 15)) {
-                v3++;
+    for (i = 1; i <= 0x66; i++) {
+        PuniData* data = &Punidat[i];
+        if ((data->unk4 & 0x400) && !(data->unk4 & 0x804000) && !(data->unk4 & 0x80) &&
+            data->unkC != 0x10 && data->unkC != 0xF) {
+            count++;
+        }
+    }
+
+    total = swGet(0xB3C);
+    total += swGet(0xB3D);
+    total += swGet(0xB3F);
+    total += swByteGet(0x28B);
+    {
+        s32 showAll = FALSE;
+        if (Punigp->unk328 == 9 && !swGet(0xB21)) {
+            showAll = TRUE;
+        }
+        if (Punigp->unk328 == 12 && !swGet(0xB29)) {
+            showAll = TRUE;
+        }
+        if (showAll) {
+            evtSetValue(event, args[0], count);
+            evtSetValue(event, args[1], 0);
+            Punigp->unk448 = 0;
+        } else {
+            evtSetValue(event, args[0], count);
+            evtSetValue(event, args[1], total - count);
+            if (count == total) {
+                Punigp->unk448 = 0;
+            } else {
+                Punigp->unk448 = 1;
             }
         }
-    }*/
+    }
 
+    if (!(*(s32*)Punigp & 2)) {
+        count = swByteGet(0x29B);
+        total = swByteGet(0x29C);
+        Punigp->unk448 = 0;
+    } else {
+        swByteSet(0x29B, (u8)count);
+        swByteSet(0x29C, (u8)total);
+    }
+    {
+        s32 packedCount = (count << 16) | total;
+        if (Punigp->showPuniCounter && total >= 10) {
+            dispEntry(8, lbl_19_rodata_5374, 0, puniCountDisp, (void*)packedCount);
+        }
+    }
     return EVT_RETURN_DONE;
 }

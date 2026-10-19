@@ -4,6 +4,15 @@
 #include <string.h>
 
 extern BattleWork* _battleWorkPointer;
+extern const f32 lbl_8042F1AC;
+extern const f32 lbl_8042F18C;
+extern const f32 lbl_8042F1B0;
+#ifndef TARGET_PC
+extern const f32 lbl_8042F190;
+#define BTLUNIT_ONE lbl_8042F190
+#else
+#define BTLUNIT_ONE 1.0f
+#endif
 
 //local prototypes
 void _CheckMoveCount(BattleUnit* unit);
@@ -67,9 +76,12 @@ BattleUnitPart* BtlUnit_GetPartsPtr(BattleUnit* unit, s32 partNum) {
     part = unit->mParts;
     if (partNum >= 0) {
         if (part->mNextPart) {
-            while (part && part->mKindPartParams->partNum != partNum) {
+			do {
+				if (part->mKindPartParams->partNum == partNum) {
+					return part;
+				}
                 part = part->mNextPart;
-            }
+			} while (part != NULL);
         }
     }
     return part;
@@ -131,16 +143,15 @@ void BtlUnit_GetPartsWorldPos(BattleUnitPart* part, f32* x, f32* y, f32* z) {
 }
 
 void BtlUnit_GetHitPos(BattleUnit* unit, BattleUnitPart* part, f32* x, f32* y, f32* z) {
-    f32 y_multiply = 1.0f;
     s32 direction = _battleWorkPointer->alliances[unit->mAlliance].attackDirection;
     BtlUnit_GetPartsWorldPos(part, x, y, z);
     //add hit base offset
     *x = ((f32)direction * (part->mHitBaseOffset.x * unit->mSizeMultiplier)) + *x;
-    *y = (y_multiply * (part->mHitBaseOffset.y * unit->mSizeMultiplier)) + *y;
+    *y = (BTLUNIT_ONE * (part->mHitBaseOffset.y * unit->mSizeMultiplier)) + *y;
     *z = (part->mHitBaseOffset.z * unit->mSizeMultiplier) + *z;
     //add hit offset
     *x = ((f32)direction * (part->mHitOffset.x * unit->mSizeMultiplier)) + *x;
-    *y = (y_multiply * (part->mHitOffset.y * unit->mSizeMultiplier)) + *y;
+    *y = (BTLUNIT_ONE * (part->mHitOffset.y * unit->mSizeMultiplier)) + *y;
     *z = (part->mHitOffset.z * unit->mSizeMultiplier) + *z;
 }
 
@@ -184,20 +195,20 @@ void BtlUnit_SetRotate(BattleUnit* unit, f32 x, f32 y, f32 z) {
     f32 new_x, new_y, new_z;
 
     new_x = reviseAngle(x);
-    if (new_x >= 360.0f) {
-        new_x = 0.0f;
+    if (new_x >= lbl_8042F1B0) {
+        new_x = lbl_8042F18C;
     }
     unit->mRotation.x = new_x;
 
     new_y = reviseAngle(y);
-    if (new_y >= 360.0f) {
-        new_y = 0.0f;
+    if (new_y >= lbl_8042F1B0) {
+        new_y = lbl_8042F18C;
     }
     unit->mRotation.y = new_y;
 
     new_z = reviseAngle(z);
-    if (new_z >= 360.0f) {
-        new_z = 0.0f;
+    if (new_z >= lbl_8042F1B0) {
+        new_z = lbl_8042F18C;
     }
     unit->mRotation.z = new_z;
 }
@@ -210,16 +221,16 @@ void BtlUnit_GetRotate(BattleUnit* unit, f32* x, f32* y, f32* z) {
 
 void BtlUnit_AddRotate(BattleUnit* unit, f32 x, f32 y, f32 z) {
     unit->mRotation.x = reviseAngle(unit->mRotation.x + x);
-    if (unit->mRotation.x >= 360.0f) {
-        unit->mRotation.x = 0.0f;
+    if (unit->mRotation.x >= lbl_8042F1B0) {
+        unit->mRotation.x = lbl_8042F18C;
     }
     unit->mRotation.y = reviseAngle(unit->mRotation.y + y);
-    if (unit->mRotation.y >= 360.0f) {
-        unit->mRotation.y = 0.0f;
+    if (unit->mRotation.y >= lbl_8042F1B0) {
+        unit->mRotation.y = lbl_8042F18C;
     }
     unit->mRotation.z = reviseAngle(unit->mRotation.z + z);
-    if (unit->mRotation.z >= 360.0f) {
-        unit->mRotation.z = 0.0f;
+    if (unit->mRotation.z >= lbl_8042F1B0) {
+        unit->mRotation.z = lbl_8042F18C;
     }
 }
 
@@ -237,34 +248,28 @@ void BtlUnit_GetPartsRotate(BattleUnitPart* part, f32* x, f32* y, f32* z) {
 
 void BtlUnit_AddPartsRotate(BattleUnitPart* part, f32 x, f32 y, f32 z) {
     part->mRotation.x += x;
-    if (part->mRotation.x <= 360.0f) {
-        if (part->mRotation.x < 0.0f) {
-            part->mRotation.x += 360.0f;
-        }
+	if (part->mRotation.x > lbl_8042F1B0) {
+        part->mRotation.x -= lbl_8042F1B0;
     }
-    else {
-        part->mRotation.x -= 360.0f;
-    }
+	else if (part->mRotation.x < lbl_8042F18C) {
+		part->mRotation.x += lbl_8042F1B0;
+	}
 
     part->mRotation.y += y;
-    if (part->mRotation.y <= 360.0f) {
-        if (part->mRotation.y < 0.0f) {
-            part->mRotation.y += 360.0f;
-        }
+	if (part->mRotation.y > lbl_8042F1B0) {
+        part->mRotation.y -= lbl_8042F1B0;
     }
-    else {
-        part->mRotation.y -= 360.0f;
-    }
+	else if (part->mRotation.y < lbl_8042F18C) {
+		part->mRotation.y += lbl_8042F1B0;
+	}
 
     part->mRotation.z += z;
-    if (part->mRotation.z <= 360.0f) {
-        if (part->mRotation.z < 0.0f) {
-            part->mRotation.z += 360.0f;
-        }
+	if (part->mRotation.z > lbl_8042F1B0) {
+        part->mRotation.z -= lbl_8042F1B0;
     }
-    else {
-        part->mRotation.z -= 360.0f;
-    }
+	else if (part->mRotation.z < lbl_8042F18C) {
+		part->mRotation.z += lbl_8042F1B0;
+	}
 }
 
 void BtlUnit_SetBaseRotate(BattleUnit* unit, f32 x, f32 y, f32 z) {
@@ -292,27 +297,25 @@ void BtlUnit_GetPartsBaseRotate(BattleUnitPart* part, f32* x, f32* y, f32* z) {
 }
 
 void BtlUnit_SetRotateOffset(BattleUnit* unit, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         unit->mRotationOffset.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         unit->mRotationOffset.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         unit->mRotationOffset.z = z;
     }
 }
 
 void BtlUnit_SetPartsRotateOffset(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mRotationOffset.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mRotationOffset.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mRotationOffset.z = z;
     }
 }
@@ -324,14 +327,13 @@ void BtlUnit_AddPartsRotateOffset(BattleUnitPart* part, f32 x, f32 y, f32 z) {
 }
 
 void BtlUnit_SetBaseScale(BattleUnit* unit, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         unit->mBaseScale.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         unit->mBaseScale.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         unit->mBaseScale.z = z;
     }
 }
@@ -343,66 +345,61 @@ void BtlUnit_GetScale(BattleUnit* unit, f32* x, f32* y, f32* z) {
 }
 
 void BtlUnit_SetScale(BattleUnit* unit, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         unit->mScale.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         unit->mScale.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         unit->mScale.z = z;
     }
 }
 
 void BtlUnit_AddScale(BattleUnit* unit, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         unit->mScale.x += x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         unit->mScale.y += y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         unit->mScale.z += z;
     }
 }
 
 void BtlUnit_SetPartsBaseScale(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mBaseScale.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mBaseScale.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mBaseScale.z = z;
     }
 }
 
 void BtlUnit_SetPartsScale(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mScale.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mScale.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mScale.z = z;
     }
 }
 
 void BtlUnit_AddPartsScale(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mScale.x += x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mScale.y += y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mScale.z += z;
     }
 }
@@ -420,14 +417,13 @@ void BtlUnit_SetHeight(BattleUnit* unit, s16 height) {
 }
 
 void BtlUnit_SetOffsetPos(BattleUnit* unit, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         unit->mPositionOffset.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         unit->mPositionOffset.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         unit->mPositionOffset.z = z;
     }
 }
@@ -439,14 +435,13 @@ void BtlUnit_GetPartsOffsetPos(BattleUnitPart* part, f32* x, f32* y, f32* z) {
 }
 
 void BtlUnit_SetPartsOffsetPos(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mPositionOffset.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mPositionOffset.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mPositionOffset.z = z;
     }
 }
@@ -458,118 +453,109 @@ void BtlUnit_AddPartsOffsetPos(BattleUnitPart* part, f32 x, f32 y, f32 z) {
 }
 
 void BtlUnit_SetDispOffset(BattleUnit* unit, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         unit->mDisplayOffset.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         unit->mDisplayOffset.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         unit->mDisplayOffset.z = z;
     }
 }
 
 void BtlUnit_SetPartsDispOffset(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mDisplayOffset.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mDisplayOffset.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mDisplayOffset.z = z;
     }
 }
 
 void BtlUnit_AddPartsDispOffset(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mDisplayOffset.x += x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mDisplayOffset.y += y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mDisplayOffset.z += z;
     }
 }
 
 void BtlUnit_SetMoveStartPos(BattleUnit* unit, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         unit->mMoveStartPos.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         unit->mMoveStartPos.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         unit->mMoveStartPos.z = z;
     }
 }
 
 void BtlUnit_SetPartsMoveStartPos(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mMoveStartPos.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mMoveStartPos.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mMoveStartPos.z = z;
     }
 }
 
 void BtlUnit_SetMoveCurrentPos(BattleUnit* unit, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         unit->mMoveCurrentPos.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         unit->mMoveCurrentPos.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         unit->mMoveCurrentPos.z = z;
     }
 }
 
 void BtlUnit_SetPartsMoveCurrentPos(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mMoveCurrentPos.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mMoveCurrentPos.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mMoveCurrentPos.z = z;
     }
 }
 
 void BtlUnit_SetMoveTargetPos(BattleUnit* unit, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         unit->mMoveTargetPos.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         unit->mMoveTargetPos.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         unit->mMoveTargetPos.z = z;
     }
 }
 
 void BtlUnit_SetPartsMoveTargetPos(BattleUnitPart* part, f32 x, f32 y, f32 z) {
-    f32 thefuckyone = -2.0468902587890625f;
-    if (thefuckyone != x) {
+    if (lbl_8042F1AC != x) {
         part->mMoveTargetPos.x = x;
     }
-    if (thefuckyone != y) {
+    if (lbl_8042F1AC != y) {
         part->mMoveTargetPos.y = y;
     }
-    if (thefuckyone != z) {
+    if (lbl_8042F1AC != z) {
         part->mMoveTargetPos.z = z;
     }
 }
@@ -610,9 +596,9 @@ void _CheckMoveCount(BattleUnit* unit) {
 }
 
 void BtlUnit_GetStatus(BattleUnit* unit, StatusEffectType type, s8* turns, s8* strength) {
-    s8 status_turns, status_strength;
+    s8 status_turns = 0, status_strength = 0;
 
-    switch (type) {
+    switch ((s8)type) {
         case STATUS_SLEEP:
             status_strength = unit->mSleepTurns;
             status_turns = status_strength;
@@ -956,16 +942,19 @@ BOOL BtlUnit_CheckRecoveryStatus(BattleUnit* unit, StatusEffectType type) {
     if (!turns) {
         return FALSE;
     }
-    switch (type) {
+    switch ((s8)type) {
         case STATUS_SLEEP:
-            if (turns <= 1) {
-                turns = 0;
-            }
-            else {
+            if (turns > 1) {
                 turns--;
             }
+            else {
+                turns = 0;
+            }
             unit->mSleepTurns = turns;
-            return turns == 0;
+            if (!turns) {
+                return TRUE;
+            }
+            return FALSE;
         case STATUS_ALLERGIC:
         case STATUS_STOP:
         case STATUS_DIZZY:
@@ -979,78 +968,91 @@ BOOL BtlUnit_CheckRecoveryStatus(BattleUnit* unit, StatusEffectType type) {
         case STATUS_SLOW:
         case STATUS_PAYBACK:
         case STATUS_HOLD_FAST:
-            if (turns < 0) {
-                turns++;
-            }
-            else {
+            if (turns >= 0) {
                 turns--;
             }
-            if (strength < 0) {
-                strength++;
+            else {
+                turns++;
+            }
+            if (strength >= 0) {
+                strength--;
             }
             else {
-                strength--;
+                strength++;
             }
             if (!turns) {
                 strength = 0;
             }
             BtlUnit_SetStatus(unit, type, turns, strength);
-            return turns == 0;
+            if (!turns) {
+                return TRUE;
+            }
+            return FALSE;
         case STATUS_HUGE:
         case STATUS_TINY:
-            if (turns <= 0) {
-                if (turns >= 0) {
-                    return FALSE;
-                }
+            if (turns > 0) {
+                turns--;
+            }
+            else if (turns < 0) {
                 turns++;
             }
             else {
-                turns--;
+                return FALSE;
             }
             if (!turns) {
                 strength = 0;
             }
             unit->mSizeChangeTurns = turns;
             unit->mSizeChangeStrength = strength;
-            return turns == 0;
+            if (!turns) {
+                return TRUE;
+            }
+            return FALSE;
         case STATUS_ATTACK_UP:
         case STATUS_ATTACK_DOWN:
-            if (turns <= 0) {
-                if (turns >= 0) {
-                    return FALSE;
-                }
+            if (turns > 0) {
+                turns--;
+            }
+            else if (turns < 0) {
                 turns++;
             }
             else {
-                turns--;
+                return FALSE;
             }
             if (!turns) {
                 strength = 0;
             }
             unit->mAtkChangeTurns = turns;
             unit->mAtkChangeStrength = strength;
-            return turns == 0;
+            if (!turns) {
+                return TRUE;
+            }
+            return FALSE;
         case STATUS_POISON:
         case STATUS_DEFENSE_UP:
         case STATUS_DEFENSE_DOWN:
         case STATUS_HP_REGEN:
         case STATUS_FP_REGEN:
-            if (turns < 0) {
-                turns++;
+            if (turns >= 0) {
+                turns--;
             }
             else {
-                turns--;
+                turns++;
             }
             if (!turns) {
                 strength = 0;
             }
             BtlUnit_SetStatus(unit, type, turns, strength);
-            return turns == 0;
+            if (!turns) {
+                return TRUE;
+            }
+            return FALSE;
         default:
             return FALSE;
     }
 }
 
+#pragma dont_inline on
 BOOL BtlUnit_CheckStatus(BattleUnit* unit, StatusEffectType type) {
     s8 turns, strength;
 
@@ -1061,7 +1063,10 @@ BOOL BtlUnit_CheckStatus(BattleUnit* unit, StatusEffectType type) {
     if (turns) {
         return TRUE;
     }
-    return type == STATUS_ELECTRIC && unit->badgesEquipped.ZapTap;
+    if ((s8)type == STATUS_ELECTRIC && unit->badgesEquipped.ZapTap) {
+        return TRUE;
+    }
+    return FALSE;
 }
 
 s32 BtlUnit_CheckStatusFlag(BattleUnit* unit, s32 flags) {
@@ -1129,51 +1134,54 @@ void BtlUnit_ResetMoveStatus(BattleUnit* unit) {
 
 s32 BtlUnit_GetFp(BattleUnit* unit) {
     BattleUnitType kind = unit->currentKind;
-    s32 result = unit->currentFp;
+    BattleWork* wp = _battleWorkPointer;
+    s32 fp = unit->currentFp;
 
     if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
-        result = BattleGetMarioPtr(_battleWorkPointer)->currentFp;
+        fp = BattleGetMarioPtr(wp)->currentFp;
     }
-    return result;
+    return fp;
 }
 
 void BtlUnit_SetFp(BattleUnit* unit, s32 value) {
     BattleUnitType kind = unit->currentKind;
-    if (kind < TYPE_PARTNER_MIN || kind >= TYPE_PARTNER_MAX) {
-        unit->currentFp = value;
+    BattleWork* wp = _battleWorkPointer;
+
+    if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
+        BattleGetMarioPtr(wp)->currentFp = value;
     }
     else {
-        BattleGetMarioPtr(_battleWorkPointer)->currentFp = value;
+        unit->currentFp = value;
     }
 }
 
 s32 BtlUnit_GetMaxFp(BattleUnit* unit) {
     BattleUnitType kind = unit->currentKind;
-    s32 result = unit->maxFp;
+    BattleWork* wp = _battleWorkPointer;
+    s32 fp = unit->maxFp;
 
     if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
-        result = BattleGetMarioPtr(_battleWorkPointer)->maxFp;
+        fp = BattleGetMarioPtr(wp)->maxFp;
     }
-    return result;
+    return fp;
 }
 
 void BtlUnit_SetMaxFp(BattleUnit* unit, s32 value) {
     BattleUnitType kind = unit->currentKind;
-    if (kind < TYPE_PARTNER_MIN || kind >= TYPE_PARTNER_MAX) {
-        unit->maxFp = value;
+    BattleWork* wp = _battleWorkPointer;
+
+    if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
+        BattleGetMarioPtr(wp)->maxFp = value;
     }
     else {
-        BattleGetMarioPtr(_battleWorkPointer)->maxFp = value;
+        unit->maxFp = value;
     }
 }
 
 void BtlUnit_RecoverHp(BattleUnit* unit, s32 value) {
-    s32 hp;
-
     unit->currentHp += value;
-    hp = unit->maxHp;
-    if (unit->currentHp > hp) {
-        unit->currentHp = hp;
+    if (unit->currentHp > unit->maxHp) {
+        unit->currentHp = unit->maxHp;
     }
 }
 
@@ -1203,6 +1211,10 @@ s32 BtlUnit_GetHitDamage(BattleUnit* unit) {
 
 s32 BtlUnit_GetTotalHitDamage(BattleUnit* unit) {
     return unit->totalHpDamageTaken;
+}
+
+void BtlUnit_SetTotalHitDamage(BattleUnit* unit, s16 damage) {
+    unit->totalHpDamageTaken = damage;
 }
 
 void* BtlUnit_GetData(BattleUnit* unit, s32 tag) {

@@ -31,4 +31,9 @@ int sprintf(char *s, const char *format, ...);
 int vprintf(const char *format, va_list arg);
 int vsprintf(char *s, const char *format, va_list arg);
 
+#ifndef TARGET_PC
+#define stdout ((FILE*)0)
+#define fflush(stream) ((void)0)
+#endif
+
 #endif

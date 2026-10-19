@@ -1,0 +1,269 @@
+Sections:
+	.text       type:code align:4
+	.ctors      type:rodata align:4
+	.dtors      type:rodata align:4
+	.rodata     type:rodata align:8
+	.data       type:data align:8
+	.bss        type:bss align:8
+
+las.c:
+	.text       start:0x00000000 end:0x00000460
+	.rodata     start:0x00000000 end:0x00000610
+	.data       start:0x00000000 end:0x00000658
+
+las_00.c:
+	.text       start:0x00000460 end:0x000004C8
+	.data       start:0x00000658 end:0x00000CD8
+	.bss        start:0x00000000 end:0x00000010
+
+las_01.c:
+	.data       start:0x00000CD8 end:0x00000FC8
+
+las_02.c:
+	.text       start:0x000004C8 end:0x00000530
+	.rodata     start:0x00000610 end:0x00000624
+	.data       start:0x00000FC8 end:0x00001398
+
+las_03.c:
+	.text       start:0x00000530 end:0x00000674
+	.data       start:0x00001398 end:0x00001A30
+	.bss        start:0x00000010 end:0x00000020
+
+las_04.c:
+	.text       start:0x00000674 end:0x00001A50
+	.rodata     start:0x00000624 end:0x000006B0
+	.data       start:0x00001A30 end:0x00002170
+
+las_05.c:
+	.text       start:0x00001A50 end:0x000048E8
+	.rodata     start:0x000006B0 end:0x00000AE8
+	.data       start:0x00002170 end:0x00003A18
+	.bss        start:0x00000020 end:0x00000050
+
+las_06.c:
+	.text       start:0x000048E8 end:0x00004950
+	.rodata     start:0x00000AE8 end:0x00000BE8
+	.data       start:0x00003A18 end:0x00003E18
+	.bss        start:0x00000050 end:0x00000058
+
+las_07.c:
+	.rodata     start:0x00000BE8 end:0x00000C98
+	.data       start:0x00003E18 end:0x00004378
+
+las_08.c:
+	.text       start:0x00004950 end:0x00004A80
+	.rodata     start:0x00000C98 end:0x00001130
+	.data       start:0x00004378 end:0x00004C40
+
+las_09.c:
+	.text       start:0x00004A80 end:0x00004B64
+	.rodata     start:0x00001130 end:0x000015E4
+	.data       start:0x00004C40 end:0x00007548
+
+las_10.c:
+	.text       start:0x00004B64 end:0x00004E70
+	.rodata     start:0x000015E4 end:0x00001AB0
+	.data       start:0x00007548 end:0x0000A130
+
+las_11.c:
+	.rodata     start:0x00001AB0 end:0x00001BC0
+	.data       start:0x0000A130 end:0x0000A5D8
+
+las_12.c:
+	.rodata     start:0x00001BC0 end:0x00001C18
+	.data       start:0x0000A5D8 end:0x0000AA08
+
+las_13.c:
+	.text       start:0x00004E70 end:0x00004F2C
+	.rodata     start:0x00001C18 end:0x00001CA0
+	.data       start:0x0000AA08 end:0x0000AF50
+
+las_14.c:
+	.text       start:0x00004F2C end:0x00005A68
+	.rodata     start:0x00001CA0 end:0x00001DD0
+	.data       start:0x0000AF50 end:0x0000B380
+	.bss        start:0x00000058 end:0x00000060
+
+las_15.c:
+	.rodata     start:0x00001DD0 end:0x00001EE0
+	.data       start:0x0000B380 end:0x0000B828
+
+las_16.c:
+	.rodata     start:0x00001EE0 end:0x00001FB0
+	.data       start:0x0000B828 end:0x0000BE88
+
+las_17.c:
+	.rodata     start:0x00001FB0 end:0x00002090
+	.data       start:0x0000BE88 end:0x0000C548
+
+las_18.c:
+	.text       start:0x00005A68 end:0x00005BEC
+	.rodata     start:0x00002090 end:0x00002370
+	.data       start:0x0000C548 end:0x0000CA70
+
+las_19.c:
+	.rodata     start:0x00002370 end:0x000027C4
+	.data       start:0x0000CA70 end:0x0000D7C8
+
+las_20.c:
+	.text       start:0x00005BEC end:0x00005C5C
+	.rodata     start:0x000027C4 end:0x00002F30
+	.data       start:0x0000D7C8 end:0x0000E990
+
+las_21.c:
+	.text       start:0x00005C5C end:0x00005DB0
+	.rodata     start:0x00002F30 end:0x000031E0
+	.data       start:0x0000E990 end:0x0000F900
+
+las_22.c:
+	.rodata     start:0x000031E0 end:0x000032D0
+	.data       start:0x0000F900 end:0x000107D8
+
+las_23.c:
+	.rodata     start:0x000032D0 end:0x000032DC
+	.data       start:0x000107D8 end:0x00010DC8
+
+las_24.c:
+	.rodata     start:0x000032DC end:0x00003374
+	.data       start:0x00010DC8 end:0x00011868
+
+las_25.c:
+	.rodata     start:0x00003374 end:0x0000347C
+	.data       start:0x00011868 end:0x00011F78
+
+las_26.c:
+	.text       start:0x00005DB0 end:0x00005DEC
+	.rodata     start:0x0000347C end:0x00003770
+	.data       start:0x00011F78 end:0x00013770
+
+las_27.c:
+	.text       start:0x00005DEC end:0x00005E54
+	.rodata     start:0x00003770 end:0x00003854
+	.data       start:0x00013770 end:0x00013B28
+	.bss        start:0x00000060 end:0x00000068
+
+las_28.c:
+	.text       start:0x00005E54 end:0x0000611C
+	.rodata     start:0x00003854 end:0x0000408C
+	.data       start:0x00013B28 end:0x00017BF0
+	.bss        start:0x00000068 end:0x00000070
+
+las_29.c:
+	.text       start:0x0000611C end:0x00007778
+	.rodata     start:0x0000408C end:0x00004E7C
+	.data       start:0x00017BF0 end:0x0001F7E8
+	.bss        start:0x00000070 end:0x000000B8
+
+data/battle/battle_database_las.c:
+	.text       start:0x00007778 end:0x00007A5C
+	.rodata     start:0x00004E7C end:0x00005740
+	.data       start:0x0001F7E8 end:0x00024A08
+
+unit/unit_boss_koopa.c:
+	.text       start:0x00007A5C end:0x00007F54
+	.rodata     start:0x00005740 end:0x00005BA0
+	.data       start:0x00024A08 end:0x000272E0
+
+unit/unit_boss_kamec_obaba.c:
+	.text       start:0x00007F54 end:0x0000846C
+	.rodata     start:0x00005BA0 end:0x00005EF4
+	.data       start:0x000272E0 end:0x000298B0
+
+unit/unit_boss_rampell_las.c:
+	.text       start:0x0000846C end:0x00008770
+	.rodata     start:0x00005EF4 end:0x0000674C
+	.data       start:0x000298B0 end:0x00033970
+
+unit/unit_boss_black_peach.c:
+	.text       start:0x00008770 end:0x0000C084
+	.rodata     start:0x0000674C end:0x00006E30
+	.data       start:0x00033970 end:0x0003D158
+	.bss        start:0x000000B8 end:0x00000240
+
+unit/unit_black_karon.c:
+	.text       start:0x0000C084 end:0x0000C124
+	.rodata     start:0x00006E30 end:0x00007064
+	.data       start:0x0003D158 end:0x0003F5C8
+
+unit/unit_karon.c:
+	.text       start:0x0000C124 end:0x0000C1C4
+	.rodata     start:0x00007064 end:0x0000730C
+	.data       start:0x0003F5C8 end:0x00041AE8
+
+las_30.c:
+	.rodata     start:0x0000730C end:0x00007398
+	.data       start:0x00041AE8 end:0x00042090
+	.bss        start:0x00000240 end:0x00000248
+
+unit/unit_boss_batten_leader.c:
+	.text       start:0x0000C1C4 end:0x0000EA4C
+	.rodata     start:0x00007398 end:0x00007898
+	.data       start:0x00042090 end:0x00046F40
+	.bss        start:0x00000248 end:0x000002E4
+
+unit/unit_boss_batten_satellite.c:
+	.text       start:0x0000EA4C end:0x0000F30C
+	.rodata     start:0x00007898 end:0x0000799C
+	.data       start:0x00046F40 end:0x00047AA0
+
+unit/unit_boss_bunbaba.c:
+	.text       start:0x0000F30C end:0x0000F3BC
+	.rodata     start:0x0000799C end:0x00007D60
+	.data       start:0x00047AA0 end:0x0004A688
+
+unit/unit_super_killer.c:
+	.rodata     start:0x00007D60 end:0x00007E14
+	.data       start:0x0004A688 end:0x0004B110
+
+unit/unit_super_killer_cannon.c:
+	.text       start:0x0000F3BC end:0x0000F52C
+	.rodata     start:0x00007E14 end:0x00007FD8
+	.data       start:0x0004B110 end:0x0004C978
+
+unit/unit_super_mahorn.c:
+	.text       start:0x0000F52C end:0x0000FF40
+	.rodata     start:0x00007FD8 end:0x000082C4
+	.data       start:0x0004C978 end:0x00050D40
+
+unit/unit_wanwan.c:
+	.text       start:0x0000FF40 end:0x000107BC
+	.rodata     start:0x000082C4 end:0x000084C0
+	.data       start:0x00050D40 end:0x00052818
+
+unit/unit_basabasa_chururu.c:
+	.rodata     start:0x000084C0 end:0x00008F30
+	.data       start:0x00052818 end:0x00053CA8
+
+event/evt_shuryolight.c:
+	.text       start:0x000107BC end:0x0001111C
+	.rodata     start:0x00008F30 end:0x000090D8
+	.data       start:0x00053CA8 end:0x00053FF0
+
+unit/unit_phantom.c:
+	.text       start:0x0001111C end:0x000115EC
+	.rodata     start:0x000090D8 end:0x00009110
+	.data       start:0x00053FF0 end:0x00055B4C
+	.bss        start:0x000002E4 end:0x00000354
+
+unit/unit_heavy_bom.c:
+	.text       start:0x000115EC end:0x0001174C
+	.rodata     start:0x00009110 end:0x00009128
+	.data       start:0x00055B4C end:0x000571B0
+
+unit/unit_honenoko.c:
+	.text       start:0x0001174C end:0x000117EC
+	.rodata     start:0x00009128 end:0x00009374
+	.data       start:0x000571B0 end:0x00058BF0
+
+unit/unit_red_honenoko.c:
+	.text       start:0x000117EC end:0x0001188C
+	.rodata     start:0x00009374 end:0x000094AC
+	.data       start:0x00058BF0 end:0x0005A630
+
+unit/unit_boss_marilyn_las.c:
+	.data       start:0x0005A630 end:0x0005B9D8
+
+unit/unit_boss_majolyne_las.c:
+	.text       start:0x0001188C end:0x00011990
+	.rodata     start:0x000094AC end:0x00009545
+	.data       start:0x0005B9D8 end:0x0005E148

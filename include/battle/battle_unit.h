@@ -397,46 +397,47 @@ typedef struct BattleWorkUnitPart {
 } BattleUnitPart;
 
 typedef struct BattleWorkUnitBadgesEquipped {
-    u8 CloseCall;     // 0x0
-    u8 PrettyLucky;   // 0x1
-    u8 LuckyDay;      // 0x2
-    u8 field_3;       // 0x3
-    u8 PowerPlus;     // 0x4
-    u8 PUpDDown;      // 0x5
-    u8 AllOrNothing;  // 0x6
-    u8 MegaRush;      // 0x7
-    u8 PowerRush;     // 0x8
-    u8 PDownDUp;      // 0x9
-    u8 DoublePain;    // 0xA
-    u8 LastStand;     // 0xB
-    u8 DefendPlus;    // 0xC
-    u8 DamageDodge;   // 0xD
-    u8 HappyHeart;    // 0xE
-    u8 HappyFlower;   // 0xF
-    u8 ReturnPostage; // 0x10
-    u8 HpPlus;        // 0x11
-    u8 FpPlus;        // 0x12
-    u8 DoubleDip;     // 0x13
-    u8 TripleDip;     // 0x14
-    u8 FlowerSaver;   // 0x15
-    u8 FeelingFine;   // 0x16
-    u8 ZapTap;        // 0x17
-    u8 PityFlower;    // 0x18
-    u8 HpDrain;       // 0x19
-    u8 FpDrain;       // 0x1A
-    u8 Refund;        // 0x1B
-    u8 Charge;        // 0x1C
-    u8 SuperCharge;   // 0x1D
-    u8 DefendUnused;  // 0x1E
-    u8 Jumpman;       // 0x1F
-    u8 Hammerman;     // 0x20
-    u8 IcePower;      // 0x21
-    u8 SpikeShield;   // 0x22
-    u8 SuperAppeal;   // 0x23
-    u8 LuckyStart;    // 0x24
-    u8 Simplifier;    // 0x25
-    u8 Unsimplifier;  // 0x26
-    u8 AutoCommand;   // 0x27
+    u8 field_0x0[8];    // 0x0
+    u8 CloseCall;       // 0x8
+    u8 PrettyLucky;    // 0x9
+    u8 LuckyDay;       // 0xA
+    u8 field_0xB;      // 0xB
+    u8 PowerPlus;      // 0xC
+    u8 PUpDDown;       // 0xD
+    u8 AllOrNothing;   // 0xE
+    u8 MegaRush;       // 0xF
+    u8 PowerRush;      // 0x10
+    u8 PDownDUp;       // 0x11
+    u8 DoublePain;     // 0x12
+    u8 LastStand;      // 0x13
+    u8 DefendPlus;     // 0x14
+    u8 DamageDodge;    // 0x15
+    u8 HappyHeart;     // 0x16
+    u8 HappyFlower;    // 0x17
+    u8 ReturnPostage;  // 0x18
+    u8 HpPlus;         // 0x19
+    u8 FpPlus;         // 0x1A
+    u8 DoubleDip;      // 0x1B
+    u8 TripleDip;      // 0x1C
+    u8 FlowerSaver;    // 0x1D
+    u8 FeelingFine;    // 0x1E
+    u8 ZapTap;         // 0x1F
+    u8 PityFlower;     // 0x20
+    u8 HpDrain;        // 0x21
+    u8 FpDrain;        // 0x22
+    u8 Refund;         // 0x23
+    u8 Charge;         // 0x24
+    u8 SuperCharge;    // 0x25
+    u8 DefendUnused;   // 0x26
+    u8 Jumpman;        // 0x27
+    u8 Hammerman;      // 0x28
+    u8 IcePower;       // 0x29
+    u8 SpikeShield;    // 0x2A
+    u8 SuperAppeal;    // 0x2B
+    u8 LuckyStart;     // 0x2C
+    u8 Simplifier;     // 0x2D
+    u8 Unsimplifier;   // 0x2E
+    u8 AutoCommand;    // 0x2F
 } BattleWorkUnitBadgesEquipped;
 
 typedef struct BattleWorkHpGauge { // TODO: diff header file?
@@ -541,59 +542,60 @@ typedef struct BattleUnit {
     s8 mInstantKillStrength;                     // 0x135
     u8 pad_0x136[2];                             // 0x136, TODO remove?
     s32 mStatusFlags;                            // 0x138
-    s32 protectId;                               // 0x13C
-    BattleVulnerableStatus* vulnStatus;          // 0x140
-    Vec mMoveStartPos;                           // 0x144
-    Vec mMoveCurrentPos;                         // 0x150
-    Vec mMoveTargetPos;                          // 0x15C
-    u8 field_0x168[0x16C - 0x168];               // 0x168
-    f32 mMoveSpeedXZ;                            // 0x16C
-    f32 mFallAccel;                              // 0x170
-    f32 mMoveSpeedY;                             // 0x174
-    u8 field_0x178[0x184 - 0x178];               // 0x178
-    s8 moveDirection;                            // 0x184
-    s8 faceDirection;                            // 0x185
-    u8 field_0x186[0x1F8 - 0x186];               // 0x186
-    BattleWorkHpGauge hpGauge;                   // 0x1F8
-    s32 work[16];                                // 0x214
-    BattleUnitPart* currentTarget;           // 0x254
-    u8 field_0x258[0x25C - 0x258];               // 0x258
-    s16 hpDamageCount;                           // 0x25C, number of damaging moves
-    u8 field_0x25E[0x260 - 0x25E];               // 0x25E
-    s32 totalHpDamageTaken;                      // 0x260
-    u8 field_0x264[0x26C - 0x264];               // 0x264
-    s8 hpDamageTaken;                            // 0x26C
-    s8 fpDamageTaken;                            // 0x26D
-    u8 field_0x26E[0x270 - 0x26E];               // 0x26E
-    s32 damagePattern;                           // 0x270, TODO: rename?
-    s32 damageCode;                              // 0x274
-    BattleUnitToken_Flags mTokenFlags;           // 0x278
-    u8 field_0x27C[0x284 - 0x27C];               // 0x27C
-    s32 initEventId;                             // 0x284
-    void* waitEventCode;                         // 0x288
-    s32 waitEventId;                             // 0x28C
-    void* unisonPhaseEventCode;                  // 0x290
-    void* phaseEventCode;                        // 0x294
-    s32 phaseEventId;                            // 0x298
-    u8 field_0x29C[0x2A4 - 0x29C];               // 0x29C
-    s32 attackEventId;                           // 0x2A4
-    u8 field_0x2A8[0x2AC - 0x2A8];               // 0x2A8
-    void* damageEventCode;                       // 0x2AC
-    s32 damageEventId;                           // 0x2B0
-    u8 field_0x2B4[0x2DC - 0x2B4];               // 0x2B4
+    u8 field_0x13C[0x140 - 0x13C];               // 0x13C
+    s32 protectId;                               // 0x140
+    BattleVulnerableStatus* vulnStatus;          // 0x144
+    Vec mMoveStartPos;                           // 0x148
+    Vec mMoveCurrentPos;                         // 0x154
+    Vec mMoveTargetPos;                          // 0x160
+    u8 field_0x16C[0x170 - 0x16C];               // 0x16C
+    f32 mMoveSpeedXZ;                            // 0x170
+    f32 mFallAccel;                              // 0x174
+    f32 mMoveSpeedY;                             // 0x178
+    u8 field_0x17C[0x188 - 0x17C];               // 0x17C
+    s8 moveDirection;                            // 0x188
+    s8 faceDirection;                            // 0x189
+    u8 field_0x18A[0x1FC - 0x18A];               // 0x18A
+    BattleWorkHpGauge hpGauge;                   // 0x1FC
+    s32 work[16];                                // 0x218
+    BattleUnitPart* currentTarget;           // 0x258
+    u8 field_0x25C[0x260 - 0x25C];               // 0x25C
+    s16 hpDamageCount;                           // 0x260, number of damaging moves
+    u8 field_0x262[0x264 - 0x262];               // 0x262
+    s32 totalHpDamageTaken;                      // 0x264
+    u8 field_0x268[0x270 - 0x268];               // 0x268
+    s8 hpDamageTaken;                            // 0x270
+    s8 fpDamageTaken;                            // 0x271
+    u8 field_0x272[0x274 - 0x272];               // 0x272
+    s32 damagePattern;                           // 0x274, TODO: rename?
+    s32 damageCode;                              // 0x278
+    BattleUnitToken_Flags mTokenFlags;           // 0x27C
+    u8 field_0x280[0x288 - 0x280];               // 0x280
+    s32 initEventId;                             // 0x288
+    void* waitEventCode;                         // 0x28C
+    s32 waitEventId;                             // 0x290
+    void* unisonPhaseEventCode;                  // 0x294
+    void* phaseEventCode;                        // 0x298
+    s32 phaseEventId;                            // 0x29C
+    u8 field_0x2A0[0x2A8 - 0x2A0];               // 0x2A0
+    s32 attackEventId;                           // 0x2A8
+    u8 field_0x2AC[0x2B0 - 0x2AC];               // 0x2AC
+    void* damageEventCode;                       // 0x2B0
+    s32 damageEventId;                           // 0x2B4
+    u8 field_0x2B8[0x2DC - 0x2B8];               // 0x2B8
     BattleWorkUnitBadgesEquipped badgesEquipped; // 0x2DC
-    ItemType heldItem;                           // 0x304, 4 bytes
-    ItemDropData* dropTable;                     // 0x308
-    u8 field_0x30C[0x30D - 0x30C];               // 0x30C
-    u8 mMoveColorLv;                             // 0x30D
-    u8 field_0x30E[0x334 - 0x30E];               // 0x30E
-    s16 mBurnDamageFlameState;                   // 0x334
-    s16 mbBurnDamageFlameActive;                 // 0x336
-    s32 mBurnDamageFlameAnimTimer;               // 0x338
-    f32 mBurnDamageFlameScale;                   // 0x33C
-    EffectEntry* mBurnDamageFlameEff;            // 0x340
-    BattleWorkStatusIcon mStatusIconWork;        // 0x344
-    u8 field_0xAE4[0xB30 - 0xAE4];               // 0xAE4
+    ItemType heldItem;                           // 0x30C, 4 bytes
+    ItemDropData* dropTable;                     // 0x310
+    u8 field_0x314[0x315 - 0x314];               // 0x314
+    u8 mMoveColorLv;                             // 0x315
+    u8 field_0x316[0x33C - 0x316];               // 0x316
+    s16 mBurnDamageFlameState;                   // 0x33C
+    s16 mbBurnDamageFlameActive;                 // 0x33E
+    s32 mBurnDamageFlameAnimTimer;               // 0x340
+    f32 mBurnDamageFlameScale;                   // 0x344
+    EffectEntry* mBurnDamageFlameEff;            // 0x348
+    BattleWorkStatusIcon mStatusIconWork;        // 0x34C
+    u8 field_0xAEC[0xB38 - 0xAEC];               // 0xAEC
 } BattleUnit;
 
 typedef struct BattleUnitKind {
@@ -706,6 +708,7 @@ void BtlUnit_RecoverHp(BattleUnit* unit, s32 value);
 void BtlUnit_RecoverFp(BattleUnit* unit, s32 value);
 s32 BtlUnit_GetHitDamage(BattleUnit* unit);
 s32 BtlUnit_GetTotalHitDamage(BattleUnit* unit);
+void BtlUnit_SetTotalHitDamage(BattleUnit* unit, s16 damage);
 void* BtlUnit_GetData(BattleUnit* unit, s32 tag);
 BOOL BtlUnit_CheckData(BattleUnit* unit, s32 tag);
 BOOL BtlUnit_GetEnemyBelong(BattleUnit* unit);

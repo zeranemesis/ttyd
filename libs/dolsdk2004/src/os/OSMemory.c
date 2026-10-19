@@ -9,7 +9,7 @@
 
 static BOOL OnReset(BOOL final);
 
-static OSResetFunctionInfo ResetFunctionInfo = {
+static OSResetFunctionInfo ResetFunctionInfo_803CEB78 = {
     OnReset,
     0x7F,
     NULL,
@@ -211,7 +211,7 @@ void __OSInitMemoryProtection(void) {
     __OSSetInterruptHandler(__OS_INTERRUPT_MEM_2, MEMIntrruptHandler);
     __OSSetInterruptHandler(__OS_INTERRUPT_MEM_3, MEMIntrruptHandler);
     __OSSetInterruptHandler(__OS_INTERRUPT_MEM_ADDRESS, MEMIntrruptHandler);
-    OSRegisterResetFunction(&ResetFunctionInfo);
+    OSRegisterResetFunction(&ResetFunctionInfo_803CEB78);
 
 #ifdef DEBUG
     if (OSGetConsoleSimulatedMemSize() < OSGetPhysicalMemSize() && OSGetConsoleSimulatedMemSize() == 0x1800000)

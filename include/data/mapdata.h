@@ -4,7 +4,10 @@
 
 typedef struct MapData {
     const char* mapName;
-    s32* eventAddr;
+    union {
+        s32* eventAddr;
+        s32* initEvtCode;
+    };
 } MapData;
 
 typedef struct AreaData {

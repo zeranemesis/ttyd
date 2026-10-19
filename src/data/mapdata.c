@@ -481,15 +481,24 @@ UNUSED   000028 ........ maxAreaInWorld mapdata.o
 00032878 000158 80037e58  4 relSetEvtAddr 	mapdata.o
 000327c8 0000b0 80037da8  4 relSetBtlAddr 	mapdata.o */
 
-// forward declarations
 WorldData* worldDataPtr(void);
 int maxMapInArea(const char* areaName);
 int maxAreaInWorld(void);
+extern void area_aaa_init(void);
+extern void area_gor_init(void);
 
 MapData* mapDataPtr(const char* mapName) {
-    WorldData* wp = worldDataPtr();
+    static int s_areasInitialized = 0;
+    WorldData* wp;
     int i;
     int j;
+
+    if (!s_areasInitialized) {
+        s_areasInitialized = 1;
+        area_aaa_init();
+        area_gor_init();
+    }
+    wp = worldDataPtr();
 
     for (i = 0; i < maxAreaInWorld(); i++) {
         for (j = 0; j < maxMapInArea(wp->areas[i]->areaName); j++) {

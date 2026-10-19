@@ -10,8 +10,8 @@ typedef union BeroINFO {
 
 typedef struct BeroEntry {
 	const char* hitName; //0x0
-	s16 kinddirArg1; //0x4
-	s16 kinddirArg2; //0x6
+	u16 kinddirArg1; //0x4
+	u16 kinddirArg2; //0x6
 	s32 kinddirArg3; //0x8
 	s32 field_0xC; //0xC
 	s32 unknown1; //0x10
@@ -22,8 +22,8 @@ typedef struct BeroEntry {
 	s32* exitEvent; //0x24
 	s32 nextareaArg1; //0x28
 	const char* nextareaArg2; //0x2C
-	s16 animeArg1; //0x30
-	s16 animeArg2; //0x32
+	u16 animeArg1; //0x30
+	u16 animeArg2; //0x32
 	s32 animeArg3; //0x34
 	s32 animeArg4; //0x28
 } BeroEntry;

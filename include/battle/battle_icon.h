@@ -4,7 +4,7 @@
 #include "driver/icondrv.h"
 
 typedef struct BattleWorkIcon {
-	s16 flags; //0x0
+	u16 flags; //0x0
 	s16 iconId; //0x2
 	s32 index; //0x4, TODO: rename?
 	Vec position; //0x8

@@ -13,7 +13,14 @@
 #include "dolphin/gx/GXVert.h"
 #include "dolphin/mtx.h"
 #include "dolphin/os.h"
+#include "demo/DEMOPad.h"
+#include "manager/evtmgr.h"
+#include "manager/evtmgr_cmd.h"
+#include "evt/evt_cmd.h"
 #include "manager/dvdmgr.h"
+#include "pmario_sound.h"
+
+extern void _mapFree(u32 heapId, void* alloc);
 
 typedef struct THPHeader {
     char magic[4];             // 0x0
@@ -102,12 +109,18 @@ typedef struct THPSimple {
     s32 audioOutputIndex;                         // 0x14C
 } THPSimple;
 
+typedef struct THPDemoWork {
+    u8 pad[0x78];
+    u32 field_78;
+    u32 sfxId;
+} THPDemoWork;
+
 #define SAMPLES_PER_AUDIO_FRAME 160 // 5ms @ 32khz
 #define BYTES_PER_AUDIO_FRAME (SAMPLES_PER_AUDIO_FRAME * sizeof(s16) * 2)
 
 // clang-format off
 //.data
-// 32768 * ((vol * vol) / (127 * 127)) 
+// 32768 * ((vol * vol) / (127 * 127))
 static u16 VolumeTable[] = {
         0,     2,     8,    18,    32,    50,    73,    99,
       130,   164,   203,   245,   292,   343,   398,   457,
@@ -151,6 +164,27 @@ void THPGXRestore(void);
 void THPGXYuv2RgbSetup(GXRenderModeObj* rmode);
 void THPGXYuv2RgbDraw(u8* y_data, u8* u_data, u8* v_data, s16 x, s16 y, s16 textureWidth, s16 textureHeight,
                       s16 polygonWidth, s16 polygonHeight);
+
+s32 fn_801FB394(EventEntry* event) {
+    s32 eventId = evtGetValue(event, event->args[0]);
+    EventEntry* target = evtGetPtrID(eventId);
+    THPDemoWork* work = (THPDemoWork*)target->lwData[9];
+
+    if (work->field_78 == 0 && work->sfxId != 0) {
+        psndSFXOff(work->sfxId);
+        work->sfxId = 0;
+    }
+
+    if (work != NULL) {
+        _mapFree(DemoNumValidPads, work);
+        target->lwData[9] = 0;
+    }
+
+    if (evtCheckID(eventId)) {
+        evtDeleteID(eventId);
+    }
+    return EVT_RETURN_DONE;
+}
 
 BOOL THPSimpleInit(s32 audioSystem) {
     memset(&SimpleControl, 0, sizeof(THPSimple));

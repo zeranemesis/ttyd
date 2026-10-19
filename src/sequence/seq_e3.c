@@ -45,12 +45,12 @@ static seq_e3_work work;
 
 //.sdata
 static seq_e3_work* wp = &work;
-seq_e3_entry e3_tbl[3] = {
+static seq_e3_entry e3_tbl[3] = {
     { 23, -140.0f, 100.0f },
     { 35, 140.0f, 100.0f },
     { 96, 0.0f, -100.0f },
 };
-char* anim_tbl[] = { "b_mario", "PKR_W_1", "PKR_S_1", "PKR_A_2A", "PNK_W_1", "PNK_S_1",
+static char* anim_tbl[] = { "b_mario", "PKR_W_1", "PKR_S_1", "PKR_A_2A", "PNK_W_1", "PNK_S_1",
                      "PNK_O_1", "c_windy", "PWD_W_1", "PWD_S_1",  "PWD_A_7" };
 
 // Forward Declarations

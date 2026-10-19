@@ -17,8 +17,57 @@
 extern void badgeShop_init(void);
 extern void yuugijou_init(void);
 extern void johoya_init(void);
+void stg5_15_init02(void);
+void stg8_15_init(void);
+void stg5_30_init02(void);
+void stg5_30_init01(void);
+void stg5_21_01_init00(void);
+void stg5_21_init03(void);
+void stg5_18_init_02(void);
+void stg5_12_init01(void);
+void stage4_10_init(void);
+void stage4_09_05_init(void);
+void stage4_05_init(void);
+void stage4_04_01_init(void);
+void stage4_04_init(void);
+void stage4_00_init(void);
+void stg3_31_00_init(void);
+void stg3_20_15_init(void);
+void stg3_20_14_init(void);
+void stg3_20_13_init(void);
+void stg3_20_init_1(void);
+void stg3_20_12_init(void);
+void stg2_21_init02(void);
+void stg2_18_init02(void);
+void stg2_18_init01(void);
+void stg1_35_init01(void);
+void stg1_30_init(void);
+void stg0_13_init00(void);
+void N_stg9_02_init(void);
+void stg7_15_room_C_init(void);
+void stg7_15_room_B_init(void);
+void stg7_15_room_A_init(void);
+void stg7_15_init(void);
+void stg7_03_white_5(void);
+void stg7_03_white_4(void);
+void stg7_03_white_3(void);
+void stg7_03_white_2(void);
+void stg7_03_white_1(void);
+void stg7_03_white_0(void);
+void stg6_end_init02(void);
+void stg6_end_init01(void);
+void stg6_72_init(void);
 
 extern GlobalWork* gp;
+
+#ifndef TARGET_PC
+extern GlobalWork* wp_80422810;
+extern void fn_800D67D0(void);
+extern void fn_8022D65C(void);
+#define gp wp_80422810
+#define pouchInit fn_800D67D0
+#define yuugijou_init fn_8022D65C
+#endif
 
 EventData stage0_evt[] = {
 	{0, 0, 0, 0, "STG0_00", "プロローグ", "aaa_00", "prologue", stg0_00_init},
@@ -38,7 +87,7 @@ EventData stage0_evt[] = {
 	{0, 1, 11, 13, "STG0_12", "プニとの遭遇", "tik_04", "dokan", NULL},
 	{0, 1, 11, 14, "STG0_12_01", "スイッチペラ階段", "tik_04", "dokan", NULL},
 	{0, 1, 11, 15, "STG0_12_02", "ペラ魔人１", "tik_19", "s_bero", stg0_12_02_init},
-	{0, 1, 11, 16, "STG0_13", "はじめての飛行", "tik_04", "n_bero_5", stg0_13_init},
+	{0, 1, 11, 16, "STG0_13", "はじめての飛行", "tik_04", "n_bero_5", stg0_13_init00},
 	{0, 1, 11, 16, "STG0_13", "大きな扉", "tik_05", "e_bero", NULL},
 	{0, 1, 11, 17, "STG0_14", "魔方陣の前", "tik_05", "e_bero", NULL},
 	{0, 1, 11, 18, "STG0_15", "魔方陣", "tik_05", "e_bero", NULL},
@@ -95,13 +144,13 @@ EventData stage1_evt[] = {
 	{0, 0, 0, 61, "STG1_19_02", "クッパ編：クッパ飛び立つ", "kpa_00", "", NULL},
 	{0, 2, 0, 62, "STG1_20", "ノコタロウ旅立ち", "nok_01", "nokotarou", stg1_20_init},
 	{0, 2, 0, 63, "STG1_21", "ピーチからのメール", "hei_01", "e_bero", NULL},
-	{0, 1, 0, 64, "STG1_30", "ナンシーさん", "gor_01", "e_bero", stg1_30_init00},
+	{0, 1, 0, 64, "STG1_30", "ナンシーさん", "gor_01", "e_bero", stg1_30_init},
 	{0, 1, 0, 64, "STG1_30", "大きな扉ステージ１後", "tik_05", "e_bero", stg1_30_init01},
 	{0, 1, 0, 65, "STG1_31", "地図解読ステージ１後", "gor_02", NULL, NULL},
 	{0, 1, 0, 66, "STG1_32", "再度プニとの遭遇", "tik_04", "dokan", NULL},
 	{0, 1, 0, 67, "STG1_33", "プニ助けを請う", "tik_03", "s_bero_3", NULL},
 	{0, 1, 0, 68, "STG1_34", "プニ壁開ける", "tik_03", "s_bero_3", NULL},
-	{0, 1, 0, 69, "STG1_35", "プニ仲間になる", "tik_03", "s_bero_3", stg1_35_init},
+	{0, 1, 0, 69, "STG1_35", "プニ仲間になる", "tik_03", "s_bero_3", stg1_35_init01},
 	{0, 1, 10, 70, "STG1_END", "ステージ２へ", "tik_03", "a_slit", NULL}
 };
 
@@ -138,14 +187,14 @@ EventData stage2_evt[] = {
 	{0, 5, 0, 97, "STG2_17", "飛行機で？", "mri_19", "dokan1", NULL},
 	{0, 5, 0, 97, "STG2_17", "トゲ族と出会う", "mri_06", "dokan1", NULL},
 	{0, 5, 0, 98, "STG2_18", "ちびトゲ", "mri_07", "e_bero", NULL},
-	{0, 5, 0, 98, "STG2_18", "プニ族ＶＳトゲ族１", "mri_08", "w_bero", stg2_18_init00},
-	{0, 5, 0, 98, "STG2_18", "青い鍵入手", "mri_09", "w_bero", stg2_18_init01},
+	{0, 5, 0, 98, "STG2_18", "プニ族ＶＳトゲ族１", "mri_08", "w_bero", stg2_18_init01},
+	{0, 5, 0, 98, "STG2_18", "青い鍵入手", "mri_09", "w_bero", stg2_18_init02},
 	{0, 5, 0, 99, "STG2_19", "青い牢屋の中の様子", "mri_03", "", stg2_19_init},
 	{0, 5, 0, 100, "STG2_19_01", "プニコ再会直前", "mri_03", "dokan", NULL},
 	{0, 5, 0, 101, "STG2_20", "プニコ再会", "mri_03", "dokan", stg2_20_init},
 	{0, 5, 0, 102, "STG2_21", "シャボン玉２", "mri_05", "dokan3", stg2_21_init00},
 	{0, 5, 0, 102, "STG2_21", "プニ族ＶＳトゲ族２", "mri_11", "e_bero", NULL},
-	{0, 5, 0, 102, "STG2_21", "ワナにはまる", "mri_17", "w_bero", stg2_21_init01},
+	{0, 5, 0, 102, "STG2_21", "ワナにはまる", "mri_17", "w_bero", stg2_21_init02},
 	{0, 5, 0, 103, "STG2_21_01", "なぞの像", "mri_17", "w_bero", stg2_21_01_init},
 	{0, 5, 0, 104, "STG2_21_02", "絵合わせ", "mri_09", "w_bero", stg2_21_02_init},
 	{0, 5, 0, 105, "STG2_21_03", "スーパーブーツ", "mri_10", "s_bero", stg2_21_03_init},
@@ -215,16 +264,16 @@ EventData stage3_evt[] = {
 	{0, 5, 0, 149, "STG3_20_09", "コンテナふきとばし", "tou_06", "n_bero", stg3_20_09_init},
 	{0, 4, 0, 150, "STG3_20_10", "階段出現", "tou_06", "n_bero", NULL},
 	{0, 4, 0, 151, "STG3_20_11", "床破壊", "tou_06", "n_bero", NULL},
-	{0, 4, 0, 152, "STG3_20_12", "キノシコワ密談", "tou_05", "fall", stg3_20_12_init00},
+	{0, 4, 0, 152, "STG3_20_12", "キノシコワ密談", "tou_05", "fall", stg3_20_12_init},
 	{0, 4, 0, 152, "STG3_20_12", "１部−３位（毒ケーキ）", "tou_08", "n_bero", stg3_20_12_init01},
 	{0, 4, 0, 152, "STG3_20_12", "１部−２位", "tou_08", "n_bero", stg3_20_12_init02},
-	{0, 1, 0, 153, "STG3_20_13", "１部−１位", "tou_08", "n_bero", stg3_20_13_init},
-	{0, 5, 0, 154, "STG3_20_14", "ロビーのポスター", "tou_02", "n_bero_4", stg3_20_14_init},
-	{0, 1, 0, 155, "STG3_20_15", "カギをあける", "tou_06", "n_bero", stg3_20_15_init},
-	{0, 1, 0, 156, "STG3_20_16", "干物を発見", "tou_12", "w_bero", stg3_20_16_init},
+	{0, 1, 0, 153, "STG3_20_13", "１部−１位", "tou_08", "n_bero", stg3_20_init_1},
+	{0, 5, 0, 154, "STG3_20_14", "ロビーのポスター", "tou_02", "n_bero_4", stg3_20_13_init},
+	{0, 1, 0, 155, "STG3_20_15", "カギをあける", "tou_06", "n_bero", stg3_20_14_init},
+	{0, 1, 0, 156, "STG3_20_16", "干物を発見", "tou_12", "w_bero", stg3_20_15_init},
 	{0, 1, 0, 157, "STG3_21", "チャンピョンに初挑戦つづき", "tou_08", "dokan", stg3_21_init},
 	{0, 1, 0, 158, "STG3_30", "マリオチャンピョンになる", "tou_08", NULL, stg3_30_init00},
-	{0, 1, 0, 158, "STG3_30", "マリオチャンピョン", "tou_07", "n_bero", stg3_30_init01},
+	{0, 1, 0, 158, "STG3_30", "マリオチャンピョン", "tou_07", "n_bero", stg3_31_00_init},
 	{0, 1, 0, 159, "STG3_30_01", "ダクト入口", "tou_07", "n_bero", NULL},
 	{0, 1, 0, 160, "STG3_30_02", "初めてのダクト", "tou_13", "e_bero_", NULL},
 	{0, 1, 0, 161, "STG3_30_03", "盗み聞き", "tou_13", "e_bero_", NULL},
@@ -248,16 +297,16 @@ EventData stage3_evt[] = {
 };
 
 EventData stage4_evt[] = {
-	{0, 1, 0, 178, "STG4_00", "ステージ４へようこそ", "sys_01", "stg_4", stg4_00_init},
+	{0, 1, 0, 178, "STG4_00", "ステージ４へようこそ", "sys_01", "stg_4", stage4_00_init},
 	{0, 1, 0, 179, "STG4_01_00", "門番と話した", "usu_01", "w_bero", NULL},
 	{0, 1, 0, 180, "STG4_01", "村長がブタに！！", "usu_00", "e_bero", NULL},
 	{0, 1, 0, 181, "STG4_02", "門番がブタに！！", "usu_01", "w_bero", NULL},
 	{0, 1, 0, 182, "STG4_02_02", "ブタ門番を見て一言", "usu_01", "w_bero", NULL},
 	{0, 1, 0, 183, "STG4_02_03", "門を開く", "usu_01", "w_bero", NULL},
 	{0, 1, 0, 184, "STG4_03", "倉庫のカギを入手", "gra_02", "w_bero_1", NULL},
-	{0, 1, 0, 185, "STG4_04", "倉庫を開ける", "usu_01", "e_bero", stg4_04_init},
-	{0, 1, 0, 187, "STG4_04_01", "ペラ魔人（ロール取得）", "usu_01", "e_bero", stg4_04_01_init},
-	{0, 1, 0, 188, "STG4_05", "わら", "gra_02", "w_bero_1", stg4_05_init},
+	{0, 1, 0, 185, "STG4_04", "倉庫を開ける", "usu_01", "e_bero", stage4_04_init},
+	{0, 1, 0, 187, "STG4_04_01", "ペラ魔人（ロール取得）", "usu_01", "e_bero", stage4_04_01_init},
+	{0, 1, 0, 188, "STG4_05", "わら", "gra_02", "w_bero_1", stage4_05_init},
 	{0, 5, 0, 189, "STG4_06", "木の幹", "gra_04", "e_bero", NULL},
 	{0, 5, 0, 190, "STG4_06_01", "床を吹き飛ばす", "gra_05", "w_bero", NULL},
 	{0, 1, 0, 191, "STG4_06_02", "穴を開ける", "gra_05", "w_bero", NULL},
@@ -268,8 +317,8 @@ EventData stage4_evt[] = {
 	{0, 1, 0, 196, "STG4_09_02", "テレサ箱", "jin_07", "e_bero", NULL},
 	{0, 1, 0, 197, "STG4_09_03", "１０００テレサ", "jin_00", "ana", NULL},
 	{0, 1, 0, 198, "STG4_09_04", "かぎ", "jin_00", "e_bero_3", NULL},
-	{0, 1, 0, 199, "STG4_09_05", "じょうまえ", "jin_00", "e_bero_1", stg4_09_05_init},
-	{0, 1, 0, 200, "STG4_10", "ランペル遭遇", "jin_04", "s_bero", stg4_10_init},
+	{0, 1, 0, 199, "STG4_09_05", "じょうまえ", "jin_00", "e_bero_1", stage4_09_05_init},
+	{0, 1, 0, 200, "STG4_10", "ランペル遭遇", "jin_04", "s_bero", stage4_10_init},
 	{0, 1, 0, 201, "STG4_10_02", "入れ替わったマリオ", "jin_04", NULL, NULL},
 	{0, 0, 0, 202, "STG4_11", "ｓｔｇ４魔女三人組", "usu_00", "evt_majo3", stg4_11_init},
 	{0, 0, 0, 203, "STG4_11_02", "待伏せランペル１", "gra_00", "e_bero", NULL},
@@ -308,16 +357,16 @@ EventData stage5_evt[] = {
 	{0, 1, 0, 231, "STG5_10", "怨霊襲撃", "muj_20", NULL, NULL},
 	{0, 1, 0, 232, "STG5_11", "無人島漂着", "muj_00", NULL, NULL},
 	{0, 2, 0, 233, "STG5_12", "仲間割れ", "muj_01", "w_bero", NULL},
-	{0, 2, 0, 233, "STG5_12", "挙手願おう", "muj_01", "", stg5_12_init},
+	{0, 2, 0, 233, "STG5_12", "挙手願おう", "muj_01", "", stg5_12_init01},
 	{0, 2, 0, 234, "STG5_13", "サンダース孤軍奮闘", "muj_04", "w_bero", NULL},
 	{0, 2, 0, 235, "STG5_15", "にげる水夫たち", "muj_03", "e_bero", NULL},
-	{0, 2, 0, 235, "STG5_15", "オドオドした水夫説得", "muj_01", "e_bero1", stg5_15_init00},
+	{0, 2, 0, 235, "STG5_15", "オドオドした水夫説得", "muj_01", "e_bero1", stg5_15_init02},
 	{0, 2, 0, 235, "STG5_15", "サンダース救出", "muj_05", "w_bero", stg5_15_init01},
 	{0, 4, 0, 236, "STG5_16", "マルコのワイン", "muj_01", "e_bero1", NULL},
 	{0, 5, 0, 237, "STG5_17", "ワインゲット", "muj_01", "e_bero1", stg5_17_init},
 	{0, 1, 0, 238, "STG5_18", "サンダース救出２", "muj_05", "w_bero", stg5_18_init},
 	{0, 1, 0, 239, "STG5_18_01", "サンダース仲間", "muj_05", "w_bero", NULL},
-	{0, 3, 0, 240, "STG5_18_02", "挙手願おうその２", "muj_01", "e_bero1", stg5_18_02_init},
+	{0, 3, 0, 240, "STG5_18_02", "挙手願おうその２", "muj_01", "e_bero1", stg5_18_init_02},
 	{0, 3, 9, 241, "STG5_18_03", "マルコと宝石", "muj_05", "w_bero", NULL},
 	{0, 3, 0, 242, "STG5_19", "宝石と洞窟と子守唄", "muj_05", "w_bero", stg5_19_init00},
 	{0, 3, 0, 242, "STG5_19", "ドクロ岩のなぞ", "muj_05", "w_bero", stg5_19_init01},
@@ -329,14 +378,14 @@ EventData stage5_evt[] = {
 	{0, 3, 0, 246, "STG5_21", "カギツメのかぎ", "dou_04", "e_bero", stg5_21_init00},
 	{0, 3, 0, 246, "STG5_21", "動くトラップ２", "dou_10", "n_bero", stg5_21_init01},
 	{0, 3, 0, 246, "STG5_21", "爆弾穴", "dou_09", "e_bero_2", NULL},
-	{0, 3, 0, 246, "STG5_21", "ペラ魔人４", "dou_07", "s_bero", stg5_21_init02},
-	{0, 3, 0, 247, "STG5_21_01", "船変形ゲット", "dou_07", "s_bero", stg5_21_01_init},
+	{0, 3, 0, 246, "STG5_21", "ペラ魔人４", "dou_07", "s_bero", stg5_21_init03},
+	{0, 3, 0, 247, "STG5_21_01", "船変形ゲット", "dou_07", "s_bero", stg5_21_01_init00},
 	{1, 3, 0, 248, "STG5_22", "水門ハンドル", "dou_02", "e_bero_1", stg5_22_init00},
 	{0, 3, 0, 248, "STG5_22", "水門が開く", "dou_03", "w_bero_2", stg5_22_init01},
 	{1, 3, 0, 249, "STG5_29", "波よけミニゲーム", "dou_10", "w_bero_1", stg5_29_init},
 	{1, 3, 0, 250, "STG5_30", "取り残された水夫たち", "dou_11", "w_bero", NULL},
-	{0, 3, 0, 250, "STG5_30", "スイッチテスト", "dou_11", "e_bero", stg5_30_init00},
-	{1, 3, 0, 250, "STG5_30", "水夫お礼", "dou_11", "w_bero", stg5_30_init01},
+	{0, 3, 0, 250, "STG5_30", "スイッチテスト", "dou_11", "e_bero", stg5_30_init01},
+	{1, 3, 0, 250, "STG5_30", "水夫お礼", "dou_11", "w_bero", stg5_30_init02},
 	{0, 3, 0, 251, "STG5_31", "なぞの出現", "muj_10", "w_bero", NULL},
 	{0, 3, 0, 252, "STG5_32", "コルテスの警告", "muj_11", "w_bero", NULL},
 	{0, 3, 0, 253, "STG5_33", "コルテスとお宝", "muj_12", "w_bero", NULL},
@@ -441,10 +490,10 @@ EventData stage6_evt[] = {
 	{0, 6, 0, 347, "STG6_70", "大きな扉ステージ６後", "tik_05", "e_bero", stg6_70_init},
 	{0, 6, 0, 348, "STG6_71", "地図解読ステージ６後", "gor_02", NULL, NULL},
 	{0, 6, 0, 350, "STG6_72", "地図解読３分後", "gor_02", "w_bero", stg6_72_init00},
-	{0, 6, 0, 350, "STG6_72", "月に行く方法", "gor_02", "w_bero", stg6_72_init01},
+	{0, 6, 0, 350, "STG6_72", "月に行く方法", "gor_02", "w_bero", stg6_72_init},
 	{0, 6, 0, 351, "STG6_END", "ウルトラハンマーゲット", "gor_01", "e_bero", NULL},
-	{0, 6, 0, 351, "STG6_END", "ストーンブロック破壊", "tik_07", "e_bero", stg6_end_init00},
-	{0, 6, 0, 351, "STG6_END", "ボム村へ", "tik_07", "e_bero", stg6_end_init01}
+	{0, 6, 0, 351, "STG6_END", "ストーンブロック破壊", "tik_07", "e_bero", stg6_end_init01},
+	{0, 6, 0, 351, "STG6_END", "ボム村へ", "tik_07", "e_bero", stg6_end_init02}
 };
 
 EventData stage7_evt[] = {
@@ -452,12 +501,12 @@ EventData stage7_evt[] = {
 	{0, 1, 0, 353, "STG7_01", "初めてのボム村", "bom_01", "w_bero", stg7_01_init},
 	{0, 3, 0, 354, "STG7_02", "村長と会話", "bom_02", "w_bero", NULL},
 	{0, 1, 0, 355, "STG7_03", "ナリキンパパ", "pik_00", "se_bero", NULL},
-	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（ノコ村）", "nok_00", "w_bero", stg7_03_init00},
-	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（無人島）", "muj_01", "w_bero", stg7_03_init01},
-	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（闘技場）", "tou_01", "n_bero", stg7_03_init02},
-	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（大樹）", "mri_01", "w_bero", stg7_03_init03},
-	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（ウスグラ）", "usu_00", "e_bero", stg7_03_init04},
-	{0, 1, 0, 355, "STG7_03", "ホワイト将軍目覚める", "bom_02", "w_bero", stg7_03_init05},
+	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（ノコ村）", "nok_00", "w_bero", stg7_03_white_0},
+	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（無人島）", "muj_01", "w_bero", stg7_03_white_1},
+	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（闘技場）", "tou_01", "n_bero", stg7_03_white_2},
+	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（大樹）", "mri_01", "w_bero", stg7_03_white_3},
+	{0, 1, 0, 355, "STG7_03", "ホワイト居場所（ウスグラ）", "usu_00", "e_bero", stg7_03_white_4},
+	{0, 1, 0, 355, "STG7_03", "ホワイト将軍目覚める", "bom_02", "w_bero", stg7_03_white_5},
 	{0, 1, 0, 356, "STG7_04", "村長認める", "bom_02", "w_bero", stg7_04_init},
 	{0, 1, 0, 357, "STG7_05", "大砲発射", "bom_01", "e_bero", NULL},
 	{0, 1, 0, 358, "STG7_06", "月に到着", "moo_00", NULL, stg7_06_init},
@@ -470,10 +519,10 @@ EventData stage7_evt[] = {
 	{0, 1, 0, 365, "STG7_12", "合言葉入力", "aji_01", "w_bero_2", NULL},
 	{0, 1, 0, 366, "STG7_13", "クイズクリア", "aji_04", "w_bero", NULL},
 	{0, 1, 0, 367, "STG7_14", "エレベータキーＢ", "aji_04", "w_bero", NULL},
-	{0, 1, 0, 368, "STG7_15", "エレベータ始動２", "aji_01", "n_bero_4", stg7_15_init00},
-	{0, 1, 0, 368, "STG7_15", "ルームキーＡ", "aji_05", "e_bero", stg7_15_init01},
-	{0, 1, 0, 368, "STG7_15", "ルームキーＢ", "aji_12", "e_bero", stg7_15_init02},
-	{0, 1, 0, 368, "STG7_15", "ルームキーＣ", "aji_10", "w_bero", stg7_15_init03},
+	{0, 1, 0, 368, "STG7_15", "エレベータ始動２", "aji_01", "n_bero_4", stg7_15_init},
+	{0, 1, 0, 368, "STG7_15", "ルームキーＡ", "aji_05", "e_bero", stg7_15_room_A_init},
+	{0, 1, 0, 368, "STG7_15", "ルームキーＢ", "aji_12", "e_bero", stg7_15_room_B_init},
+	{0, 1, 0, 368, "STG7_15", "ルームキーＣ", "aji_10", "w_bero", stg7_15_room_C_init},
 	{0, 1, 0, 369, "STG7_16", "工場のドア", "aji_18", "w_bero", stg7_16_init},
 	{0, 1, 0, 370, "STG7_17", "ベルトコンベア", "aji_13", "w_bero", stg7_17_init},
 	{0, 1, 0, 371, "STG7_18", "オフスクリーン階段", "aji_13", "w_bero", NULL},
@@ -508,7 +557,7 @@ EventData stage8_evt[] = {
 	{0, 1, 0, 396, "STG8_12", "ブロック", "las_24", "w_bero", NULL},
 	{0, 1, 0, 397, "STG8_13", "鍵", "las_24", "s_bero_2", stg8_13_init},
 	{0, 1, 0, 398, "STG8_14", "錠前", "las_25", "w_bero", stg8_14_init},
-	{0, 1, 0, 399, "STG8_14_01", "玉座の間", "las_28", "w_bero", stg8_14_01_init},
+	{0, 1, 0, 399, "STG8_14_01", "玉座の間", "las_28", "w_bero", stg8_15_init},
 	{0, 1, 0, 400, "STG8_15", "シュリョー", "las_28", "w_bero", NULL},
 	{0, 1, 0, 400, "STG8_15", "クッパ", "las_28", "koopa_evt", NULL},
 	{0, 1, 0, 401, "STG8_16", "女王の墓所", "las_29", "w_bero", NULL},
@@ -540,7 +589,7 @@ EventData stage9_evt[] = {
 	{0, 0, 0, 403, "STG9_00", "クリスチーヌ２", "gor_00", "epilogue2", NULL},
 	{0, 0, 0, 403, "STG9_00", "マリオの家２", "aaa_00", "epilogue2", NULL},
 	{0, 1, 0, 404, "STG9_01", "スタッフロール", "end_00", "", NULL},
-	{0, 1, 0, 405, "STG9_02", "クリア後（最初）", "gor_00", "", stg9_02_init},
+	{0, 1, 0, 405, "STG9_02", "クリア後（最初）", "gor_00", "", N_stg9_02_init},
 	{0, 1, 0, 406, "STG9_END", "クリア後", "gor_00", "n_bero", NULL}
 };
 
@@ -570,8 +619,8 @@ void stg0_00_init(void) {
 	yuugijou_init();
 	johoya_init();
 	gp->retraceLocalTime = 0;
-	//marioSetCharMode(0); mario.c
-	//statusWinForceUpdate(); statuswindow.c
+	marioSetCharMode(0);
+	statusWinForceUpdate();
 }
 
 void stg0_05_init(void) {
@@ -590,7 +639,7 @@ void stg0_12_02_init(void) {
 	swSet(0x537);
 }
 
-void stg0_13_init(void) {
+void stg0_13_init00(void) {
 	pouchGetItem(ITEM_PLANE_CURSE);
 	swSet(0x539);
 }
@@ -699,10 +748,10 @@ void stg1_19_init(void) {
 }
 
 void stg1_20_init(void) {
-	//marioSetCharMode(0); mario.c
+	marioSetCharMode(0);
 }
 
-void stg1_30_init00(void) {
+void stg1_30_init(void) {
 	pouchReceiveMail(0);
 	pouchOpenMail(0);
 }
@@ -712,7 +761,7 @@ void stg1_30_init01(void) {
 	swSet(0x4A3);
 }
 
-void stg1_35_init(void) {
+void stg1_35_init01(void) {
 	swSet(0x536);
 }
 
@@ -772,11 +821,11 @@ void stg2_16_init01(void) {
 	swSet(0xB0D);
 }
 
-void stg2_18_init00(void) {
+void stg2_18_init01(void) {
 	swSet(0xB3E);
 }
 
-void stg2_18_init01(void) {
+void stg2_18_init02(void) {
 	swSet(0xB1F);
 	swSet(0xB21);
 }
@@ -799,7 +848,7 @@ void stg2_21_init00(void) {
 	swByteSet(0x28B, 0x62);
 }
 
-void stg2_21_init01(void) {
+void stg2_21_init02(void) {
 	swSet(0xB27);
 	swSet(0xB29);
 }
@@ -872,7 +921,7 @@ void stg2_25_02_init(void) {
 }
 
 void stg2_26_init(void) {
-	//marioSetCharMode(0); mario.c
+	marioSetCharMode(0);
 }
 
 void stg2_40_init(void) {
@@ -1119,7 +1168,7 @@ void stg3_20_09_init(void) {
 	pouchOpenMail(12);
 }
 
-void stg3_20_12_init00(void) {
+void stg3_20_12_init(void) {
 	pouchRemoveItem(ITEM_STORAGE_KEY_0x12);
 	swSet(0x979);
 	swSet(0x97A);
@@ -1155,7 +1204,7 @@ void stg3_20_12_init02(void) {
 	swSet(0x993);
 }
 
-void stg3_20_13_init(void) {
+void stg3_20_init_1(void) {
 	int i;
 
 	for (i = 0; i < 19; i++) {
@@ -1169,17 +1218,17 @@ void stg3_20_13_init(void) {
 	pouchOpenMail(14);
 }
 
-void stg3_20_14_init(void) {
+void stg3_20_13_init(void) {
 	swClear(0x996);
 }
 
-void stg3_20_15_init(void) {
+void stg3_20_14_init(void) {
 	pouchGetItem(ITEM_STORAGE_KEY_0x13);
 	pouchReceiveMail(15);
 	pouchOpenMail(15);
 }
 
-void stg3_20_16_init(void) {
+void stg3_20_15_init(void) {
 	pouchRemoveItem(ITEM_STORAGE_KEY_0x13);
 }
 
@@ -1212,7 +1261,7 @@ void stg3_30_init00(void) {
 	swSet(0x9D4);
 }
 
-void stg3_30_init01(void) {
+void stg3_31_00_init(void) {
 	swClear(0x955);
 	pouchGetItem(ITEM_CHAMPS_BELT);
 	pouchReceiveMail(0x2B);
@@ -1246,7 +1295,7 @@ void stg3_34_init(void) {
 
 	swSet(0x962);
 	swSet(0x963);
-	//marioSetCharMode(0); mario.c
+	marioSetCharMode(0);
 	pouchRemoveItem(ITEM_CHAMPS_BELT);
 	for (i = 0; i < 20; i++) {
 		swClear(i + 0x9A1);
@@ -1279,43 +1328,40 @@ void stg3_end_init(void) {
 	//stubbed
 }
 
-void stg4_00_init(void) {
+void stage4_00_init(void) {
 	//stubbed
 }
 
-void stg4_04_init(void) {
+void stage4_04_init(void) {
 	pouchGetItem(ITEM_SHOP_KEY);
 }
 
-void stg4_04_01_init(void) {
+void stage4_04_01_init(void) {
 	pouchRemoveItem(ITEM_SHOP_KEY);
 	swSet(0x82B);
 	pouchGetItem(ITEM_BLACK_KEY_0x23);
 }
 
-void stg4_05_init(void) {
+void stage4_05_init(void) {
 	pouchRemoveItem(ITEM_BLACK_KEY_0x23);
 	pouchGetItem(ITEM_TUBE_CURSE);
 	swSet(0x13);
 	pouchReceiveMail(0x1D);
 }
 
-void stg4_09_05_init(void) {
+void stage4_09_05_init(void) {
 	pouchGetItem(ITEM_STEEPLE_KEY_0x16);
 }
 
-void stg4_10_init(void) {
+void stage4_10_init(void) {
 	pouchRemoveItem(ITEM_STEEPLE_KEY_0x16);
 }
 
 void stg4_11_init(void) {
-	/*
-	mario_party.c
 	partyLeft(PARTNER_GOOMBELLA);
 	partyLeft(PARTNER_KOOPS);
 	partyLeft(PARTNER_FLURRIE);
 	partyLeft(PARTNER_YOSHI);
-	*/
 }
 
 void stg4_13_init(void) {
@@ -1352,7 +1398,7 @@ void stg4_15_03_init(void) {
 }
 
 void stg4_16_init(void) {
-	//marioSetCharMode(0); mario.c
+	marioSetCharMode(0);
 }
 
 void stg4_30_init(void) {
@@ -1378,16 +1424,16 @@ void stg4_end_init(void) {
 	pouchReceiveMail(0x13);
 }
 
-void stg5_12_init(void) {
+void stg5_12_init01(void) {
 	swSet(0xC36);
 }
 
-void stg5_15_init00(void) {
-	swSet(0xC3B);
+void stg5_15_init02(void) {
+	swSet(0xC39);
 }
 
 void stg5_15_init01(void) {
-	swSet(0xC39);
+	swSet(0xC3B);
 }
 
 void stg5_17_init(void) {
@@ -1399,7 +1445,7 @@ void stg5_18_init(void) {
 	pouchRemoveItem(ITEM_COCONUT);
 }
 
-void stg5_18_02_init(void) {
+void stg5_18_init_02(void) {
 	pouchRemoveItem(ITEM_CHUCKOLA_COLA);
 	partyJoin(PARTNER_BOBBERY);
 }
@@ -1431,11 +1477,11 @@ void stg5_21_init01(void) {
 	swSet(0xBA3);
 }
 
-void stg5_21_init02(void) {
+void stg5_21_init03(void) {
 	swSet(0xBA5);
 }
 
-void stg5_21_01_init(void) {
+void stg5_21_01_init00(void) {
 	pouchGetItem(ITEM_BLACK_KEY_0x24);
 }
 
@@ -1452,11 +1498,11 @@ void stg5_29_init(void) {
 	pouchRemoveItem(ITEM_GATE_HANDLE);
 }
 
-void stg5_30_init00(void) {
+void stg5_30_init01(void) {
 	swSet(0xBA6);
 }
 
-void stg5_30_init01(void) {
+void stg5_30_init02(void) {
 	swSet(0xBA7);
 	swSet(0xBA8);
 	swSet(0xBB0);
@@ -1474,7 +1520,7 @@ void stg5_47_init(void) {
 }
 
 void stg5_58_init(void) {
-	//marioSetCharMode(0); mario.c
+	marioSetCharMode(0);
 }
 
 void stg5_59_01_init(void) {
@@ -1627,7 +1673,7 @@ void stg6_54_init(void) {
 }
 
 void stg6_56_init(void) {
-	//marioSetCharMode(0); mario.c
+	marioSetCharMode(0);
 }
 
 void stg6_70_init(void) {
@@ -1641,16 +1687,16 @@ void stg6_72_init00(void) {
 	gp->retraceLocalTime += OSSecondsToTicks(180);
 }
 
-void stg6_72_init01(void) {
+void stg6_72_init(void) {
 	//stubbed
 }
 
-void stg6_end_init00(void) {
+void stg6_end_init01(void) {
 	pouchGetItem(ITEM_ULTRA_HAMMER);
 	swSet(0x4AB);
 }
 
-void stg6_end_init01(void) {
+void stg6_end_init02(void) {
 	swSet(0x53C);
 }
 
@@ -1658,30 +1704,30 @@ void stg7_01_init(void) {
 	swSet(0xF2C);
 }
 
-void stg7_03_init00(void) {
+void stg7_03_white_0(void) {
 	swSet(0x16);
 	pouchReceiveMail(0x20);
 	swSet(0xF22);
 	pouchGetItem(ITEM_GOLDBOB_GUIDE);
 }
 
-void stg7_03_init01(void) {
+void stg7_03_white_1(void) {
 	swSet(0xF25);
 }
 
-void stg7_03_init02(void) {
+void stg7_03_white_2(void) {
 	swSet(0xF26);
 }
 
-void stg7_03_init03(void) {
+void stg7_03_white_3(void) {
 	swSet(0xF27);
 }
 
-void stg7_03_init04(void) {
+void stg7_03_white_4(void) {
 	swSet(0xF31);
 }
 
-void stg7_03_init05(void) {
+void stg7_03_white_5(void) {
 	swSet(0xF28);
 	swSet(0xF);
 	pouchReceiveMail(0x18);
@@ -1703,20 +1749,20 @@ void stg7_11_init(void) {
 	pouchRemoveItem(ITEM_ELEVATOR_KEY_0x1B);
 }
 
-void stg7_15_init00(void) {
+void stg7_15_init(void) {
 	pouchGetItem(ITEM_ELEVATOR_KEY_0x1C);
 }
 
-void stg7_15_init01(void) {
+void stg7_15_room_A_init(void) {
 	pouchRemoveItem(ITEM_ELEVATOR_KEY_0x1C);
 }
 
-void stg7_15_init02(void) {
+void stg7_15_room_B_init(void) {
 	pouchGetItem(ITEM_CARD_KEY_0x1D);
 	swSet(0x1056);
 }
 
-void stg7_15_init03(void) {
+void stg7_15_room_C_init(void) {
 	pouchGetItem(ITEM_CARD_KEY_0x1E);
 	swSet(0x1057);
 }
@@ -1841,12 +1887,12 @@ void stg8_14_init(void) {
 	swSet(0x1112);
 }
 
-void stg8_14_01_init(void) {
+void stg8_15_init(void) {
 	pouchRemoveItem(ITEM_PALACE_KEY_0x30);
 	swSet(0x1107);
 }
 
-void stg9_02_init(void) {
+void N_stg9_02_init(void) {
 	swSet(0x150E);
 	partyJoin(PARTNER_MSMOWZ);
 }

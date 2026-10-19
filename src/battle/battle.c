@@ -12,6 +12,8 @@
 #include <string.h>
 #include "mario/mariost.h"
 
+extern const f32 lbl_8042EC24;
+
 typedef enum EquipFlags {
     EQUIP_RESET = 1 << 0,   // 0x1, clear/reset equipped badges
     EQUIP_MARIO = 1 << 1,   // 0x2, equip Mario (non-P) badges
@@ -40,7 +42,11 @@ BOOL battleSeqEndCheck() {
 void BattleInit(FieldBattleInfo* info) {
     BattleWork* wp;
 
+#if defined(VERSION_G8MP01)
+    wp = _battleWorkPointer = (BattleWork*)BattleAlloc(sizeof(BattleWork));
+#else
     wp = _battleWorkPointer = (BattleWork*)_mapAlloc(sizeof(BattleWork));
+#endif
     memset(_battleWorkPointer, 0, sizeof(BattleWork));
     wp->field_19060 = -1;
     wp->field_424 = -1;
@@ -361,7 +367,7 @@ void BtlUnit_EquipItem(BattleUnit* unit, EquipFlags flags, ItemType type) {
     if (unit) {
         if (flags & EQUIP_RESET) {
             for (i = 0; i < 40; i++) {
-                ((u8*)unit)[i + offsetof(BattleUnit, badgesEquipped)] = FALSE;
+                ((u8*)unit)[i + offsetof(BattleUnit, badgesEquipped.CloseCall)] = FALSE;
             }
         }
 
@@ -607,9 +613,13 @@ void BattlePartyInfoWorkInit(BattleWork* wp) {
     // TODO: add macros for Party IDs
     for (i = 0xE0; i < 0xE7; i++) {
         partyInfo = &wp->partyInfo[i - 0xE0];
-        partyInfo->field_0 = 1.0;
+        partyInfo->field_0 = lbl_8042EC24;
         partyInfo->field_24 = 0;
         memset(partyInfo->field_4, 0, sizeof(partyInfo->field_4));
+#if defined(VERSION_G8MP01)
+        partyInfo->field_28 = 0;
+        partyInfo->field_2A = 0;
+#endif
     }
 }
 

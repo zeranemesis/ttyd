@@ -9,7 +9,7 @@
 #include "manager/dvdmgr.h"
 #include <dolphin/ai.h>
 #include <dolphin/ar.h>
-// #include <dolphin/arq.h>
+#include <dolphin/arq.h>
 #include <dolphin/dvd.h>
 
 #include <musyx/musyx.h>

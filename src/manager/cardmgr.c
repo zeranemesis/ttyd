@@ -25,10 +25,11 @@ extern int sprintf(char* str, const char* format, ...);
 #include "assets/_mariost_banner_tex.inc"
 
 //.sbss
-static CardWork* wp;
+static CardWork* lbl_8042B3D8;
+#define wp lbl_8042B3D8
 
 //.sdata
-const char* version = "009";
+const char* lbl_80422B00 = "009";
 
 //local prototypes
 void check_sum(CardSaveSlot* save);
@@ -871,25 +872,25 @@ void format_main(void) {
             case 0:
                 memcard_probe();
                 break;
-            
+
             case 1:
                 memcard_mount();
                 break;
-            
+
             case 2:
                 memcard_format();
                 break;
-            
+
             case 3:
                 memcard_unmount();
                 break;
-            
+
             case 4:
                 wp->unkE0 = 0;
                 wp->flags |= 0x100;
                 wp->flags &= ~2;
                 break;
-            
+
         }
         wp->unkD8++;
     }
@@ -910,29 +911,29 @@ void delete_main(void) {
             case 0:
                 memcard_probe();
                 break;
-            
+
             case 1:
                 memcard_mount();
                 break;
-            
+
             case 2:
                 memcard_check();
                 break;
-            
+
             case 3:
                 memcard_delete();
                 break;
-            
+
             case 4:
                 memcard_unmount();
                 break;
-            
+
             case 5:
                 wp->unkE0 = 0;
                 wp->flags |= 0x100;
                 wp->flags &= ~2;
                 break;
-            
+
         }
         wp->unkD8++;
     }
@@ -946,12 +947,12 @@ void check_sum(CardSaveSlot* save) {
     s32 i;
     u8* temp;
     u32 checksum;
-    
-    strcpy(save->version, version);
+
+    strcpy(save->version, lbl_80422B00);
     save->size = sizeof(save->data);
     save->checksum1 = (checksum = 0u);
     save->checksum2 = ~0u;
-    
+
     temp = (u8*)&save->data;
     for (i = 0; i < (s32)sizeof(save->data); i++) {
         checksum += temp[i];
@@ -1015,7 +1016,7 @@ BOOL dataCheck(void) {
     save = wp->unkAC;
     if (save->size != sizeof(save->data)) {
         return FALSE;
-    } else if (strcmp(save->version, version)) {
+    } else if (strcmp(save->version, lbl_80422B00)) {
         return FALSE;
     } else if (save->checksum2 != ~save->checksum1) {
         return FALSE;
@@ -1065,7 +1066,7 @@ void make_header(void) {
 void make_data(void) {
     CardSaveSlot* save;
     s32 i;
-    
+
     for (i = 0; i < 4; i++) {
         if (i != -1) {
             save = &cardGetFilePtr()->saves[i];
@@ -1085,7 +1086,7 @@ void memcard_probe(void) {
     s32 result;
     s32 i;
     s32 timeout;
-    
+
     wp->flags |= 1;
 
     i = 0;
@@ -1137,7 +1138,7 @@ void memcard_mount(void) {
 void memcard_unmount(void) {
     s32 result;
     s32 i;
-    
+
     wp->flags |= 1;
     i = 0;
     while (result = CARDUnmount(wp->chan), result == CARD_RESULT_BUSY) {
@@ -1173,9 +1174,9 @@ void memcard_format(void) {
 void memcard_delete(void) {
     s32 result;
     s32 i;
-    
+
     wp->flags |= 1;
-    
+
     i = 0;
     while (result = CARDDelete(wp->chan, "mariost_save_file"), result == CARD_RESULT_BUSY) {
         if (++i > 1000000) {
@@ -1183,7 +1184,7 @@ void memcard_delete(void) {
             break;
         }
     }
-    
+
     if (result == CARD_RESULT_NOFILE) {
         result = CARD_RESULT_READY;
     }
@@ -1234,9 +1235,9 @@ void memcard_set_stat(void) {
 void memcard_get_stat(void) {
     s32 result;
     s32 i;
-    
+
     wp->flags |= 1;
-    
+
     i = 0;
     while (result = CARDGetStatus(wp->chan, wp->info.fileNo, &wp->status), result == CARD_RESULT_BUSY) {
         if (++i > 1000000) {

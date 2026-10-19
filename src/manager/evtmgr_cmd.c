@@ -166,13 +166,13 @@ s32 change_float(f32 val) {
     val *= 1024.0f;
     ret = (s32)val;
     ret -= EVTDAT_FLOAT_BASE;
-    
+
     return ret;
 }
 
 s32 evt_end_evt(EventEntry* entry) { // 2
     evtDelete(entry);
-    
+
     return EVT_RETURN_FINISH;
 }
 
@@ -231,13 +231,13 @@ s32 evt_while(EventEntry* entry) { // 6
 s32 evt_do_break(EventEntry* entry) { // 7
     entry->nextCommand = evtSearchWhile(entry);
     entry->loopDepth--;
-    
+
     return EVT_RETURN_DONE;
 }
 
 s32 evt_do_continue(EventEntry* entry) { // 8
     entry->nextCommand = evtSearchJustBeforeWhile(entry);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -253,7 +253,7 @@ s32 evt_wait_frm(EventEntry* entry) { // 9
 	if (!entry->userdata[0]) {
 		return EVT_RETURN_DONE;
 	}
-    
+
     entry->userdata[0]--;
     if (entry->userdata[0]) {
         return EVT_RETURN_BLOCK;
@@ -292,19 +292,53 @@ s32 evt_halt(EventEntry* entry) { // 11
    return evtGetValue(entry, *entry->args) ? EVT_RETURN_BLOCK : EVT_RETURN_DONE;
 }
 
+#ifdef TARGET_PC
+#include <stdint.h>
+void* evtRestorePtr(uint32_t lower) {
+    if (!lower) return NULL;
+    uintptr_t high = ((uintptr_t)&evt_user_func) & 0xFFFFFFFF00000000ULL;
+    return (void*)(high | (uintptr_t)lower);
+}
+#endif
+
+void* evtGetPtrVal(EventEntry* entry, s32 index) {
+#ifdef TARGET_PC
+    uint32_t val;
+    if (index >= EVTDAT_LW_BASE && index <= EVTDAT_UF_MAX) {
+        val = (uint32_t)evtGetValue(entry, index);
+    } else {
+        val = (uint32_t)index;
+    }
+    if (!val) return NULL;
+    return evtRestorePtr(val);
+#else
+    uint32_t val = (uint32_t)evtGetValue(entry, index);
+    if (!val) return NULL;
+    return (void*)(uintptr_t)val;
+#endif
+}
+
+const char* evtGetString(EventEntry* entry, s32 index) {
+    return (const char*)evtGetPtrVal(entry, index);
+}
+
 s32 evt_if_str_equal(EventEntry *entry) { // 12
     s32* args = entry->args;
     const char* str1;
     const char* str2;
-    
-    str1 = (const char*)evtGetValue(entry, args[0]);
-    str2 = (const char*)evtGetValue(entry, args[1]);
+
+    str1 = evtGetString(entry, args[0]);
+    str2 = evtGetString(entry, args[1]);
     if (!str1) {
         str1 = "";
     }
     if (!str2) {
         str2 = "";
     }
+#ifdef TARGET_PC
+    printf("[evt_if_str_equal] '%s' == '%s' -> match=%d\n", str1, str2, strcmp(str1, str2) == 0);
+    fflush(stdout);
+#endif
     if (strcmp(str1, str2)) {
         entry->nextCommand = evtSearchElse(entry);
         return EVT_RETURN_DONE;
@@ -316,9 +350,9 @@ s32 evt_if_str_not_equal(EventEntry *entry) { // 13
     s32* args = entry->args;
     const char* str1;
     const char* str2;
-    
-    str1 = (const char*)evtGetValue(entry, args[0]);
-    str2 = (const char*)evtGetValue(entry, args[1]);
+
+    str1 = evtGetString(entry, args[0]);
+    str2 = evtGetString(entry, args[1]);
     if (!str1) {
         str1 = "";
     }
@@ -336,9 +370,9 @@ s32 evt_if_str_small(EventEntry *entry) { // 14
     s32* args = entry->args;
     const char* str1;
     const char* str2;
-    
-    str1 = (const char*)evtGetValue(entry, args[0]);
-    str2 = (const char*)evtGetValue(entry, args[1]);
+
+    str1 = evtGetString(entry, args[0]);
+    str2 = evtGetString(entry, args[1]);
     if (!str1) {
         str1 = "";
     }
@@ -356,9 +390,9 @@ s32 evt_if_str_large(EventEntry *entry) { // 15
     s32* args = entry->args;
     const char* str1;
     const char* str2;
-    
-    str1 = (const char*)evtGetValue(entry, args[0]);
-    str2 = (const char*)evtGetValue(entry, args[1]);
+
+    str1 = evtGetString(entry, args[0]);
+    str2 = evtGetString(entry, args[1]);
     if (!str1) {
         str1 = "";
     }
@@ -376,9 +410,9 @@ s32 evt_if_str_small_equal(EventEntry *entry) { // 16
     s32* args = entry->args;
     const char* str1;
     const char* str2;
-    
-    str1 = (const char*)evtGetValue(entry, args[0]);
-    str2 = (const char*)evtGetValue(entry, args[1]);
+
+    str1 = evtGetString(entry, args[0]);
+    str2 = evtGetString(entry, args[1]);
     if (!str1) {
         str1 = "";
     }
@@ -396,9 +430,9 @@ s32 evt_if_str_large_equal(EventEntry *entry) { // 17
     s32* args = entry->args;
     const char* str1;
     const char* str2;
-    
-    str1 = (const char*)evtGetValue(entry, args[0]);
-    str2 = (const char*)evtGetValue(entry, args[1]);
+
+    str1 = evtGetString(entry, args[0]);
+    str2 = evtGetString(entry, args[1]);
     if (!str1) {
         str1 = "";
     }
@@ -412,11 +446,12 @@ s32 evt_if_str_large_equal(EventEntry *entry) { // 17
     return EVT_RETURN_DONE;
 }
 
+
 s32 evt_iff_equal(EventEntry *entry) { // 18
     s32* args = entry->args;
     f32 float1;
     f32 float2;
-    
+
     float1 = evtGetFloat(entry, args[0]);
     float2 = evtGetFloat(entry, args[1]);
     if (float1 != float2) {
@@ -430,7 +465,7 @@ s32 evt_iff_not_equal(EventEntry *entry) { // 19
     s32* args = entry->args;
     f32 float1;
     f32 float2;
-    
+
     float1 = evtGetFloat(entry, args[0]);
     float2 = evtGetFloat(entry, args[1]);
     if (float1 == float2) {
@@ -444,7 +479,7 @@ s32 evt_iff_small(EventEntry *entry) { // 20
     s32* args = entry->args;
     f32 float1;
     f32 float2;
-    
+
     float1 = evtGetFloat(entry, args[0]);
     float2 = evtGetFloat(entry, args[1]);
     if (float1 >= float2) {
@@ -458,7 +493,7 @@ s32 evt_iff_large(EventEntry *entry) { // 21
     s32* args = entry->args;
     f32 float1;
     f32 float2;
-    
+
     float1 = evtGetFloat(entry, args[0]);
     float2 = evtGetFloat(entry, args[1]);
     if (float1 <= float2) {
@@ -472,7 +507,7 @@ s32 evt_iff_small_equal(EventEntry *entry) { // 22
     s32* args = entry->args;
     f32 float1;
     f32 float2;
-    
+
     float1 = evtGetFloat(entry, args[0]);
     float2 = evtGetFloat(entry, args[1]);
     if (float1 > float2) {
@@ -486,7 +521,7 @@ s32 evt_iff_large_equal(EventEntry *entry) { // 22
     s32* args = entry->args;
     f32 float1;
     f32 float2;
-    
+
     float1 = evtGetFloat(entry, args[0]);
     float2 = evtGetFloat(entry, args[1]);
     if (float1 < float2) {
@@ -500,7 +535,7 @@ s32 evt_if_equal(EventEntry *entry) { // 24
     s32* args = entry->args;
     s32 value1;
     s32 value2;
-    
+
     value1 = evtGetValue(entry, args[0]);
     value2 = evtGetValue(entry, args[1]);
     if (value1 != value2) {
@@ -514,7 +549,7 @@ s32 evt_if_not_equal(EventEntry *entry) { // 25
     s32* args = entry->args;
     s32 value1;
     s32 value2;
-    
+
     value1 = evtGetValue(entry, args[0]);
     value2 = evtGetValue(entry, args[1]);
     if (value1 == value2) {
@@ -528,7 +563,7 @@ s32 evt_if_small(EventEntry *entry) { // 26
     s32* args = entry->args;
     s32 value1;
     s32 value2;
-    
+
     value1 = evtGetValue(entry, args[0]);
     value2 = evtGetValue(entry, args[1]);
     if (value1 >= value2) {
@@ -542,7 +577,7 @@ s32 evt_if_large(EventEntry *entry) { // 27
     s32* args = entry->args;
     s32 value1;
     s32 value2;
-    
+
     value1 = evtGetValue(entry, args[0]);
     value2 = evtGetValue(entry, args[1]);
     if (value1 <= value2) {
@@ -556,7 +591,7 @@ s32 evt_if_small_equal(EventEntry *entry) { // 28
     s32* args = entry->args;
     s32 value1;
     s32 value2;
-    
+
     value1 = evtGetValue(entry, args[0]);
     value2 = evtGetValue(entry, args[1]);
     if (value1 > value2) {
@@ -570,7 +605,7 @@ s32 evt_if_large_equal(EventEntry *entry) { //29
     s32* args = entry->args;
     s32 value1;
     s32 value2;
-    
+
     value1 = evtGetValue(entry, args[0]);
     value2 = evtGetValue(entry, args[1]);
     if (value1 < value2) {
@@ -584,7 +619,7 @@ s32 evt_if_flag(EventEntry *entry) { // 30
     s32* args = entry->args;
     s32 value;
     s32 flags;
-    
+
     value = evtGetValue(entry, args[0]);
     flags = args[1];
     if ((value & flags) == 0) {
@@ -598,7 +633,7 @@ s32 evt_if_not_flag(EventEntry *entry) { // 31
     s32* args = entry->args;
     s32 value;
     s32 flags;
-    
+
     value = evtGetValue(entry, args[0]);
     flags = args[1];
     if ((value & flags) != 0) {
@@ -610,7 +645,7 @@ s32 evt_if_not_flag(EventEntry *entry) { // 31
 
 s32 evt_else(EventEntry* entry) { // 32
     entry->nextCommand = evtSearchEndIf(entry);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -853,12 +888,12 @@ s32 evt_case_etc(EventEntry* entry) { // 43
 
     if (state <= 0) {
         entry->nextCommand = evtSearchEndSwitch(entry);
-        
+
         return EVT_RETURN_DONE;
     }
     else {
         entry->switchStates[depth] = 0;
-        
+
         return EVT_RETURN_DONE;
     }
 }
@@ -899,7 +934,7 @@ s32 evt_case_or(EventEntry* entry) { // 45
     targetValue = evtGetValue(entry, args[0]);
     inputValue = entry->switchValues[depth];
     state = entry->switchStates[depth];
-    
+
     if (state == 0) {
         entry->nextCommand = evtSearchEndSwitch(entry);
         return EVT_RETURN_DONE;
@@ -924,7 +959,7 @@ s32 evt_case_and(EventEntry* entry) { // 46
 
     targetValue = evtGetValue(entry, args[0]);
     inputValue = entry->switchValues[depth];
-    
+
     if (entry->switchStates[depth] == 0) {
         entry->nextCommand = evtSearchEndSwitch(entry);
         return EVT_RETURN_DONE;
@@ -953,7 +988,7 @@ s32 evt_case_end(EventEntry* entry) { // 47
 
     inputValue = entry->switchValues[depth];
     state = entry->switchStates[depth];
-    
+
     if (state == 0) {
         entry->nextCommand = evtSearchEndSwitch(entry);
         return EVT_RETURN_DONE;
@@ -972,7 +1007,7 @@ s32 evt_case_end(EventEntry* entry) { // 47
 
 s32 evt_switch_break(EventEntry* entry) { // 48
     entry->nextCommand = evtSearchEndSwitch(entry);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -993,7 +1028,7 @@ s32 evt_set(EventEntry* entry) { // 50
     index = args[0];
     value = evtGetValue(entry, args[1]);
     evtSetValue(entry, index, value);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1005,7 +1040,7 @@ s32 evt_seti(EventEntry* entry) { // 51
     index = args[0];
     value = args[1];
     evtSetValue(entry, index, value);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1017,7 +1052,7 @@ s32 evt_setf(EventEntry* entry) { // 52
     index = args[0];
     value = evtGetFloat(entry, args[1]);
     evtSetFloat(entry, index, value);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1031,7 +1066,7 @@ s32 evt_add(EventEntry* entry) { // 53
     param = evtGetValue(entry, args[1]);
     result = evtGetValue(entry, index) + param;
     evtSetValue(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1045,7 +1080,7 @@ s32 evt_sub(EventEntry* entry) { // 54
     param = evtGetValue(entry, args[1]);
     result = evtGetValue(entry, index) - param;
     evtSetValue(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1059,7 +1094,7 @@ s32 evt_mul(EventEntry* entry) { // 55
     param = evtGetValue(entry, args[1]);
     result = evtGetValue(entry, index) * param;
     evtSetValue(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1073,7 +1108,7 @@ s32 evt_div(EventEntry* entry) { // 56
     param = evtGetValue(entry, args[1]);
     result = evtGetValue(entry, index) / param;
     evtSetValue(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1089,7 +1124,7 @@ s32 evt_mod(EventEntry* entry) { // 57
     value = (s32)(evtGetValue(entry, index) + 0.5f);
     result = value % param;
     evtSetValue(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1103,7 +1138,7 @@ s32 evt_addf(EventEntry* entry) { // 58
     param = evtGetFloat(entry, args[1]);
     result = evtGetFloat(entry, index) + param;
     evtSetFloat(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1117,7 +1152,7 @@ s32 evt_subf(EventEntry* entry) { // 59
     param = evtGetFloat(entry, args[1]);
     result = evtGetFloat(entry, index) - param;
     evtSetFloat(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 s32 evt_mulf(EventEntry* entry) { // 60
@@ -1130,7 +1165,7 @@ s32 evt_mulf(EventEntry* entry) { // 60
     param = evtGetFloat(entry, args[1]);
     result = evtGetFloat(entry, index) * param;
     evtSetFloat(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1144,7 +1179,7 @@ s32 evt_divf(EventEntry* entry) { // 61
     param = evtGetFloat(entry, args[1]);
     result = evtGetFloat(entry, index) / param;
     evtSetFloat(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1254,13 +1289,13 @@ s32 evt_readf_n(EventEntry* entry) { // 73
 
 s32 evt_set_user_wrk(EventEntry* entry) { // 74
     entry->uwBase = (s32*) evtGetValue(entry, *entry->args);
-    
+
     return EVT_RETURN_DONE;
 }
 
 s32 evt_set_user_flg(EventEntry* entry) { // 75
     entry->ufBase = (s32*)evtGetValue(entry, *entry->args);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1273,7 +1308,7 @@ s32 evt_alloc_user_wrk(EventEntry* entry) { // 76
     index = args[1];
     entry->uwBase = _mapAlloc(count * sizeof(s32));
     evtSetValue(entry, index, (s32)entry->uwBase);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1286,7 +1321,7 @@ s32 evt_and(EventEntry* entry) { // 77
     param = evtGetValue(entry, args[1]);
     param &= evtGetValue(entry, index);
     evtSetValue(entry, index, param);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1294,12 +1329,12 @@ s32 evt_andi(EventEntry* entry) { // 78
     s32* args = entry->args;
     s32 index;
     s32 param;
-    
+
     index = args[0];
     param = args[1];
     param &= evtGetValue(entry, index);
     evtSetValue(entry, index, param);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1312,7 +1347,7 @@ s32 evt_or(EventEntry* entry) { // 79
     param = evtGetValue(entry, args[1]);
     param |= evtGetValue(entry, index);
     evtSetValue(entry, index, param);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1320,12 +1355,12 @@ s32 evt_ori(EventEntry* entry) { // 80
     s32* args = entry->args;
     s32 index;
     s32 param;
-    
+
     index = args[0];
     param = args[1];
     param |= evtGetValue(entry, index);
     evtSetValue(entry, index, param);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1337,9 +1372,9 @@ s32 evt_set_frame_from_msec(EventEntry* entry) { // 81
 
     index = args[0];
     msec = evtGetValue(entry, args[1]);
-    result = (msec * 60) / 1000; 
+    result = (msec * 60) / 1000;
     evtSetValue(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1351,9 +1386,9 @@ s32 evt_set_msec_from_frame(EventEntry* entry) { // 82
 
     index = args[0];
     frame = evtGetValue(entry, args[1]);
-    result = (frame * 1000) / 60; 
+    result = (frame * 1000) / 60;
     evtSetValue(entry, index, result);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1365,7 +1400,7 @@ s32 evt_set_ram(EventEntry* entry) { // 83
     value = evtGetValue(entry, args[0]);
     addr = (s32*)args[1];
     *addr = value;
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1377,7 +1412,7 @@ s32 evt_set_ramf(EventEntry* entry) { // 84
     value = evtGetFloat(entry, args[0]);
     addr = (f32*)args[1];
     *addr = value;
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1389,7 +1424,7 @@ s32 evt_get_ram(EventEntry* entry) { // 85
     addr = (s32*)args[1];
     value = *addr;
     evtSetValue(entry, args[0], value);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1401,7 +1436,7 @@ s32 evt_get_ramf(EventEntry* entry) { // 86
     addr = (f32*)args[1];
     value = *addr;
     evtSetFloat(entry, args[0], value);
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1459,7 +1494,11 @@ s32 evt_user_func(EventEntry* entry) { // 91
 
     switch (entry->blocked) {
         case 0:
-    		entry->userfunc = (UserFunction)evtGetValue(entry, *args++);
+#ifdef TARGET_PC
+		entry->userfunc = (UserFunction)evtRestorePtr((uint32_t)*args++);
+#else
+		entry->userfunc = (UserFunction)evtGetValue(entry, *args++);
+#endif
     		entry->params--;
     		entry->args = args;
     		entry->blocked = 1;
@@ -1478,8 +1517,12 @@ s32 evt_run_evt(EventEntry *entry) { // 92
     EventEntry *copy;
     void *script;
     u32 i;
-    
+
+#ifdef TARGET_PC
+    script = evtRestorePtr((uint32_t)*entry->args);
+#else
     script = (void*)evtGetValue(entry, *entry->args);
+#endif
     copy = evtEntryType(script, entry->priority, 0, entry->type);
     copy->unitId = entry->unitId;
     copy->ownerNPC = entry->ownerNPC;
@@ -1500,8 +1543,12 @@ s32 evt_run_evt_id(EventEntry *entry) { // 93
     void *script;
     s32 index;
     u32 i;
-    
+
+#ifdef TARGET_PC
+    script = evtRestorePtr((uint32_t)args[0]);
+#else
     script = (void*)evtGetValue(entry, args[0]);
+#endif
     index = args[1];
     copy = evtEntryType(script, entry->priority, 0, entry->type);
     copy->unitId = entry->unitId;
@@ -1521,8 +1568,12 @@ s32 evt_run_evt_id(EventEntry *entry) { // 93
 s32 evt_run_child_evt(EventEntry* entry) { // 94
     s32* script;
     EventEntry* evt;
-    
+
+#ifdef TARGET_PC
+    script = (s32*)evtRestorePtr((uint32_t)*entry->args);
+#else
     script = (s32*)evtGetValue(entry, *entry->args);
+#endif
     evt = evtChildEntry(entry, script, 0);
 
     entry->opcode = OPCODE_NEXT;
@@ -1531,15 +1582,19 @@ s32 evt_run_child_evt(EventEntry* entry) { // 94
 }
 
 s32 evt_restart_evt(EventEntry* entry) { // 95
+#ifdef TARGET_PC
+    entry->restartFrom = evtRestorePtr((uint32_t)*entry->args);
+#else
     entry->restartFrom = (void*)evtGetValue(entry, *entry->args);
+#endif
     evtRestart(entry);
-    
+
     return EVT_RETURN_DONE;
 }
 
 s32 evt_delete_evt(EventEntry* entry) { // 96
     s32 id;
-    
+
     id = evtGetValue(entry, *entry->args);
     evtDeleteID(id);
 
@@ -1548,7 +1603,7 @@ s32 evt_delete_evt(EventEntry* entry) { // 96
 
 s32 evt_set_pri(EventEntry* entry) { // 97
     u32 priority;
-    
+
     priority = (u32)evtGetValue(entry, *entry->args);
     evtSetPri(entry, priority);
 
@@ -1557,7 +1612,7 @@ s32 evt_set_pri(EventEntry* entry) { // 97
 
 s32 evt_set_spd(EventEntry* entry) { // 98
     f32 speed;
-    
+
     speed = evtGetFloat(entry, *entry->args);
     evtSetSpeed(entry, speed);
 
@@ -1566,7 +1621,7 @@ s32 evt_set_spd(EventEntry* entry) { // 98
 
 s32 evt_set_type(EventEntry* entry) { // 99
     u32 type;
-    
+
     type = (u32)evtGetValue(entry, *entry->args);
     evtSetType(entry, type);
 
@@ -1575,7 +1630,7 @@ s32 evt_set_type(EventEntry* entry) { // 99
 
 s32 evt_stop_all(EventEntry* entry) { // 100
     u32 mask;
-    
+
     mask = (u32) evtGetValue(entry, *entry->args);
     evtStopAll(mask);
 
@@ -1584,7 +1639,7 @@ s32 evt_stop_all(EventEntry* entry) { // 100
 
 s32 evt_start_all(EventEntry* entry) { // 101
     u32 mask;
-    
+
     mask = (u32) evtGetValue(entry, *entry->args);
     evtStartAll(mask);
 
@@ -1593,7 +1648,7 @@ s32 evt_start_all(EventEntry* entry) { // 101
 
 s32 evt_stop_other(EventEntry* entry) { // 102
     u32 mask;
-    
+
     mask = (u32) evtGetValue(entry, *entry->args);
     evtStopOther(entry, mask);
 
@@ -1602,7 +1657,7 @@ s32 evt_stop_other(EventEntry* entry) { // 102
 
 s32 evt_start_other(EventEntry* entry) { // 103
     u32 mask;
-    
+
     mask = (u32) evtGetValue(entry, *entry->args);
     evtStartOther(entry, mask);
 
@@ -1611,7 +1666,7 @@ s32 evt_start_other(EventEntry* entry) { // 103
 
 s32 evt_stop_id(EventEntry* entry) { // 104
     s32 id;
-    
+
     id = evtGetValue(entry, *entry->args);
     evtStopID(id);
 
@@ -1620,7 +1675,7 @@ s32 evt_stop_id(EventEntry* entry) { // 104
 
 s32 evt_start_id(EventEntry* entry) { // 105
     s32 id;
-    
+
     id = evtGetValue(entry, *entry->args);
     evtStartID(id);
 
@@ -1635,7 +1690,7 @@ s32 evt_chk_evt(EventEntry* entry) { // 106
     id = evtGetValue(entry, args[0]);
     index = args[1];
     evtSetValue(entry, index, evtCheckID(id));
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1713,7 +1768,7 @@ s32 evt_inline_evt_id(EventEntry* entry) { // 108
 
 s32 evt_end_inline(EventEntry* entry) { // 109
     evtDelete(entry);
-    
+
     return EVT_RETURN_FINISH;
 }
 
@@ -1768,7 +1823,7 @@ s32 evt_brother_evt_id(EventEntry* entry) { // 111
 
 s32 evt_end_brother(EventEntry* entry) { // 112
     evtDelete(entry);
-    
+
     return EVT_RETURN_BLOCK;
 }
 
@@ -1899,7 +1954,7 @@ s32 evt_debug_put_reg(EventEntry* entry) { // 115
 
 s32 evt_debug_name(EventEntry* entry) { // 116
     entry->name = (const char*)*entry->args;
-    
+
     return EVT_RETURN_DONE;
 }
 
@@ -1915,7 +1970,7 @@ s32 evt_debug_bp(EventEntry* entry) { // 118
             break;
         }
     }
-    
+
     return EVT_RETURN_YIELD;
 }
 
@@ -1930,8 +1985,8 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_NEXT:
                 entry->currCommand = entry->nextCommand;
                 args = entry->nextCommand;
-                entry->opcode = (EventOpcode)*args;
-                argCount = *args++ >> 16;
+                entry->opcode = (EventOpcode)(*args & 0xFFFF);
+                argCount = (u32)*args++ >> 16;
                 entry->params = (u8)argCount;
                 entry->args = args;
                 args += argCount;
@@ -2314,7 +2369,7 @@ s32 evtmgrCmd(EventEntry* entry) {
         }
         else if (status == EVT_RETURN_DONE) {
             entry->opcode = OPCODE_NEXT;
-            continue;            
+            continue;
         }
     }
     return 0;
@@ -2648,7 +2703,7 @@ f32 evtSetFloat(EventEntry* entry, s32 index, f32 value) {
 s32* evtSearchLabel(EventEntry* entry, s32 lbl) {
     s32* args = entry->args;
     s32 n;
-    
+
     if (lbl < EVTDAT_ADDR_MAX) {
         return (s32*)lbl;
     }

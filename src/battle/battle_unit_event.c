@@ -2,9 +2,9 @@
 #include "battle/battle_unit_event.h"
 
 BOOL BattleCheckEndUnitInitEvent(BattleWork* wp) {
-    BattleUnit* unit;
-    s32 i, eventId;
     BOOL valid;
+    s32 i, eventId;
+    BattleUnit* unit;
 
     valid = TRUE;
     for (i = 0; i < 64; i++) {
@@ -24,6 +24,7 @@ BOOL BattleCheckEndUnitInitEvent(BattleWork* wp) {
     return valid;
 }
 
+#pragma dont_inline on
 s32 BattleRunHitEventDirect(BattleUnit* unit, s32 damageCode, void* code) {
     EventEntry* evt;
     s32 id, newId;
@@ -62,15 +63,16 @@ s32 BattleRunHitEventDirect(BattleUnit* unit, s32 damageCode, void* code) {
     }
     return newId;
 }
+#pragma dont_inline reset
 
 s32 BattleRunHitEvent(BattleUnit* unit, s32 damageCode) {
     void* code;
-    BOOL valid;
     s32 id;
+    BOOL valid;
 
     id = 0;
     valid = TRUE;
-    if (damageCode == 0x28 && !BtlUnit_CheckData(unit, 0x2E)) {
+    if ((u8)damageCode == 0x28 && !BtlUnit_CheckData(unit, 0x2E)) {
         valid = FALSE;
     }
     if (!valid) {
@@ -90,13 +92,13 @@ s32 BattleRunPhaseEvent(BattleUnit* unit, BOOL isUnison) {
 
     if (isUnison) {
         code = unit->unisonPhaseEventCode;
-        if (!code) {
+        if (code) {
             evt = evtEntry(code, 0xA, 0x20);
         }
     }
     else {
         code = unit->phaseEventCode;
-        if (!code) {
+        if (code) {
             evt = evtEntry(code, 0xA, 0x20);
         }
     }

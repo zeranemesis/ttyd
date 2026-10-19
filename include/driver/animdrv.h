@@ -138,7 +138,7 @@ typedef struct AnimationPoseData {
     AnimPoseTexEntry* texData;     // 0x194, TODO: rename
     AnimTexBind* texBinds;         // 0x198, TODO: rename
     AnimPoseShapeDraw* draws;      // 0x19C
-    u8 field_0x1A0[0x1A4 - 0x1A0]; // 0x1A0
+    u8 field_0x1A0[0x1A8 - 0x1A0]; // 0x1A0
     AnimPoseGroup* groups;         // 0x1A8
     AnimTableEntry* mpAnims;       // 0x1AC
 } AnimationPoseData;
@@ -233,7 +233,7 @@ typedef struct AnimationWork {
     Vec* vtxArrayNrm;                 // 0xFC
     FileEntry* mp_ag2tg;              // 0x100
     void* testHeap;                   // 0x104
-    u32 testAlloc;                    // 0x108
+    uintptr_t testAlloc;              // 0x108
     BOOL inBattle;                    // 0x10C
 } AnimationWork;
 
@@ -274,7 +274,7 @@ AnimationPose* animPoseGetAnimPosePtr(s32 poseId);
 void animPaperPoseRelease(s32 poseId);
 void animPoseRelease(s32 poseId);
 
-GXColor* animPoseGetMaterialEvtColor(s32 poseId);
+GXColor animPoseGetMaterialEvtColor(s32 poseId);
 u32 animPoseGetMaterialLightFlag(s32 poseId);
 u32 animPoseGetMaterialFlag(s32 poseId);
 void animPoseSetMaterialEvtColor(s32 poseId, GXColor color);

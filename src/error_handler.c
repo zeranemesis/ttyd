@@ -58,6 +58,7 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 			strcpy(print_buffer, "---- OS_ERROR_PROGRAM ----\n");
 			break;
 	}
+#if !defined(TARGET_PC)
 	sprintf(print_buffer2, "---- Context 0x%08x ----\n", context);
 	strcat(print_buffer, print_buffer2);
 	for (i = 0; i < 16; i++) {
@@ -86,6 +87,10 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 	strcat(print_buffer, "\n");
 	sprintf(print_buffer2, "Instruction at 0x%x\n(read from SRR0) attempted to access\ninvalid address 0x%x (read from DAR)\n", context->srr0, dar);
 	strcat(print_buffer, print_buffer2);
+#else
+	sprintf(print_buffer2, "PC Error Handler: %d\n", error);
+	strcat(print_buffer, print_buffer2);
+#endif
 	psndExit();
 	OSFillFPUContext(context);
 #ifdef __MWERKS__

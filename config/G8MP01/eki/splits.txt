@@ -1,0 +1,74 @@
+Sections:
+	.text       type:code align:4
+	.ctors      type:rodata align:4
+	.dtors      type:rodata align:4
+	.rodata     type:rodata align:8
+	.data       type:data align:8
+	.bss        type:bss align:8
+
+eki.c:
+	.text       start:0x00000000 end:0x00000144
+	.rodata     start:0x00000000 end:0x00000038
+	.data       start:0x00000000 end:0x000000B0
+
+eki_00.c:
+	.text       start:0x00000144 end:0x00005808
+	.rodata     start:0x00000038 end:0x000009C8
+	.data       start:0x000000B0 end:0x00002558
+
+eki_01.c:
+	.rodata     start:0x000009C8 end:0x000009E0
+	.data       start:0x00002558 end:0x00002E40
+
+eki_02.c:
+	.text       start:0x00005808 end:0x000059E8
+	.data       start:0x00002E40 end:0x00003058
+
+eki_03.c:
+	.text       start:0x000059E8 end:0x00005E08
+	.rodata     start:0x000009E0 end:0x00000A48
+	.data       start:0x00003058 end:0x00003D08
+	.bss        start:0x00000000 end:0x00000018
+
+eki_04.c:
+	.data       start:0x00003D08 end:0x00004028
+
+eki_05.c:
+	.rodata     start:0x00000A48 end:0x00000B9C
+	.data       start:0x00004028 end:0x00004620
+
+eki_06.c:
+	.text       start:0x00005E08 end:0x000073B8
+	.rodata     start:0x00000B9C end:0x00000DB8
+	.data       start:0x00004620 end:0x00004900
+
+data/battle/battle_database_eki.c:
+	.rodata     start:0x00000DB8 end:0x00001060
+	.data       start:0x00004900 end:0x00006A18
+
+unit/unit_kuriboo.c:
+	.text       start:0x000073B8 end:0x000074D0
+	.rodata     start:0x00001060 end:0x00001238
+	.data       start:0x00006A18 end:0x000075B0
+
+unit/unit_sambo.c:
+	.rodata     start:0x00001238 end:0x00001554
+	.data       start:0x000075B0 end:0x0000BCC8
+
+unit/unit_sambo_mummy.c:
+	.rodata     start:0x00001554 end:0x000018A4
+	.data       start:0x0000BCC8 end:0x000103E0
+
+unit/unit_patatogemet.c:
+	.rodata     start:0x000018A4 end:0x00001BAC
+	.data       start:0x000103E0 end:0x00012ED0
+
+unit/unit_kurokumorn.c:
+	.rodata     start:0x00001BAC end:0x00001D18
+	.data       start:0x00012ED0 end:0x00014690
+
+event/evt_lect_eki.c:
+	.text       start:0x000074D0 end:0x00008710
+	.rodata     start:0x00001D18 end:0x00001EEC
+	.data       start:0x00014690 end:0x00015548
+	.bss        start:0x00000018 end:0x000000B0

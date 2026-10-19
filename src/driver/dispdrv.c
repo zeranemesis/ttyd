@@ -16,8 +16,8 @@
 
 //.sdata
 f32 offset_tbl[] = {
-	400000.0f, 400000.0f, 600000.0f, 100000.0f, 100000.0f, 
-	300000.0f, 900000.0f, 1100000.0f, 1000000.0f, 500000.0f, 
+	400000.0f, 400000.0f, 600000.0f, 100000.0f, 100000.0f,
+	300000.0f, 900000.0f, 1100000.0f, 1000000.0f, 500000.0f,
 	700000.0f //700K new in retail
 };
 
@@ -83,7 +83,7 @@ s32 _sort(const void** sortA, const void** sortB) {
 }
 
 void dispSort(void) {
-	qqsort(pSortWork, entry_n, 4, _sort);
+	qqsort(pSortWork, entry_n, sizeof(DispEntry*), (int (*)(void*, void*))_sort);
 }
 
 void dispDraw(CameraId camId) {
@@ -141,7 +141,9 @@ void dispDraw(CameraId camId) {
 					break;
 			}
 			currentWorkPtr = entry;
-			entry->callback(camId, entry->param);
+			if (entry->callback) {
+				entry->callback(camId, entry->param);
+			}
 		}
 	}
 }

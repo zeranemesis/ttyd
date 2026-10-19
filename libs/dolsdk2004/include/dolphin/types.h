@@ -24,6 +24,26 @@ typedef double f64;
 
 typedef char *Ptr;
 
+#ifndef _UINTPTR_T_DEFINED
+#define _UINTPTR_T_DEFINED
+#if defined(_WIN64) || defined(__x86_64__) || defined(_M_X64)
+typedef unsigned long long uintptr_t;
+typedef long long intptr_t;
+#else
+typedef unsigned long uintptr_t;
+typedef long intptr_t;
+#endif
+#endif
+
+typedef u8  uint8_t;
+typedef s8  int8_t;
+typedef u16 uint16_t;
+typedef s16 int16_t;
+typedef u32 uint32_t;
+typedef s32 int32_t;
+typedef u64 uint64_t;
+typedef s64 int64_t;
+
 typedef int BOOL;
 
 #define FALSE 0

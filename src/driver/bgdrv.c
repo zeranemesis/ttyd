@@ -41,7 +41,7 @@ void bgEntry(const char* filename) {
 	GXColor color;
 	u32 size;
 	char path[256]; //TODO: check
-	
+
 	bgwork = bgGetWork();
 	size = 0;
 	if (filename) {
@@ -123,8 +123,8 @@ void bgReEntry(const char* filename) {
 	}
 }
 
-void bgSetColor(GXColor color) {
-	bgGetWork()->color = color;
+void bgSetColor(GXColor* color) {
+	bgGetWork()->color = *color;
 }
 
 void bgDispOn(void) {
@@ -163,7 +163,7 @@ void bgMain(void) {
 	CameraEntry* camera;
 	GXTexObj texobj;
 	u32 width;
-		
+
 	bgwork = bgGetWork();
 	if (bgwork->flags & 1) {
 		camera = camGetPtr(CAMERA_3D);
@@ -190,12 +190,52 @@ void bgMain(void) {
 void bgDisp(CameraId camId, void* param) {
 	BackgroundWork* bgwork = bgGetWork();
 	CameraEntry* camera = camGetPtr(camId);
-	if (bgwork->flags & 1) {
-		GXSetAlphaUpdate(GX_FALSE);
-		GXSetCullMode(GX_CULL_BACK);
-		GXSetZCompLoc(GX_TRUE);
-		GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
-		GXSetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_OR);
-		GXSetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
+	GXTexObj texobj;
+	if (!(bgwork->flags & 1) || !bgwork->data) {
+		return;
 	}
+
+	TEXGetGXTexObjFromPalette(bgwork->data, &texobj, 0);
+
+	GXSetAlphaUpdate(GX_FALSE);
+	GXSetCullMode(GX_CULL_NONE);
+	GXSetZCompLoc(GX_TRUE);
+	GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+	GXSetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_OR);
+	GXSetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
+
+	GXSetNumChans(0);
+	GXSetNumTevStages(1);
+	GXSetNumTexGens(1);
+	GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+	GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+	GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+
+	GXLoadTexObj(&texobj, GX_TEXMAP0);
+	GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, GX_FALSE, GX_PTIDENTITY);
+
+	GXClearVtxDesc();
+	GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+	GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+
+	GXLoadPosMtxImm(camera->view, GX_PNMTX0);
+	GXSetCurrentMtx(GX_PNMTX0);
+
+	GXBegin(GX_QUADS, GX_VTXFMT0, 4);
+	GXPosition3f32(0.0f, 0.0f, 0.0f);
+	GXTexCoord2f32(0.0f, 0.0f);
+
+	GXPosition3f32(608.0f, 0.0f, 0.0f);
+	GXTexCoord2f32(1.0f, 0.0f);
+
+	GXPosition3f32(608.0f, 480.0f, 0.0f);
+	GXTexCoord2f32(1.0f, 1.0f);
+
+	GXPosition3f32(0.0f, 480.0f, 0.0f);
+	GXTexCoord2f32(0.0f, 1.0f);
+	GXEnd();
 }

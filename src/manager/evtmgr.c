@@ -13,7 +13,7 @@
 #include "manager/evtmgr_cmd.h"
 #include <string.h>
 
-extern GlobalWork* gp;
+extern GlobalWork* wp_80422810;
 extern s32 _mariostSystemLevel;
 
 //.bss
@@ -35,7 +35,7 @@ void make_pri_table(void);
 void evtEntryRunCheck(EventEntry* entry);
 
 EventWork* evtGetWork(void) {
-	return gp->inBattle ? &work[1] : &work[0];
+	return wp_80422810->inBattle ? &work[1] : &work[0];
 }
 
 #pragma dont_inline on
@@ -116,7 +116,7 @@ void evtmgrInit(void) {
 	wp = &work[0];
 	wp->count = 0x100;
 	wp->entries = __memAlloc(HEAP_DEFAULT, wp->count * sizeof(EventEntry));
-	wp->lastUpdate = gp->renderTime;
+	wp->lastUpdate = wp_80422810->renderTime;
 	memset(wp->entries, 0, wp->count * sizeof(EventEntry));
 	memset(wp->gwData, 0, sizeof(wp->gwData));
 	memset(wp->gfData, 0, sizeof(wp->gfData));
@@ -124,7 +124,7 @@ void evtmgrInit(void) {
 	wp = &work[1];
 	wp->count = 0x100;
 	wp->entries = __memAlloc(HEAP_DEFAULT, wp->count * sizeof(EventEntry));
-	wp->lastUpdate = gp->renderTime;
+	wp->lastUpdate = wp_80422810->renderTime;
 	memset(wp->entries, 0, wp->count * sizeof(EventEntry));
 	memset(wp->gwData, 0, sizeof(wp->gwData));
 	memset(wp->gfData, 0, sizeof(wp->gfData));
@@ -137,7 +137,7 @@ void evtmgrInit(void) {
 void evtmgrReInit(void) {
 	EventWork* wp = evtGetWork();
 
-	wp->lastUpdate = gp->renderTime;
+	wp->lastUpdate = wp_80422810->renderTime;
 	memset(wp->entries, 0, wp->count * sizeof(EventEntry));
 	evtMax = 0;
 	runMainF = FALSE;
@@ -435,15 +435,15 @@ void evtmgrMain(void) {
 
 	runMainF = TRUE; //we're in evtmgrMain
 
-	delta = gp->renderTime - wp->lastUpdate;
+	delta = wp_80422810->renderTime - wp->lastUpdate;
 	if (delta < 0) {
 		delta = 0;
 	}
 
 	if (OSTicksToMilliseconds(delta) > 500) {
-		delta = OSMillisecondsToTicks(1000 / gp->framerate);
+		delta = OSMillisecondsToTicks(1000 / wp_80422810->framerate);
 	}
-	wp->lastUpdate = gp->renderTime;
+	wp->lastUpdate = wp_80422810->renderTime;
 	make_pri_table();
 
 	entryNum = priTbl;
@@ -560,7 +560,7 @@ void evtSetType(EventEntry* entry, u32 type) {
 }
 
 void evtStop(EventEntry* entry, u32 type) {
-	EventWork* wp = gp->inBattle ? &work[1] : &work[0];
+	EventWork* wp = wp_80422810->inBattle ? &work[1] : &work[0];
 	EventEntry* brother;
 	int i;
 
@@ -581,7 +581,7 @@ void evtStop(EventEntry* entry, u32 type) {
 }
 
 void evtStart(EventEntry* entry, u32 type) {
-	EventWork* wp = gp->inBattle ? &work[1] : &work[0];
+	EventWork* wp = wp_80422810->inBattle ? &work[1] : &work[0];
 	EventEntry* brother;
 	int i;
 

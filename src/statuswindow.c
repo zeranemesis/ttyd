@@ -1,4 +1,5 @@
 #include "statuswindow.h"
+#include "battle/battle.h"
 #include "driver/seqdrv.h"
 #include "mario/mario.h"
 #include "mario/mario_pouch.h"
@@ -152,5 +153,185 @@ void statusWinDisp(CameraId camId, void* param) {
     }
 }
 
+void statusWinDispOff(void) {
+    wp->field_0x4 |= 0x1000;
+}
+
+void statusWinDispOn(void) {
+    wp->field_0x4 &= ~0x1000;
+}
+
+void statusWinForceOff(void) {
+    if (wp->field_0x4 & 0x10) {
+        wp->field_0x4 &= ~0x10;
+        wp->field_0x4 &= ~0xA;
+        wp->field_0x4 |= 5;
+    } else if (wp->field_0x4 & 1) {
+        wp->field_0x4 &= ~0xA;
+        wp->field_0x4 |= 5;
+    }
+    if (wp->field_0x4 & 0x20) {
+        wp->field_0x4 &= ~0x20;
+        wp->field_0x4 |= 0xA;
+        wp->field_0x4 &= ~5;
+    } else if (wp->field_0x4 & 2) {
+        wp->field_0x4 |= 0xA;
+        wp->field_0x4 &= ~5;
+    }
+}
+
+s32 marioGetParty(void);
+
 void statusGetValue(StatusValue* values) {
+    s32 inBattle;
+    s16 partyId;
+    MarioWork* m;
+    PouchData* pouch;
+    void* bMario;
+    void* bParty;
+    s32 partyUnitId;
+
+    if (!values) return;
+    memset(values, 0, sizeof(StatusValue));
+
+    inBattle = (wp && *(s32*)((u8*)wp + 0x14) != 0);
+    if (!inBattle) {
+        values->hp = (s16)pouchGetHP();
+        values->maxHp = (s16)pouchGetMaxHP();
+        values->fp = (s16)pouchGetFP();
+        values->maxFp = (s16)pouchGetMaxFP();
+        values->ap = (s16)pouchGetAP();
+        values->maxAp = (s16)pouchGetMaxAP();
+        values->starPoints = (s16)pouchGetStarPoint();
+        values->coins = (s16)pouchGetCoin();
+
+        partyId = 0;
+        if (!marioBgmodeChk()) {
+            partyId = (s16)marioGetParty();
+        } else {
+            m = marioGetPtr();
+            if (m) partyId = (s16)m->characterId;
+        }
+        values->partyId = partyId;
+
+        pouch = pouchGetPtr();
+        if (pouch && partyId >= 0 && partyId < 8) {
+            values->partyHp = (s16)pouch->partyData[partyId].currentHP;
+            values->partyMaxHp = (s16)pouch->partyData[partyId].maximumHP;
+        }
+    } else {
+        bMario = BattleGetMarioPtr(NULL);
+        bParty = BattleGetPartyPtr(NULL);
+        if (bMario) {
+            values->hp = *(s16*)((u8*)bMario + 0x10C);
+            values->maxHp = *(s16*)((u8*)bMario + 0x108);
+            values->fp = *(s16*)((u8*)bMario + 0x112);
+            values->maxFp = *(s16*)((u8*)bMario + 0x10E);
+        }
+        values->ap = (s16)pouchGetAP();
+        values->maxAp = (s16)pouchGetMaxAP();
+        values->starPoints = (s16)pouchGetStarPoint();
+        values->coins = (s16)pouchGetCoin();
+
+        if (bParty) {
+            partyUnitId = *(s32*)((u8*)bParty + 0x8);
+            values->partyId = (s16)BattleTransPartyId(partyUnitId);
+            values->partyHp = *(s16*)((u8*)bParty + 0x10C);
+            values->partyMaxHp = *(s16*)((u8*)bParty + 0x108);
+        }
+    }
+}
+
+void statusWinForceUpdate(void) {
+    StatusValue val;
+    statusGetValue(&val);
+
+    *(s16*)((u8*)wp + 0x50) = val.hp;
+    *(s16*)((u8*)wp + 0x52) = val.maxHp;
+    *(s16*)((u8*)wp + 0x54) = val.fp;
+    *(s16*)((u8*)wp + 0x56) = val.maxFp;
+    *(s16*)((u8*)wp + 0x62) = val.ap;
+    *(s16*)((u8*)wp + 0x64) = val.maxAp;
+    *(s16*)((u8*)wp + 0x5E) = val.starPoints;
+    *(s16*)((u8*)wp + 0x60) = val.coins;
+    *(s16*)((u8*)wp + 0x58) = val.partyId;
+    if (*(s16*)((u8*)wp + 0x58) != 0) {
+        *(s16*)((u8*)wp + 0x5A) = val.partyHp;
+        *(s16*)((u8*)wp + 0x5C) = val.partyMaxHp;
+    }
+}
+
+void statusWinForceUpdateCoin(void) {
+    StatusValue val;
+    statusGetValue(&val);
+    *(s16*)((u8*)wp + 0x60) = val.coins;
+}
+
+s32 valueCheck(void);
+
+BOOL statusWinCheckUpdate(void) {
+    return valueCheck() != 0;
+}
+
+BOOL statusWinCheck(void) {
+    return (wp->field_0x4 & 0x11) != 0;
+}
+
+void statusWinForceCloseClear(void) {
+    wp->field_0x4 &= ~0xA0;
+}
+
+void statusWinForceClose(void) {
+    wp->field_0x4 &= ~5;
+    wp->field_0x4 &= ~0x50;
+    wp->field_0x4 |= 0xA0;
+}
+
+void statusWinForceOpen(void) {
+    wp->field_0x4 &= ~0xA;
+    wp->field_0x4 &= ~0xA0;
+    wp->field_0x4 |= 0x50;
+}
+
+void statusWinClose(void) {
+    wp->field_0x4 |= 0xA;
+    wp->field_0x4 &= ~5;
+}
+
+void statusWinOpen(void) {
+    wp->field_0x4 &= ~0xA;
+    wp->field_0x4 |= 5;
+}
+
+void statusPartyHPBlink(s32 duration) {
+    wp->field_0x80 |= 8;
+    wp->field_0x88 = duration;
+}
+
+void statusMarioHPBlink(s32 duration) {
+    wp->field_0x80 |= 1;
+    wp->field_0x88 = duration;
+}
+
+void statusFPBlink(s32 duration) {
+    wp->field_0x80 |= 2;
+    wp->field_0x88 = duration;
+}
+
+void N_statusClearBlink(void) {
+    wp->field_0x80 = 0;
+}
+
+void statusAPBlink(s32 duration) {
+    wp->field_0x80 = 0;
+    wp->field_0x80 |= 4;
+    wp->field_0x88 = duration;
+}
+
+void statusGetApPos(Vec* outPos) {
+    Vec pos;
+    pos.x = wp->field_0x20 + (f32)alwaysDt[12].xpos;
+    pos.y = wp->field_0x24 - (f32)alwaysDt[12].ypos;
+    pos.z = 0.0f;
+    *outPos = pos;
 }

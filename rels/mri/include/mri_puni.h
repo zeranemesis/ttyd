@@ -9,7 +9,9 @@
 typedef struct PuniWork {
     u8 unk0[0x328 - 0x0];     // 0x0
     s32 unk328;               // 0x328
-    u8 unk32C[0x448 - 0x32C]; // 0x32C
+    u8 unk32C[0x43C - 0x32C]; // 0x32C
+    s32 unk43c; // 0x43C
+    u8 unk440[0x444 - 0x440]; // 0x440
     BOOL showPuniCounter; //0x444
     BOOL unk448; //0x448
     s32 puniCounterAlpha; //0x44C

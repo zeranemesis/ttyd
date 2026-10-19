@@ -18,6 +18,13 @@
 
 extern GlobalWork* gp;
 
+#ifndef TARGET_PC
+extern const f32 lbl_8042CC44;
+#define MOBJ_DISPLAY_SCALE lbl_8042CC44
+#else
+#define MOBJ_DISPLAY_SCALE 10.0f
+#endif
+
 //.sbss
 BOOL koopaRunFlag;
 
@@ -81,11 +88,11 @@ void mobjDispXLU(CameraId camId, void* param) {
         animSetPaperTexObj(&entry->paperTexObj, NULL, NULL, entry->unk208, NULL, NULL, 1, 1);
     }
     animPoseDraw(entry->poseId, entry->position.x, entry->position.y, entry->position.z, entry->rotation.y,
-                 10.0f * entry->scale.x, 1);
+                 MOBJ_DISPLAY_SCALE * entry->scale.x, 1);
     animPoseDraw(entry->poseId, entry->position.x, entry->position.y, entry->position.z, entry->rotation.y,
-                 10.0f * entry->scale.x, 2);
+                 MOBJ_DISPLAY_SCALE * entry->scale.x, 2);
     animPoseDraw(entry->poseId, entry->position.x, entry->position.y, entry->position.z, entry->rotation.y,
-                 10.0f * entry->scale.x, 3);
+                 MOBJ_DISPLAY_SCALE * entry->scale.x, 3);
     if (entry->flags & 0x400) {
         animSetPaperTexMtx(NULL, NULL, NULL);
         animSetPaperTexObj(NULL, NULL, NULL, NULL, NULL, NULL, 1, 1);
@@ -104,16 +111,16 @@ void mobjDisp(CameraId camId, void* param) {
     switch (disp->renderMode) {
         case 0:
             animPoseDraw(entry->poseId, entry->position.x, entry->position.y, entry->position.z, entry->rotation.y,
-                         10.0f * entry->scale.x, 1);
+                         MOBJ_DISPLAY_SCALE * entry->scale.x, 1);
             break;
         case 1:
             animPoseDraw(entry->poseId, entry->position.x, entry->position.y, entry->position.z, entry->rotation.y,
-                         10.0f * entry->scale.x, 2);
+                         MOBJ_DISPLAY_SCALE * entry->scale.x, 2);
             break;
         case 2:
         default:
             animPoseDraw(entry->poseId, entry->position.x, entry->position.y, entry->position.z, entry->rotation.y,
-                         10.0f * entry->scale.x, 3);
+                         MOBJ_DISPLAY_SCALE * entry->scale.x, 3);
             break;
     }
     if (entry->flags & 0x400) {
@@ -133,11 +140,11 @@ void mobjDisp_OffscreenXLU(CameraId camId, void* param) {
         animSetPaperTexObj(&entry->paperTexObj, NULL, NULL, entry->unk208, NULL, NULL, 1, 1);
     }
     animPoseDraw(entry->poseId, entry->position.x, entry->position.y, entry->position.z, entry->rotation.y,
-                 10.0f * entry->scale.x, 1);
+                 MOBJ_DISPLAY_SCALE * entry->scale.x, 1);
     animPoseDraw(entry->poseId, entry->position.x, entry->position.y, entry->position.z, entry->rotation.y,
-                 10.0f * entry->scale.x, 2);
+                 MOBJ_DISPLAY_SCALE * entry->scale.x, 2);
     animPoseDraw(entry->poseId, entry->position.x, entry->position.y, entry->position.z, entry->rotation.y,
-                 10.0f * entry->scale.x, 3);
+                 MOBJ_DISPLAY_SCALE * entry->scale.x, 3);
     if (entry->flags & 0x400) {
         animSetPaperTexMtx(NULL, NULL, NULL);
         animSetPaperTexObj(NULL, NULL, NULL, NULL, NULL, NULL, 1, 1);

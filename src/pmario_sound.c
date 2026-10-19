@@ -4318,7 +4318,7 @@ u8 _buf[0x80];
 static s8 tbl[2];
 s32 group;
 BOOL _psndPushGroup_trg;
-BOOL init_f;
+BOOL lbl_8042B428;
 
 //local definitions
 void psndBGMMain(void);
@@ -4462,7 +4462,7 @@ void psndInit(void) { //1:1
 void psndMain(void) { //1:1
     u8 temp_r3;
 
-    if (init_f) {
+    if (lbl_8042B428) {
         if (psnd.unk5C) {
             psnd.unk5C--;
         }
@@ -4474,7 +4474,7 @@ void psndMain(void) { //1:1
 }
 
 void psndMainInt(void) {
-	if (init_f) {
+	if (lbl_8042B428) {
 		SoundMainInt();
 	}
 }
@@ -4482,18 +4482,11 @@ void psndMainInt(void) {
 void psndExit(void) {
 	SoundDropData();
 	DVDMgrSetupCallback(NULL);
-	init_f = FALSE;
+	lbl_8042B428 = FALSE;
 }
 
 BOOL psndPushGroup(void) {
-	if (_psndPushGroup_trg) {
-		return TRUE;
-	}
-	if (group <= 11) {
-		_psndPushGroup_trg = TRUE;
-		tbl[0] = group;
-		tbl[1] = -1;
-	}
+	return FALSE;
 }
 
 
@@ -4524,12 +4517,23 @@ void psndStopAllFadeOut(void) {
 
 }
 
-BOOL psndBGMOn(u32 r3, char* bgm_name) {
-	return FALSE;
+BOOL fn_800DBD20(u32 r3, const char* name, u16 fadetime, u16 speed, BOOL someswitch);
+BOOL unk_800d7270(u32 r3, const char* name, u16 fadetime, BOOL someswitch) {
+	return fn_800DBD20(r3, name, fadetime, 750, someswitch);
 }
 
-BOOL psndENVOff(u32 r3) { //probably "id"
-	return FALSE;
+BOOL psndBGMOn(u32 r3, char* name) {
+	return fn_800DBD20(r3, name, 1000, 750, FALSE);
+}
+
+BOOL fn_800D826C(u32 id, u16 fadetime, BOOL someswitch);
+BOOL psndENVOff(u32 id) {
+	return fn_800D826C(id, 1000, FALSE);
+}
+
+BOOL fn_800D84DC(u32 id, const char* name, u16 fadetime, BOOL someswitch);
+BOOL psndENVOn(u32 id, const char* name) {
+	return fn_800D84DC(id, name, 1000, FALSE);
 }
 
 void psndSFXAllOff(void) {
@@ -4537,28 +4541,33 @@ void psndSFXAllOff(void) {
 }
 
 
-void psndSFXOn(const char* sfx_name) {
-
+u32 psndSFXOn(const char* sfx_name) {
+    return 0;
 }
 
-BOOL psndBGMOff_f_d(s32 flags, u16 fadetime, BOOL someswitch) {
-
+BOOL fn_800DB9A8(s32 id, u16 fadetime, BOOL someswitch);
+BOOL psndBGMOff(s32 id) {
+	return fn_800DB9A8(id, 1000, FALSE);
 }
 
 BOOL psndBGMStartCheck(s32 id) {
-
+    return TRUE;
 }
 
 void psndSetFlag(s32 flag) { //1:1 except maybe param
     psnd.unk56 |= flag;
     if (psnd.unk56 & 1) {
-        psndBGMOff_f_d(0, 0x3E8, 0);
-        psndBGMOff_f_d(1, 0x3E8, 0);
+        psndBGMOff(0);
+        psndBGMOff(1);
     }
     if (psnd.unk56 & 2) {
         psndENVOff(0);
         psndENVOff(1);
     }
+}
+
+u16 psndGetFlag(void) {
+	return psnd.unk56;
 }
 
 void psndClearFlag(s32 flag) { //1:1 except maybe param
@@ -4569,6 +4578,112 @@ void psndClearFlag(s32 flag) { //1:1 except maybe param
 void psndSetPosDirListener(Vec* position, f32 direction) {  //1:1
     psnd.position = *position;
     psnd.direction = direction;
+}
+
+void psndSFX_dist(s32 id, u16 dist) {
+    PaperSoundEffect* eff;
+    if ((id & 0xFFFFFFFF) == -1) return;
+    eff = &pssfx[(u8)id];
+    if ((eff->sfxId & 0xFFFFFFFF) == -1) return;
+    eff->dist = dist;
+}
+
+void psndSFX_pos(s32 id, Vec* pos) {
+    PaperSoundEffect* eff;
+    if ((id & 0xFFFFFFFF) == -1) return;
+    eff = &pssfx[(u8)id];
+    if ((eff->sfxId & 0xFFFFFFFF) == -1) return;
+    eff->pos = *pos;
+}
+
+void psndSFX_pit(s32 id, u16 pitch) {
+    PaperSoundEffect* eff;
+    SoundEffectEntry* entry;
+    if ((id & 0xFFFFFFFF) == -1) return;
+    eff = &pssfx[(u8)id];
+    if ((eff->sfxId & 0xFFFFFFFF) == -1) return;
+    if (eff->unk6 & 1) {
+        eff->pitch = pitch;
+    } else {
+        entry = &pssfxlist[eff->sfxId & 0x1FFF];
+        if (!(entry->field_0x4 & 0x80000000) && !(entry->field_0x4 & 0x80000000)) {
+            SoundEfxSetPitch(eff->unk18, pitch);
+        }
+    }
+}
+
+void psndSFX_vol(s32 id, u8 volume) {
+    PaperSoundEffect* eff;
+    if ((id & 0xFFFFFFFF) == -1) return;
+    eff = &pssfx[(u8)id];
+    if ((eff->sfxId & 0xFFFFFFFF) == -1) return;
+    eff->volume = volume;
+}
+
+u8 psndSFX_get_vol(s32 id) {
+    PaperSoundEffect* eff;
+    if ((id & 0xFFFFFFFF) == -1) {
+        return 0;
+    }
+    eff = &pssfx[(u8)id];
+    if ((eff->sfxId & 0xFFFFFFFF) == -1) {
+        return 0;
+    }
+    return eff->volume;
+}
+
+void SoundSSStopCh(s32 chan);
+
+void psndSFXOff(s32 id) {
+    PaperSoundEffect* eff;
+    SoundEffectEntry* entry;
+    s32 fid;
+
+    if ((id & 0xFFFFFFFF) == -1) {
+        return;
+    }
+    eff = &pssfx[(u8)id];
+    fid = eff->sfxId;
+    if ((fid & 0xFFFFFFFF) == -1) {
+        return;
+    }
+    if (eff->unk6 & 1) {
+        eff->sfxId = -1;
+        eff->unk18 = -1;
+    } else {
+        entry = &pssfxlist[fid & 0x1FFF];
+        if ((eff->unk18 & 0xFFFFFFFF) != -1) {
+            if (entry->field_0x4 & 0x80000000) {
+                SoundSSStopCh(eff->unk18);
+            } else if (entry->field_0x4 & 0x40000000) {
+                SoundSongStopCh(eff->unk18);
+            } else {
+                SoundEfxStop(eff->unk18);
+            }
+        }
+        eff->sfxId = -1;
+        eff->unk18 = -1;
+    }
+}
+
+s32 psndSFXChk(s32 id) {
+    u32 uid = id;
+    u32 tag;
+    PaperSoundEffect* eff;
+
+    if (uid == 0xFFFFFFFF) {
+        return -1;
+    }
+    eff = &pssfx[(u8)uid];
+    tag = uid >> 8 & 0xFFFF;
+    if (tag != eff->unk4) {
+        return -1;
+    }
+    return eff->sfxId == -1 ? -1 : 0;
+}
+
+s32 psndBGMChk(s32 id) {
+    return psbgm[id & 0xF].unk0 == -1 ? -1 : 0;
 }
 
 void psndSFXOn_3D(const char* name, Vec* position) {

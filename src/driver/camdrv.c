@@ -17,7 +17,7 @@ extern double tan(double arg);
 #define DEG_TO_RAD_12_5__2 0.21816615760326385
 
 //.bss
-CameraEntry* camPtrTbl[CAMERA_MAX];
+CameraEntry* lbl_803D5658[CAMERA_MAX];
 
 //.sdata
 Vec camPtDefault = { 0.0f, 0.0f, 1000.0f };
@@ -26,6 +26,7 @@ Vec camUpDefault = { 0.0f, 1.0f, 0.0f };
 
 //.sbss
 CameraId currentCamNo;
+extern CameraId lbl_8042AF28;
 
 typedef struct CameraParams {
     f32 fovY;   // 0x00
@@ -50,43 +51,43 @@ inline Vec makeVecByValue(f32 x, f32 y, f32 z);
 void camInit(void) {
     f32 deg2rad;
 
-    camPtrTbl[0] =
+    lbl_803D5658[0] =
         camEntryOrtho(NULL, 25.0f, 1.2666666f, 240.0f, -240.0f, -304.0f, 304.0f, 1.0f, 32768.0f, 0.0f, 1.0f, "off");
 
-    camPtrTbl[1] =
+    lbl_803D5658[1] =
         camEntryOrtho(NULL, 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f, "off2");
 
-    camPtrTbl[2] =
+    lbl_803D5658[2] =
         camEntryOrtho(NULL, 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f, "shadow");
 
-    camPtrTbl[3] = camEntryOrtho(NULL, 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f, "bg");
+    lbl_803D5658[3] = camEntryOrtho(NULL, 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f, "bg");
 
-    camPtrTbl[4] = camEntryPersp(cam3dMain, 25.0f, 1.2666666f, 1.0f, 32768.0f, 0.0f, 1.0f, "3d");
+    lbl_803D5658[4] = camEntryPersp(cam3dMain, 25.0f, 1.2666666f, 1.0f, 32768.0f, 0.0f, 1.0f, "3d");
 
-    camPtrTbl[5] = camEntryPersp(camEffMain, 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.2f, 0.3f, "3deff_A");
+    lbl_803D5658[5] = camEntryPersp(camEffMain, 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.2f, 0.3f, "3deff_A");
 
-    camPtrTbl[6] = camEntryPersp(cam3dImgMain, 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 1.0f, "3dimg");
+    lbl_803D5658[6] = camEntryPersp(cam3dImgMain, 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 1.0f, "3dimg");
     deg2rad = (f32)tan(DEG_TO_RAD_12_5__1);
-    camPtrTbl[6]->cameraPos = makeVecByValue(0.0f, 0.0f, 24.0f / deg2rad);
+    lbl_803D5658[6]->cameraPos = makeVecByValue(0.0f, 0.0f, 24.0f / deg2rad);
 
-    camPtrTbl[7] = camEntryPersp(camEffMain, 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.2f, 0.3f, "3deff_B");
+    lbl_803D5658[7] = camEntryPersp(camEffMain, 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.2f, 0.3f, "3deff_B");
 
-    camPtrTbl[8] = camEntryPersp(NULL, 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.1f, 0.2f, "2d");
+    lbl_803D5658[8] = camEntryPersp(NULL, 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.1f, 0.2f, "2d");
     deg2rad = (f32)tan(DEG_TO_RAD_12_5__1);
-    camPtrTbl[8]->cameraPos = makeVecByValue(0.0f, 0.0f, 240.0f / deg2rad);
+    lbl_803D5658[8]->cameraPos = makeVecByValue(0.0f, 0.0f, 240.0f / deg2rad);
 
-    camPtrTbl[9] = camEntryPersp(NULL, 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 0.1f, "fade");
+    lbl_803D5658[9] = camEntryPersp(NULL, 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 0.1f, "fade");
     deg2rad = (f32)tan(DEG_TO_RAD_12_5__1);
-    camPtrTbl[9]->cameraPos = makeVecByValue(0.0f, 0.0f, 24.0f / deg2rad);
+    lbl_803D5658[9]->cameraPos = makeVecByValue(0.0f, 0.0f, 24.0f / deg2rad);
 
-    camPtrTbl[10] = camEntryPersp(NULL, 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 0.1f, "fade2");
+    lbl_803D5658[10] = camEntryPersp(NULL, 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 0.1f, "fade2");
     deg2rad = (f32)tan(DEG_TO_RAD_12_5__1);
-    camPtrTbl[10]->cameraPos = makeVecByValue(0.0f, 0.0f, 24.0f / deg2rad);
+    lbl_803D5658[10]->cameraPos = makeVecByValue(0.0f, 0.0f, 24.0f / deg2rad);
 
-    camPtrTbl[11] =
+    lbl_803D5658[11] =
         camEntryOrtho(NULL, 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f, "dbg");
 
-    camPtrTbl[12] = camEntryPersp(NULL, 25.0f, 1.2666666f, 1.0f, 32768.0f, 0.0f, 1.0f, "dbg3d");
+    lbl_803D5658[12] = camEntryPersp(NULL, 25.0f, 1.2666666f, 1.0f, 32768.0f, 0.0f, 1.0f, "dbg3d");
 }
 
 // near/far is perspective, nearZ/farZ is projection
@@ -202,7 +203,7 @@ void camMain(void) {
     int cameraId;
 
     for (cameraId = 0; cameraId < CAMERA_MAX; cameraId++) {
-        CameraEntry* camera = camPtrTbl[cameraId];
+        CameraEntry* camera = lbl_803D5658[cameraId];
         if (camera->callback != NULL) {
             camera->callback(camera);
         }
@@ -228,7 +229,7 @@ void camMain(void) {
             vExtent = weight * (1.0f - 1.0f / zoom) * (f32)DEMOGetRenderModeObj()->efbHeight;
 
             GXGetProjectionv(savedProj);
-            cam3d = camPtrTbl[CAMERA_3D];
+            cam3d = lbl_803D5658[CAMERA_3D];
             GXSetProjection(cam3d->projection, cam3d->projType);
             GXGetProjectionv(proj);
             GXGetViewportv(viewport);
@@ -335,9 +336,9 @@ void camDraw(void) {
     camLetterBox();
     dispSort();
     for (cameraId = 0; cameraId < CAMERA_MAX; cameraId++) {
-        CameraEntry* camera = camPtrTbl[cameraId];
+        CameraEntry* camera = lbl_803D5658[cameraId];
         if (!(camera->flags & 1)) {
-            currentCamNo = cameraId;
+            lbl_8042AF28 = cameraId;
             GXSetViewport(camera->viewport[0], camera->viewport[1], camera->viewport[2], camera->viewport[3],
                           camera->viewport[4], camera->viewport[5]);
             GXSetScissor(camera->scissor[0], camera->scissor[1], camera->scissor[2], camera->scissor[3]);
@@ -396,19 +397,19 @@ void camUnLoadRoad(CameraId cameraId) {
 }
 
 CameraEntry* camGetPtr(CameraId cameraId) {
-    return camPtrTbl[cameraId];
+    return lbl_803D5658[cameraId];
 }
 
 CameraEntry* camGetCurPtr(void) {
-    return camPtrTbl[currentCamNo];
+    return lbl_803D5658[lbl_8042AF28];
 }
 
 CameraId camGetCurNo(void) {
-    return currentCamNo;
+    return lbl_8042AF28;
 }
 
 void camSetCurNo(CameraId cameraId) {
-    currentCamNo = cameraId;
+    lbl_8042AF28 = cameraId;
 }
 
 void cam3dMain(CameraEntry* camera) {
@@ -647,31 +648,31 @@ void camEffMain(CameraEntry* camera) {
 }
 
 void camSetMode(CameraId cameraId, u16 mode) {
-    camPtrTbl[cameraId]->mode = mode;
+    lbl_803D5658[cameraId]->mode = mode;
 }
 
 void camDispOn(CameraId cameraId) {
-    camPtrTbl[cameraId]->flags &= ~1;
+    lbl_803D5658[cameraId]->flags &= ~1;
 }
 
 void camDispOff(CameraId cameraId) {
-    camPtrTbl[cameraId]->flags |= 1;
+    lbl_803D5658[cameraId]->flags |= 1;
 }
 
 void camCtrlOn(CameraId cameraId) {
-    camPtrTbl[cameraId]->flags &= ~2;
+    lbl_803D5658[cameraId]->flags &= ~2;
 }
 
 void camCtrlOff(CameraId cameraId) {
-    camPtrTbl[cameraId]->flags |= 2;
+    lbl_803D5658[cameraId]->flags |= 2;
 }
 
 void camSetTypePersp(CameraId cameraId) {
-    camPtrTbl[cameraId]->projType = GX_PERSPECTIVE;
+    lbl_803D5658[cameraId]->projType = GX_PERSPECTIVE;
 }
 
 void camSetTypeOrtho(CameraId cameraId) {
-    camPtrTbl[cameraId]->projType = GX_ORTHOGRAPHIC;
+    lbl_803D5658[cameraId]->projType = GX_ORTHOGRAPHIC;
 }
 
 void getScreenPoint(Vec* model, Vec* screen) {
@@ -736,7 +737,7 @@ void camLetterBoxDraw(CameraId cameraId, void* param) {
 }
 
 void camLetterBox(void) {
-    CameraEntry* camera = camPtrTbl[CAMERA_2D];
+    CameraEntry* camera = lbl_803D5658[CAMERA_2D];
     PartyEntry* party = partyGetPtr(0);
     if (!(camera->flags & 0x200) && !(bero_get_BeroEXEC() & 1)) {
         if ((seqGetSeq() == SEQ_GAME) && (!marioChkKey() || !marioChkCtrl()) &&

@@ -16,6 +16,8 @@ void btlseqInit(BattleWork* wp);
 void btlseqFirstAct(BattleWork* wp);
 void btlseqTurn(BattleWork* wp);
 void btlseqEnd(BattleWork* wp);
+void BattleStatusWindowEventOn(void);
+void BattleStatusWindowSystemOn(void);
 
 void BattleSequenceManager(void) { //1:1
 	BattleWork* wp = _battleWorkPointer;
@@ -84,7 +86,7 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 		for (i = 0; i < 64; i++) {
 			unit = BattleGetUnitPtr(wp, i);
 			if (unit) {
-				if ((unit->mStatusFlags & 0x20000000) &&
+				if ((unit->mStatusFlags & 0x10000000) &&
 					!BtlUnit_CheckStatus(unit, STATUS_INSTANT_KILL) &&
 					!BtlUnit_GetBelong(unit))
 				{
@@ -158,8 +160,8 @@ void btlseqInit(BattleWork* wp) { //1:1, needs stmw
 			break;
 
 		case 0x1000005:
-			//BattleStatusWindowEventOn();
-			//BattleStatusWindowSystemOn();
+			BattleStatusWindowEventOn();
+			BattleStatusWindowSystemOn();
 			BattleSetSeq(wp, SEQ_UNKNOWN, 1);
 			BattleSetSeq(wp, SEQ_FIRST_ACT, 0x2000000);
 			break;

@@ -18,9 +18,30 @@
 #include <dolphin/vi.h>
 #include <string.h>
 
+#ifndef TARGET_PC
+// These diagnostics are for the Aurora port and are not part of the retail sequence.
+#define printf(...) ((void)0)
+#define fflush(...) ((void)0)
+#endif
+
 extern GlobalWork* gp;
 extern GXRenderModeObj GXNtsc480ProgMarioSt;
 extern GXRenderModeObj GXNtsc480IntDfMarioSt;
+#ifndef TARGET_PC
+extern const f32 lbl_8042D2A0;
+extern const f32 lbl_8042D2AC;
+extern const f32 lbl_8042D2B0;
+extern const f32 lbl_8042D2B4;
+#define LOGO_VIEWPORT_ZERO lbl_8042D2AC
+#define LOGO_VIEWPORT_ONE lbl_8042D2A0
+#define LOGO_VIEWPORT_WIDTH lbl_8042D2B0
+#define LOGO_VIEWPORT_HEIGHT lbl_8042D2B4
+#else
+#define LOGO_VIEWPORT_ZERO 0.0f
+#define LOGO_VIEWPORT_ONE 1.0f
+#define LOGO_VIEWPORT_WIDTH 608.0f
+#define LOGO_VIEWPORT_HEIGHT 480.0f
+#endif
 
 //.data
 GXRenderModeObj GXNtsc480ProgLogo = {
@@ -73,8 +94,11 @@ void dummy_draw(CameraId camId, void* param);
 void progDisp(CameraId camId, void* param);
 
 void seq_logoInit(SequenceWork* work) {
+	printf("[seq_logoInit] Starting seq_logoInit...\n"); fflush(stdout);
 	memset(wp, 0, sizeof(LogoWork));
+	printf("[seq_logoInit] Loading mariost.tpl via fileAllocf...\n"); fflush(stdout);
 	wp->texture = fileAllocf(4, "%s/mariost.tpl", getMarioStDvdRoot());
+	printf("[seq_logoInit] wp->texture=%p\n", wp->texture); fflush(stdout);
 	if (!OSIsRestart() || OSGetResetCode() & OS_RESET_SHUTDOWN) {
 		if (VIGetDTVStatus()) {
 			if (OSGetProgressiveMode() == 1) {
@@ -91,8 +115,10 @@ void seq_logoInit(SequenceWork* work) {
 			wp->progressive = FALSE;
 		}
 	}
-	fileAsyncf(0, 0, "%s/b/first", getMarioStDvdRoot()); //unused
+	printf("[seq_logoInit] progressive=%d\n", wp->progressive); fflush(stdout);
+	printf("[seq_logoInit] Calling fileAsyncf('/b/first')...\n"); fflush(stdout);
 	if (!OSIsRestart() || OSGetResetCode() & OS_RESET_SHUTDOWN) {
+		printf("[seq_logoInit] VIConfigure...\n"); fflush(stdout);
 		VIConfigure(&GXNtsc480IntDfLogo);
 		VIFlush();
 		VIWaitForRetrace();
@@ -118,14 +144,41 @@ void seq_logoInit(SequenceWork* work) {
 }
 
 void seq_logoExit(SequenceWork* work) {
+#ifdef TARGET_PC
+	printf("[seq_logoExit] Starting exit handlers...\n"); fflush(stdout);
+#endif
 	fontmgrTexSetup();
+#ifdef TARGET_PC
+	printf("[seq_logoExit] fontmgrTexSetup done.\n"); fflush(stdout);
+#endif
 	windowTexSetup();
+#ifdef TARGET_PC
+	printf("[seq_logoExit] windowTexSetup done.\n"); fflush(stdout);
+#endif
 	fadeTexSetup();
+#ifdef TARGET_PC
+	printf("[seq_logoExit] fadeTexSetup done.\n"); fflush(stdout);
+#endif
 	iconTexSetup();
+#ifdef TARGET_PC
+	printf("[seq_logoExit] iconTexSetup done.\n"); fflush(stdout);
+#endif
 	envTexSetup();
+#ifdef TARGET_PC
+	printf("[seq_logoExit] envTexSetup done.\n"); fflush(stdout);
+#endif
 	effTexSetup();
+#ifdef TARGET_PC
+	printf("[seq_logoExit] effTexSetup done.\n"); fflush(stdout);
+#endif
 	marioPoseInit();
+#ifdef TARGET_PC
+	printf("[seq_logoExit] marioPoseInit done.\n"); fflush(stdout);
+#endif
 	fileFree(wp->texture);
+#ifdef TARGET_PC
+	printf("[seq_logoExit] fileFree done. Exit complete!\n"); fflush(stdout);
+#endif
 }
 
 void seq_logoMain(SequenceWork* work) {
@@ -133,6 +186,13 @@ void seq_logoMain(SequenceWork* work) {
 	FileEntry* first;
 	u8* decode;
 	u32 size;
+
+	if (work->state < 10 && (keyGetButtonTrg(0) & (PAD_BUTTON_START | PAD_BUTTON_A))) {
+		printf("[seq_logoMain] User pressed START/A! Skipping logos to Title Screen...\n");
+		fflush(stdout);
+		work->state = 10;
+		fadeReset(0);
+	}
 
 	switch (work->state) {
 		case 0:
@@ -148,7 +208,7 @@ void seq_logoMain(SequenceWork* work) {
 				gp->flags |= 4;
 			}
 			break;
-		
+
 		case 2:
 			if (OSTicksToMilliseconds(gp->renderTime - time) > 1000) {
 				fadeEntry(FADE_OUT_BLACK, 500, (GXColor){0, 0, 0, 0xFF});
@@ -208,6 +268,8 @@ void seq_logoMain(SequenceWork* work) {
 			if (!psndPushGroup()) {
 				DVDMgrSetupCallback(NULL);
 				if (fadeIsFinish()) {
+					printf("[seq_logoMain] State 9 -> 10 (fade finished, retrace=%llu)\n", (unsigned long long)gp->renderTime);
+					fflush(stdout);
 					if (gp->flags & 8) {
 						VIConfigure(&GXNtsc480ProgMarioSt);
 					}
@@ -228,24 +290,32 @@ void seq_logoMain(SequenceWork* work) {
 			if (!fileAsyncf(0, 0, "%s/b/first", getMarioStDvdRoot())) {
 				break;
 			}
+			printf("[seq_logoMain] State 10: fileAsyncf('/b/first') finished! Loading and decompressing...\n");
+			fflush(stdout);
 			first = fileAllocf(0, "%s/b/first", getMarioStDvdRoot());
 			if (first) {
-				size = *(u32*)first->data;
-				size = ((size >> 16) & 0xFF) | ((size >> 8) & 0xFF) | (size & 0xFF); //might need to reverse
+				u8* src = (u8*)*first->data;
+				size = src[1] | (src[2] << 8) | (src[3] << 16);
+				printf("[seq_logoMain] LZ77 decompressing /b/first: compressed at %p, uncompressed size=%u\n", src, size);
+				fflush(stdout);
 				decode = __memAlloc(HEAP_DEFAULT, size);
-				LZ77Decode(*first->data, decode);
+				LZ77Decode(src, decode);
+				printf("[seq_logoMain] Decompressed! Magic: %02X %02X %02X %02X. Registering arcEntry(0)...\n",
+					((u8*)decode)[0], ((u8*)decode)[1], ((u8*)decode)[2], ((u8*)decode)[3]);
+				fflush(stdout);
 				arcEntry(0, decode, size);
 				fileFree(first);
+				printf("[seq_logoMain] arcEntry(0) done!\n");
+				fflush(stdout);
 			}
 			if (gp->flags & 0x1000) {
+				printf("[seq_logoMain] Transition to SEQ_E3\n"); fflush(stdout);
 				seqSetSeq(SEQ_E3, NULL, NULL);
 			}
-			else if (wp->skipStory) { //continue to title screen
+			else { //continue to title screen
+				printf("[seq_logoMain] Transition to SEQ_TITLE\n"); fflush(stdout);
 				fadeEntry(FADE_OUT_WHITE, 500, (GXColor){0, 0, 0, 0xFF});
 				work->state++;
-			}
-			else { //play story demo
-				seqSetSeq(SEQ_MAP_CHANGE, "dmo_00", NULL);
 			}
 			break;
 
@@ -385,7 +455,7 @@ void logoDisp(CameraId camId, void* param) {
 				GXPosition3f32(x, height, 0.0f);
 				GXTexCoord2f32(0.0f, 1.0f);
 				break;
-		
+
 			case 3:
 				TEXGetGXTexObjFromPalette(*wp->texture->data, &texObj, 2);
 				GXLoadTexObj(&texObj, GX_TEXMAP0);
@@ -442,9 +512,11 @@ void dummy_draw(CameraId camId, void* param) {
 	f32 scale;
 	u16 height;
 
-	rmode = &GXNtsc480ProgMarioSt;
 	if (OSGetProgressiveMode() != 1) {
 		rmode = &GXNtsc480IntDfMarioSt;
+	}
+	else {
+		rmode = &GXNtsc480ProgMarioSt;
 	}
 	scale = GXGetYScaleFactor(rmode->efbHeight, rmode->xfbHeight);
 	height = (u16)GXSetDispCopyYScale(scale);
@@ -452,7 +524,7 @@ void dummy_draw(CameraId camId, void* param) {
 	GXSetDispCopyDst(rmode->fbWidth, height);
 	GXSetPixelFmt(GX_PF_RGBA6_Z24, GX_ZC_LINEAR);
 	GXSetScissor(0, 0, 608, 480);
-	GXSetViewport(0.0f, 0.0f, 608.0f, 480.0f, 0.0f, 1.0f);
+	GXSetViewport(LOGO_VIEWPORT_ZERO, LOGO_VIEWPORT_ZERO, LOGO_VIEWPORT_WIDTH, LOGO_VIEWPORT_HEIGHT, LOGO_VIEWPORT_ZERO, LOGO_VIEWPORT_ONE);
 }
 
 //param is unused

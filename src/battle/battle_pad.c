@@ -26,6 +26,7 @@ void BattlePadManager(void) {
 	}
 }
 
+#pragma dont_inline on
 void BtlPad_WorkInit(BattleWorkPad* pad) {
 	int i;
 
@@ -51,7 +52,9 @@ void BtlPad_WorkInit(BattleWorkPad* pad) {
 	pad->mHoldRepeatState = 0;
 	pad->mHoldRepeatFrameCounter = 0;
 }
+#pragma dont_inline reset
 
+#pragma dont_inline on
 void BtlPad_WorkUpdate(BattleWorkPad* pad, s32 chan) {
 	int i, repeat;
 
@@ -139,6 +142,7 @@ void BtlPad_WorkUpdate(BattleWorkPad* pad, s32 chan) {
 	}
 	pad->mButtonsReleasedHistory[0] |= pad->mButtonsHistory[1] & (pad->mButtonsHistory[1] ^ pad->mButtonsHistory[0]) & 0xFFFF0000;
 }
+#pragma dont_inline reset
 
 u32 BattlePadGetTrigger(void) {
 	return _battleWorkPointer->padWork[0].mButtonsPressedHistory[0];
@@ -148,6 +152,7 @@ u32 BattlePadGetNow(void) {
 	return _battleWorkPointer->padWork[0].mButtonsHistory[0];
 }
 
+#pragma dont_inline on
 u32 BattlePadCheckTrigger(s32 mask) {
 	return BattlePadMultiCheckTrigger(0, mask);
 }
@@ -163,7 +168,7 @@ u32 BattlePadCheckRecordTrigger(s32 frame, s32 mask) {
 
 u32 BattlePadMultiCheckRecordTrigger(s32 chan, s32 frame, s32 mask) {
 	u32* history = _battleWorkPointer->padWork[chan].mButtonsPressedHistory;
-	return mask & history[frame];
+    return mask & history[frame];
 }
 
 u32 BattlePadCheckNow(s32 mask) {
@@ -192,3 +197,4 @@ u32 BattlePadMultiCheckRepeat(s32 chan, s32 mask) {
 	u32* history = _battleWorkPointer->padWork[chan].mButtonsHeldHistory;
 	return history[0] & mask;
 }
+#pragma dont_inline reset

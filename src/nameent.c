@@ -1,4 +1,5 @@
 #include "nameent.h"
+#include "mario/mariost.h"
 #include "system.h"
 #include <string.h>
 
@@ -62,6 +63,12 @@ static const char* msg_tbl[] = {
 	"msg_nameent_4"
 };
 static NameEntryWork* wp = &work;
+#ifndef TARGET_PC
+extern GlobalWork* wp_80422810;
+#define nameEntGlobalWork wp_80422810
+#else
+#define nameEntGlobalWork gp
+#endif
 
 void nameEntInit(void) {
 	memset(wp, 0, sizeof(NameEntryWork));
@@ -71,8 +78,22 @@ void nameEntReInit(void) {
 	wp->field_0x4 = 3;
 }
 
-BOOL nameEntPrepare(void) {
-	return fileAsyncf(4, NULL, "%s/w/jp/name.tpl", getMarioStDvdRoot()) != 0;
+BOOL nameEntIsCancel(void) {
+	return (wp->field_0x0 >> 1) & 1;
+}
+
+BOOL nameEntWait(void) {
+	wp->field_0x0 |= 1;
+	return wp->field_0x8 != 0x65;
+}
+
+void nameEntOff(void) {
+	wp->field_0x4 = 3;
+}
+
+BOOL fn_8020D384(void) {
+	const char* langDirs[6] = {"jp", "us", "ge", "fr", "sp", "it"};
+	return fileAsyncf(4, NULL, "%s/w/%s/name.tpl", getMarioStDvdRoot(), langDirs[nameEntGlobalWork->language]) != 0;
 }
 
 void nameEntMain(void) {

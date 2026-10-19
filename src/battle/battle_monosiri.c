@@ -680,7 +680,7 @@ BattleUnitType same_tbl_rampell_faker_10[] = {
 	UNIT_NULL
 };
 
-BattleUnitType* battle_monosiri_same_tbl[] = {
+BattleUnitType* lbl_8037A620[] = {
 	same_tbl_gesso,
 	same_tbl_gesso_arm_l,
 	same_tbl_gesso_arm_r,
@@ -738,7 +738,7 @@ TattleEntry* battleGetUnitMonosiriPtr(s32 id) {
 BOOL battleCheckUnitMonosiriFlag(BattleUnit* unit) { //needs stmw, swGet | fix
 	BattleWork* wp = _battleWorkPointer;
 	BattleUnitType kind = unit->currentKind;
-	u32 flag;
+    s32 flag;
 	if (wp->badgeEquippedFlags & 2) {
 		return TRUE;
 	}
@@ -747,34 +747,25 @@ BOOL battleCheckUnitMonosiriFlag(BattleUnit* unit) { //needs stmw, swGet | fix
 		kind = unit->initialKind;
 		flag |= wp->tattledUnitTypeFlags[kind / 32] & (1 << (kind % 32));
 	}
-	if (flag) //TODO: should be able to permute to != 0 like swGet
-		return TRUE;
-	else
-		return FALSE;
+    return flag != 0;
 }
 
 void battleSetUnitMonosiriFlag(BattleUnitType kind) { //very non-matching, TODO permute
 	BattleWork* wp = _battleWorkPointer;
 	BattleUnitType** table;
-	int i, j, k;
+	BattleUnitType* entry;
 
-	table = battle_monosiri_same_tbl;
-	i = 0;
-	while (table[i]) { //check main table hasn't run out of entries
-		j = 0;
-		while (table[i][j]) { //check this table hasn't run out of IDs
-			if (kind == table[i][j]) { //found the type in a group
-				k = 0;
-				while (table[i][k]) { //write bits for all entries
-					swSet(table[i][k] + 0x117A);
-					wp->tattledUnitTypeFlags[table[i][k] / 32] |= 1 << (table[i][k] % 32);
-					k++;
+	for (table = lbl_8037A620; *table; table++) {
+		for (entry = *table; *entry; entry++) {
+			if (kind == *entry) {
+				for (entry = *table; *entry; entry++) {
+					kind = *entry;
+					swSet(kind + 0x117A);
+					wp->tattledUnitTypeFlags[kind / 32] |= 1 << (kind % 32);
 				}
 				return;
 			}
-			j++;
 		}
-		i++;
 	}
 	//no group found, just write the single bit
 	swSet(kind + 0x117A);

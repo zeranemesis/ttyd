@@ -4,12 +4,27 @@
 #include "mario/mariost.h"
 #include "manager/dvdmgr.h"
 #include "system.h"
+
+extern const f32 lbl_804313E0;
+extern const f32 lbl_8043137C;
+extern const f32 lbl_80431394;
+extern const f32 lbl_80431424;
+#ifndef TARGET_PC
+extern const char double_to_int_mask_802f93a8[];
+extern const char lbl_803058F0[];
+#define ENV_TPL_NAME double_to_int_mask_802f93a8
+#define ENV_TPL_FORMAT lbl_803058F0
+#else
+#define ENV_TPL_NAME "env.tpl"
+#define ENV_TPL_FORMAT "%s/env.tpl"
+#endif
 #include "texPalette.h"
 #include <dolphin/dvd.h>
 #include <string.h>
 
 extern int sprintf(char* str, const char* format, ...);
-extern GlobalWork* gp;
+extern GlobalWork* wp_80422810;
+#define gp wp_80422810
 
 //.data
 EnvironmentGlare envGlare0 = {
@@ -60,7 +75,8 @@ EnvironmentGlare envGlare3 = {
 };
 
 //.bss
-static EnvironmentWork work[2];
+static EnvironmentWork lbl_803F32D8[2];
+#define work lbl_803F32D8
 
 //.sbss
 s32 v_count; //TODO: re-type all these
@@ -68,8 +84,10 @@ s32 u2;
 s32 u1;
 s32 a;
 s32 frame_cnt;
-s32 tpl_ok;
-TEXPalette* env_tpl;
+s32 jumpheight;
+TEXPalette* wp_8042B5B0;
+#define tpl_ok jumpheight
+#define env_tpl wp_8042B5B0
 
 //local prototypes
 void _callback(s32 result, DVDFileInfo* fileInfo);
@@ -110,10 +128,10 @@ void envTexSetup(void) { //1:1
     u32 size;
 
     env_tpl = NULL;
-    tpl = arcOpen("env.tpl", 0, 0);
+    tpl = arcOpen(ENV_TPL_NAME, 0, 0);
     env_tpl = tpl;
     if (!tpl) {
-        sprintf(path, "%s/env.tpl", getMarioStDvdRoot());
+        sprintf(path, ENV_TPL_FORMAT, getMarioStDvdRoot());
         entry = DVDMgrOpen(path, 2, 0);
         size = DVDMgrGetLength(entry);
         env_tpl = __memAlloc(HEAP_DEFAULT, OSRoundUp32B(size));
@@ -130,7 +148,7 @@ void envCapture(CameraId camId, void* param) { //1:1
     EnvironmentWork* wp = envGetWork();
     u16 var0, var1, var2, var3;
     u32 size;
-    
+
     var0 = gp->fbWidth;
     var1 = gp->efbHeight;
     var2 = (u16)(((u32)var0 & 0xFFFF) / 2);
@@ -143,7 +161,7 @@ void envCapture(CameraId camId, void* param) { //1:1
         GXCopyTex(wp->capture->address, GX_FALSE);
         GXPixModeSync();
         GXInitTexObj(&wp->captureObj, wp->capture->address, var2, var3, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
-        GXInitTexObjLOD(&wp->captureObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        GXInitTexObjLOD(&wp->captureObj, GX_LINEAR, GX_LINEAR, lbl_80431394, lbl_80431394, lbl_80431394, GX_FALSE, GX_FALSE, GX_ANISO_1);
     }
     if (wp->flags & 2) {
         GXSetTexCopySrc(0, 0, var0, var1);
@@ -153,7 +171,7 @@ void envCapture(CameraId camId, void* param) { //1:1
         GXCopyTex(wp->capture2->address, 0);
         GXPixModeSync();
         GXInitTexObj(&wp->captureObj2, wp->capture2->address, var2, var3, GX_TF_I8, GX_CLAMP, GX_CLAMP, GX_FALSE);
-        GXInitTexObjLOD(&wp->captureObj2, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        GXInitTexObjLOD(&wp->captureObj2, GX_LINEAR, GX_LINEAR, lbl_80431394, lbl_80431394, lbl_80431394, GX_FALSE, GX_FALSE, GX_ANISO_1);
     }
 }
 
@@ -169,7 +187,7 @@ void envCapture2(CameraId camId, void* param) { //1:1
         GXCopyTex(wp->envBlur, GX_FALSE);
         GXPixModeSync();
         GXInitTexObj(&wp->envBlurObj, wp->envBlur, var0, var1, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
-        GXInitTexObjLOD(&wp->envBlurObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, GX_FALSE, GX_FALSE, GX_ANISO_1);
+        GXInitTexObjLOD(&wp->envBlurObj, GX_LINEAR, GX_LINEAR, lbl_80431394, lbl_80431394, lbl_80431394, GX_FALSE, GX_FALSE, GX_ANISO_1);
     }
     if (wp->flags & 0x40000000) {
         if ((wp->unk98 & 1) && (wp->flags & 8)) {
@@ -225,10 +243,10 @@ void envDisp2(CameraId camId, void *param) { //almost 1:1, needs extra addi
 }
 
 void envMain(void) {
-    dispEntry(CAMERA_3D, 20.0f, 7, envCapture, NULL);
-    dispEntry(CAMERA_3D, 10.0f, 7, envDisp, NULL);
-    dispEntry(CAMERA_3D, 0.0f, 7, envCapture2, NULL);
-    dispEntry(CAMERA_3D, 5000.0f, 8, envDisp2, NULL);
+    dispEntry(CAMERA_3D, lbl_804313E0, 7, envCapture, NULL);
+    dispEntry(CAMERA_3D, lbl_8043137C, 7, envDisp, NULL);
+    dispEntry(CAMERA_3D, lbl_80431394, 7, envCapture2, NULL);
+    dispEntry(CAMERA_3D, lbl_80431424, 8, envDisp2, NULL);
 }
 
 
@@ -959,8 +977,8 @@ void envGlare(EnvironmentGlare* glare) {
             GXLoadTexMtxImm(sp28, var_r23_2, 1);
             var_r23_2 += 3;
             var_r19_3 += 1;
-            var_r22_3 = (void*)((u32)var_r22_3 + 8);
-            var_r21 = (void*)((u32)var_r21 + 8);
+            var_r22_3 = (void*)((uintptr_t)var_r22_3 + 8);
+            var_r21 = (void*)((uintptr_t)var_r21 + 8);
             var_r28 += 1;
         }
         GXSetNumTevStages((u8)(var_r19_3 * 2));

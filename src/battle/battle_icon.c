@@ -33,8 +33,8 @@ void BattleIconMain(void) {
 	int i;
 
 	wp = _battleWorkPointer;
+	icon = wp->icons;
 	for (i = 0; i < 16; i++) {
-		icon = &wp->icons[i];
 		if (icon->flags & 1) { //in use
 			base = icon->base;
 			if (base) {
@@ -48,9 +48,11 @@ void BattleIconMain(void) {
 				}
 			}
 		}
+		icon++;
 	}
 }
 
+#pragma dont_inline on
 void BattleIconEnd(void) {
 	BattleWork* wp = _battleWorkPointer;
 	int i;
@@ -59,6 +61,7 @@ void BattleIconEnd(void) {
 		BtlIcon_Delete(&wp->icons[i]);
 	}
 }
+#pragma dont_inline reset
 
 BattleIcon* BtlIcon_Entry(s16 iconId, f32 x, f32 y, f32 z) {
 	BattleIcon* icon;
@@ -90,12 +93,14 @@ BattleIcon* BtlIcon_Entry(s16 iconId, f32 x, f32 y, f32 z) {
 	}
 }
 
+#pragma dont_inline on
 void BtlIcon_Delete(BattleIcon* icon) {
 	if (icon->flags & 1) {
 		iconDelete(icon->base->name);
 		icon->flags &= ~1;
 	}
 }
+#pragma dont_inline reset
 
 //s32 iconId, f32 x, f32 y, f32 z, s32 evtIndex
 USER_FUNC(btlevtcmd_BtlIconEntry) {
