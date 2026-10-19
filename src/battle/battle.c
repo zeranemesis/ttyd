@@ -350,6 +350,21 @@ BattleUnit* BattleGetUnitPtr(BattleWork* wp, s32 index) {
     return NULL;
 }
 
+/* Candidate lookup for the special system unit in a battle.
+ * The original instruction sequence and slot convention still need
+ * a G8MP01 binary comparison before this can be considered matching.
+ */
+BattleUnit* BattleGetSystemPtr(BattleWork* work) {
+    s32 index;
+    for (index = 0; index < 64; index++) {
+        BattleUnit* unit = BattleGetUnitPtr(work, index);
+        if (unit != NULL && unit->currentKind == UNIT_SYSTEM) {
+            return unit;
+        }
+    }
+    return NULL;
+}
+
 void BattleSetUnitPtr(BattleWork* wp, s32 index, BattleUnit* unit) {
     if (index < 64) {
         wp->units[index] = unit;

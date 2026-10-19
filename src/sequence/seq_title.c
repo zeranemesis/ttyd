@@ -84,6 +84,13 @@ s32 N_getDebugMode(void) {
 	return wp2->debug;
 }
 
+/* Candidate exported accessor, mirroring the existing debug getter.
+ * Confirm code generation against the retail G8MP01 function.
+ */
+s32 getDebugMode(void) {
+    return N_getDebugMode();
+}
+
 static void fn_80008A54(u8 alpha, f32 x, f32 y) {
 	CameraEntry* cam;
 	GXTexObj texObj0, texObj1;

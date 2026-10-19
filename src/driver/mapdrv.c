@@ -124,6 +124,18 @@ void N_mapDispOn(void) {
 	disableMapDraw = FALSE;
 }
 
+/* Candidate entrypoints declared in mapdrv.h. The N_ variants above
+ * already control the map draw gate; verify their retail linkage and
+ * generated code before marking this object as matching.
+ */
+void mapDispOff(void) {
+    N_mapDispOff();
+}
+
+void mapDispOn(void) {
+    N_mapDispOn();
+}
+
 MapWork* mapGetWork(void) {
 	return &mapWork[activeGroup];
 }
