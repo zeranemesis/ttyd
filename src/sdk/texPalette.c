@@ -7,6 +7,7 @@
 #define PALETTE_VERSION 0x0020AF30
 #define PALETTE_VERSION_BE 0x30AF2000
 
+#ifdef TARGET_PC
 static inline u16 swap16(u16 v) {
 #if defined(_MSC_VER)
     return _byteswap_ushort(v);
@@ -23,14 +24,16 @@ static inline u32 swap32(u32 v) {
 #endif
 }
 
+#endif // TARGET_PC
+
 void UnpackTexPalette(TEXPalette* pal) {
 #ifndef TARGET_PC
     u16 i;
     TEXDescriptor* desc;
 #endif
+    #ifdef TARGET_PC
     if (!pal) return;
 
-#ifdef TARGET_PC
     printf("[UnpackTexPalette] pal=%p, raw versionNumber=0x%08X\n", pal, pal->versionNumber); fflush(stdout);
     // Check if already unpacked in native format
     if (pal->versionNumber == PALETTE_VERSION && pal->descriptorArray && (uintptr_t)pal->descriptorArray > 0x10000) {
@@ -143,16 +146,20 @@ void UnpackTexPalette(TEXPalette* pal) {
 }
 
 TEXDescriptor* TEXGet(TEXPalette* pal, u32 id) {
+#ifdef TARGET_PC
     if (!pal || id >= pal->numDescriptors) {
         return NULL;
     }
+#endif
     return &pal->descriptorArray[id];
 }
 
 void TEXGetGXTexObjFromPalette(TEXPalette* pal, GXTexObj* to, u32 id) {
     TEXDescriptor* tdp = TEXGet(pal, id);
     GXBool mipMap;
+#ifdef TARGET_PC
     if (!tdp || !tdp->textureHeader) return;
+#endif
     mipMap = (tdp->textureHeader->minLOD == tdp->textureHeader->maxLOD) ? GX_FALSE : GX_TRUE;
     GXInitTexObj(to, tdp->textureHeader->data, tdp->textureHeader->width, tdp->textureHeader->height,
                  (GXTexFmt)tdp->textureHeader->format, tdp->textureHeader->wrapS, tdp->textureHeader->wrapT, mipMap);

@@ -34,9 +34,11 @@ void seqInit_MARIOSTORY(void) {
 void seqMain(void) {
 	if (next_seq != now_seq || s_seqForceChange) {
 		s_seqForceChange = FALSE;
+#ifdef TARGET_PC
 		printf("[seqMain] Transitioning from %d to %d (map=%s, bero=%s)\n",
 		       now_seq, next_seq, next_p0 ? next_p0 : "(null)", next_p1 ? next_p1 : "(null)");
 		fflush(stdout);
+#endif
 		if (now_seq != SEQ_UNDEFINED) {
 			sysWaitDrawSync();
 			seq_data[now_seq][2](&seqWork); //call Exit function
@@ -48,9 +50,13 @@ void seqMain(void) {
 		seqWork.state = 0;
 		seqWork.mapName = next_p0;
 		seqWork.beroName = next_p1;
+#ifdef TARGET_PC
 		printf("[seqMain] Calling init for seq %d...\n", next_seq); fflush(stdout);
+#endif
 		seq_data[next_seq][0](&seqWork); //call Init function
+#ifdef TARGET_PC
 		printf("[seqMain] Init for seq %d done!\n", next_seq); fflush(stdout);
+#endif
 	}
 	seq_data[now_seq][1](&seqWork); //call Main function
 }
