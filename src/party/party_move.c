@@ -10,17 +10,68 @@ extern s32 lbl_8042B408[2];
 extern s32 lbl_8042B410[2];
 extern u8 footmarkBuf[];
 
-u32 partyGetFootmarkId(PartyEntry* party) { return (party->flags >> 2) & 1; }
-s32 partyGetFootmarkWriteId(s32 slot) { return lbl_8042B410[slot]; }
-s32 partyGetFootmarkReadId(s32 slot) { return lbl_8042B408[slot]; }
-void* partyGetFootmarkPtr(s32 slot) { return footmarkBuf + slot * 0x500 + lbl_8042B408[slot] * 0x10; }
-void partyNextReadId(s32 slot) { if (lbl_8042B408[slot] != lbl_8042B410[slot]) { lbl_8042B408[slot]++; if (lbl_8042B408[slot] >= 0x50) lbl_8042B408[slot] = 0; } }
-void partyGetReadId(s32 slot, f32* x, f32* y, f32* z) { f32* p = (f32*)partyGetFootmarkPtr(slot); *x = p[1]; *y = p[2]; *z = p[3]; }
-void partyGetReadId2(s32 slot, Vec* out) { f32* p = (f32*)partyGetFootmarkPtr(slot); out->x = p[1]; out->y = p[2]; out->z = p[3]; }
-void partySetDir(PartyEntry* party, f32 x, f32 z) { party->forceMoveTargetX = angleABf(party->position.x, party->position.z, x, z); }
-void partyMove(PartyEntry* party) { partyMoveMain(party, 1); }
-void partyMoveNoHosei(PartyEntry* party) { partyMoveMain(party, 0); }
-void partyClearJumpPara(PartyEntry* party) { party->flags &= 0xFFFFFF8F; *(f32*)((u8*)party + 0x114) = dat_804196ac; *(f32*)((u8*)party + 0x118) = dat_804196ac; *(f32*)((u8*)party + 0x11C) = dat_804196ac; }
+/* Footmarks are a two-slot circular buffer of 0x50 entries per slot.
+ * Each record occupies 0x10 bytes: status, x, y, z.
+ * Keep the original indexing and wrap behavior for matching builds.
+ */
+u32 partyGetFootmarkId(PartyEntry* party) {
+    return (party->flags >> 2) & 1;
+}
+
+s32 partyGetFootmarkWriteId(s32 slot) {
+    return lbl_8042B410[slot];
+}
+
+s32 partyGetFootmarkReadId(s32 slot) {
+    return lbl_8042B408[slot];
+}
+
+void* partyGetFootmarkPtr(s32 slot) {
+    return footmarkBuf + slot * 0x500 + lbl_8042B408[slot] * 0x10;
+}
+
+void partyNextReadId(s32 slot) {
+    if (lbl_8042B408[slot] != lbl_8042B410[slot]) {
+        lbl_8042B408[slot]++;
+        if (lbl_8042B408[slot] >= 0x50) {
+            lbl_8042B408[slot] = 0;
+        }
+    }
+}
+
+void partyGetReadId(s32 slot, f32* x, f32* y, f32* z) {
+    f32* p = (f32*)partyGetFootmarkPtr(slot);
+    *x = p[1];
+    *y = p[2];
+    *z = p[3];
+}
+
+void partyGetReadId2(s32 slot, Vec* out) {
+    f32* p = (f32*)partyGetFootmarkPtr(slot);
+    out->x = p[1];
+    out->y = p[2];
+    out->z = p[3];
+}
+
+void partySetDir(PartyEntry* party, f32 x, f32 z) {
+    party->forceMoveTargetX = angleABf(party->position.x, party->position.z, x, z);
+}
+
+void partyMove(PartyEntry* party) {
+    partyMoveMain(party, 1);
+}
+
+void partyMoveNoHosei(PartyEntry* party) {
+    partyMoveMain(party, 0);
+}
+
+void partyClearJumpPara(PartyEntry* party) {
+    party->flags &= 0xFFFFFF8F;
+    *(f32*)((u8*)party + 0x114) = dat_804196ac;
+    *(f32*)((u8*)party + 0x118) = dat_804196ac;
+    *(f32*)((u8*)party + 0x11C) = dat_804196ac;
+}
+
 void partyChgMot(PartyEntry* party, s32 motId) {
     if (party->field_36[0] == 3) {
         party->flags &= 0xFFFFFF8F;
@@ -74,12 +125,12 @@ void partyClearFootmark(void) {
 
 void partyChgMoveMode(PartyEntry* party, u8 mode) {
     s32 oldMode = *(u8*)((u8*)party + 0x3B);
-    if (oldMode != 6) {
-        if ((oldMode < 6) && (oldMode < 4)) {
-        }
-    } else {
+
+    // Clear the flag whenever the previous movement mode was 6.
+    if (oldMode == 6) {
         party->flags &= 0xFFFF7FFF;
     }
+
     *(u8*)((u8*)party + 0x3B) = mode;
     party->field_8 |= 4;
 }
