@@ -126,7 +126,7 @@ void partyClearFootmark(void) {
 void partyChgMoveMode(PartyEntry* party, u8 mode) {
     s32 oldMode = *(u8*)((u8*)party + 0x3B);
 
-    // Only the transition out of mode 6 clears this flag.
+    // Clear the flag whenever the previous movement mode was 6.
     if (oldMode == 6) {
         party->flags &= 0xFFFF7FFF;
     }
