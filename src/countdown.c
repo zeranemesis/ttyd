@@ -13,6 +13,18 @@ void countDownInit(void) {
     memset(&gp->countdown, 0, sizeof(gp->countdown));
 }
 
+/* Candidate reconstructions of the countdown flag helpers.
+ * Both only modify the u16 flag field of the active CountdownWork.
+ * Binary equivalence against G8MP01 remains to be checked with objdiff.
+ */
+void countDownFlagOff(u16 flag) {
+    wp->flags &= ~flag;
+}
+
+void countDownFlagOn(u16 flag) {
+    wp->flags |= flag;
+}
+
 void countDownSaveReStart(void) {
 }
 
